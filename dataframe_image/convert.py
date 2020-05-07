@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import shutil
 import nbformat
 from nbconvert.preprocessors import ExecutePreprocessor
@@ -21,47 +22,101 @@ class MetaExecutePreprocessor(ExecutePreprocessor):
                         del output['execution_count']
         return cell, resources
 
-def execute_notebook(name, nb_home, limit):
-    with open(name) as f:
-        nb = nbformat.read(f, as_version=4)
+class Converter:
 
-    if limit > -1:
-        nb['cells'] = nb['cells'][:limit]
+    KINDS = ['pdf', 'md']
+    DATA_DISPLAY_PRIORITY = ['image/png', 'text/html', 'application/pdf', 'text/latex', 
+                             'image/svg+xml', 'image/jpeg', 'text/markdown', 'text/plain']
 
-    resources = {'metadata': {'path': './' + nb_home}}
-    ep = MetaExecutePreprocessor(timeout=600, kernel_name='python3', allow_errors=True, 
-                                 extra_arguments=["--InteractiveShellApp.code_to_run='from dataframe_image._to_image import pd'"])
+    def __init__(self, path, to, max_rows, max_cols, ss_width, ss_height, resize, chrome_path, limit):
+        self.path = path
+        self.max_rows = max_rows
+        self.max_cols = max_cols
+        self.ss_width = ss_width
+        self.ss_height = ss_height
+        self.resize = resize
+        self.chrome_path = chrome_path
 
-    ep.preprocess(nb, resources)
-    return nb
+        self.nb_home = path.parent
+        self.nb_name = path.stem
+        self.to = self.get_to(to)
+        self.nb = self.get_notebook(limit)
+        
+    def get_to(self, to):
+        if isinstance(to, str):
+            to = [to]
+        elif not isinstance(to, list):
+            raise TypeError('`to` must either be a string or a list. '
+                            'Possible values are "pdf" and "md"')
 
-def convert(name, limit=-1):
-    nb_home = os.path.dirname(name)
-    images_home = os.path.join(nb_home, 'images_from_dataframe_image')
-    if os.path.isdir(images_home):
-        shutil.rmtree(images_home)
-    os.mkdir(images_home)
-    nb = execute_notebook(name, nb_home, limit)
+        for kind in to:
+            if kind not in self.KINDS:
+                raise TypeError('`to` must either be a string or a list. '
+                                'Possible values are "pdf" and "md" and not {kind}')
+        return to
 
-    resources = {'metadata': {'path': nb_home}, 
-                 'output_files_dir': images_home}
-    # TODO: need to list all types
-    me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': ['image/png', 'text/html', 'text/plain']}})
-    md_data, output_resources = me.from_notebook_node(nb, resources)
+    def get_notebook(self, limit):
+        with open(self.path) as f:
+            nb = nbformat.read(f, as_version=4)
 
-    # the base64 encoded binary files are saved in output_resources
-    for filename, data in output_resources['outputs'].items():
-        with open(filename, 'wb') as f:
-            f.write(data)
+        if isinstance(limit, int):
+            nb['cells'] = nb['cells'][:limit]
 
-    final_file = name[:-name[::-1].find('.') - 1]
+        return nb
 
-    with open(f'{final_file}.md', mode='w') as f:
-        f.write(md_data)
+    def execute_notebook(self):
+        code = 'import pandas as pd;'\
+               'from dataframe_image.image_maker import png_maker;'\
+              f'pd.DataFrame._repr_png_ = png_maker(max_rows={self.max_rows}, '\
+              f'max_cols={self.max_cols}, ss_width={self.ss_width}, '\
+              f'ss_height={self.ss_height}, resize={self.resize}, '\
+              f'chrome_path={self.chrome_path});'\
+               'del png_maker'
+        extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
+        resources = {'metadata': {'path': self.nb_home}}
+        ep = MetaExecutePreprocessor(timeout=600, kernel_name='python3', allow_errors=True, 
+                                    extra_arguments=extra_arguments)
+        with open('/Users/Ted/Desktop/log.txt', 'w') as f:
+            f.write('adfasd')
+        ep.preprocess(self.nb, resources)
 
-    pdf = PDFExporter()
-    pdf_data, resources = pdf.from_notebook_node(nb, resources={'metadata':{'name': final_file, 'path': nb_home}})
-    with open(f'{final_file}.pdf', mode='wb') as f:
-        f.write(pdf_data)
+    def to_pdf(self):
+        pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': self.DATA_DISPLAY_PRIORITY}})
+        resources = resources={'metadata':{'path': str(self.nb_home)}}
+        pdf_data, _ = pdf.from_notebook_node(self.nb, resources)
+        fn = self.path.with_suffix('.pdf')
+        with open(fn, mode='wb') as f:
+            f.write(pdf_data)
 
-    return nb
+    def to_md(self):
+        images_home = self.nb_home.joinpath('images_from_dataframe_image')
+        if images_home.is_dir():
+            shutil.rmtree(images_home)
+        images_home.mkdir()
+
+        resources = {'metadata': {'path': str(self.nb_home)}, 
+                     'output_files_dir': str(images_home)}
+
+        me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': self.DATA_DISPLAY_PRIORITY}})
+        md_data, output_resources = me.from_notebook_node(self.nb, resources)
+
+        # the base64 encoded binary files are saved in output_resources
+        for filename, data in output_resources['outputs'].items():
+            with open(filename, 'wb') as f:
+                f.write(data)
+        fn = self.path.with_suffix('.md')
+        with open(fn, mode='w') as f:
+            f.write(md_data)
+                
+    def convert(self):
+        self.execute_notebook()
+        for kind in self.to:
+            getattr(self, f'to_{kind}')()
+
+def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, 
+            ss_height=900, resize=1, chrome_path=None, limit=None):
+    '''
+    Convert a Jupyter Notebook to pdf or markdown
+    '''
+    c = Converter(Path(filename), to, max_rows, max_cols, ss_width, ss_height, resize, chrome_path, limit)
+    c.convert()

@@ -1,4 +1,6 @@
-# dataframe_image - a package to embed pandas DataFrames into pdf and markdown documents
+# dataframe_image
+
+A package to embed pandas DataFrames into pdf and markdown documents.
 
 ## Installation
 
