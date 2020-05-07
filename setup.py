@@ -13,7 +13,7 @@ setuptools.setup(
     version="0.0.1",
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
-    description="Embed pandas DataFrames as images in pdf and markdown files",
+    description="Embed pandas DataFrames as images in pdf and markdown files when converting Jupyter Notebooks",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/dexplo/dataframe_image",

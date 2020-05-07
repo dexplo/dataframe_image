@@ -28,7 +28,8 @@ class Converter:
     DATA_DISPLAY_PRIORITY = ['image/png', 'text/html', 'application/pdf', 'text/latex', 
                              'image/svg+xml', 'image/jpeg', 'text/markdown', 'text/plain']
 
-    def __init__(self, path, to, max_rows, max_cols, ss_width, ss_height, resize, chrome_path, limit):
+    def __init__(self, path, to, max_rows, max_cols, ss_width, ss_height, 
+                 resize, chrome_path, limit):
         self.path = path
         self.max_rows = max_rows
         self.max_cols = max_cols
@@ -76,8 +77,6 @@ class Converter:
         resources = {'metadata': {'path': self.nb_home}}
         ep = MetaExecutePreprocessor(timeout=600, kernel_name='python3', allow_errors=True, 
                                     extra_arguments=extra_arguments)
-        with open('/Users/Ted/Desktop/log.txt', 'w') as f:
-            f.write('adfasd')
         ep.preprocess(self.nb, resources)
 
     def to_pdf(self):
@@ -116,7 +115,57 @@ class Converter:
 def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, 
             ss_height=900, resize=1, chrome_path=None, limit=None):
     '''
-    Convert a Jupyter Notebook to pdf or markdown
+    Convert a Jupyter Notebook to pdf or markdown using images for pandas
+    DataFrames instead of their normal latex/markdown representation. 
+    The images will be screenshots of the DataFrames as they appear in a 
+    chrome browser.
+
+    The new file will be in the same directory where the 
+    notebook resides and use the same name but with appropriate extension.
+
+    When converting to markdown, a folder titled 'images_from_dataframe_image'
+    will be created to hold all of the images.
+
+    Caution, this is computationally expensive and takes a long time to 
+    complete with many DataFrames.
+
+    Parameters
+    ----------
+    filename : str
+        Path to Jupyter Notebook '.ipynb' file that you'd like to convert.
+
+    to : str or list, default 'pdf'
+        Choose conversion format. Either 'pdf' or 'md' or a list with all formats
+
+    max_rows : int, default 30
+        Maximum number of rows to output from DataFrame. This is forwarded to the
+            `to_html` DataFrame method.
+
+    max_cols : int, default 10
+        Maximum number of columns to output from DataFrame. This is forwarded to the
+            `to_html` DataFrame method.
+
+    ss_width : int, default 1000
+        Width of the screenshot. This may need to be increased for larger monitors.
+        If this value is too small, then smaller DataFrames will appear larger.
+        It's best to keep this value at least as large as the width of the output 
+        section of a Jupyter Notebook.
+
+    ss_height : int, default 900
+        Height of the screen shot. The height of the image is automatically cropped 
+        so that only the relevant parts of the DataFrame are shown.
+
+    resize : int or float, default 1
+        Relative resizing of image. Higher numbers produce smaller images. The 
+        Pillow `Image.resize` method is used for this.
+
+    chrome_path : str, default None
+        Path to your machine's chrome executable. When `None`, it is automatically found.
+        Use this when chrome is not automatically found.
+
+    limit : int, default None
+        Limit the number of cells in the notebook for conversion. This is useful to test
+        conversion of a large notebook on a smaller subset. 
     '''
     c = Converter(Path(filename), to, max_rows, max_cols, ss_width, ss_height, resize, chrome_path, limit)
     c.convert()

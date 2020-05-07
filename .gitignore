@@ -4,5 +4,3 @@ __pycache__/
 dataframe_image.egg-info/
 dist/
 build/
-*.ipynb
-*.csv
