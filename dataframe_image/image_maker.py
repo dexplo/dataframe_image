@@ -52,9 +52,9 @@ def get_css():
     return css
 
 def png_maker(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, resize=1, chrome_path=None):
+    css = get_css()
     def f(self):
         nonlocal chrome_path
-        css = get_css()
         html = css + self.to_html(max_cols=max_cols, max_rows=max_rows, notebook=True)
         temp_dir = TemporaryDirectory()
         temp_html = Path(temp_dir.name) / 'temp.html'
@@ -65,13 +65,15 @@ def png_maker(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, resize=1, 
         if chrome_path is None:
             chrome_path = get_chrome_path()
 
-        args = ['--headless', 
+        args = ['--enable-logging', 
+                '--disable-gpu',
+                '--headless', 
                f'--window-size={ss_width},{ss_height}', 
                 '--hide-scrollbars',
                f'--screenshot={str(temp_img)}',
                  str(temp_html)]
 
-        run(executable=chrome_path, args=args, shell=True)
+        run(executable=chrome_path, args=args)
         
         pil_data = Image.open(str(temp_img))
         image_arr = np.array(pil_data)

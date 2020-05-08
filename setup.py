@@ -12,7 +12,7 @@ long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
     name="dataframe_image",
-    version="0.0.1",
+    version="0.0.3",
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
     description="Embed pandas DataFrames as images in pdf and markdown files when converting from Jupyter Notebooks",
