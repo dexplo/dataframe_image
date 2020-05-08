@@ -7,13 +7,11 @@ with open("README.md", "r") as fh:
 pat = r"!\[png\]\("
 repl = r"![png](https://raw.githubusercontent.com/dexplo/dataframe_image/master/"
 
-
 long_description = re.sub(pat, repl, long_description)
-
 
 setuptools.setup(
     name="dataframe_image",
-    version="0.0.3",
+    version="0.0.4",
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
     description="Embed pandas DataFrames as images in pdf and markdown files when "
