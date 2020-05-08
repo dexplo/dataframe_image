@@ -1,8 +1,10 @@
 # dataframe_image
 
-A package to convert Jupyter Notebooks to either pdf or markdown documents embedding pandas DataFrames as images instead of their default format.
+A package to embed pandas DataFrames as images when convert Jupyter Notebooks to pdf or markdown documents. 
 
-When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as a simple latex table. When converting to markdown, the DataFrame will be output as HTML, but won't have the correct styling. Below, we have a pdf showing both the plain text and latex DataFrame representation.
+## Motivation
+
+When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as a simple latex table. Below, we have a pdf showing both the plain text and latex DataFrame representation.
 
 ![png](images/cur_nb.png)
 
@@ -32,12 +34,14 @@ In a separate Python script, import the `dataframe_image` package and pass the f
                 )
 ```
 
+The new file(s) will be saved in the same directory where the notebook resides. dataframe_image will automatically find the location of chrome on Windows, macOS, and Linux. Set the `to` parameter to `'md'` to convert to markdown.
+
 ## Dependencies
 
 You must have the following python libraries installed
 
 * [pandas](https://github.com/pandas-dev/pandas)
-* [nbconvert](https://github.com/jupyter/nbconvert) with [xelatex installed](https://miktex.org/download)
+* [nbconvert](https://github.com/jupyter/nbconvert) which requires latex, xelatex, and pandoc
 * [pillow](https://github.com/python-pillow/Pillow)
 
 You must also have Google Chrome installed.
