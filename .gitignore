@@ -4,3 +4,4 @@ __pycache__/
 dataframe_image.egg-info/
 dist/
 build/
+.vscode/
