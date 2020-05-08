@@ -37,7 +37,7 @@ In a separate Python script, import the `dataframe_image` package and pass the f
 You must have the following python libraries installed
 
 * [pandas](https://github.com/pandas-dev/pandas)
-* [nbconvert](https://github.com/jupyter/nbconvert)
+* [nbconvert](https://github.com/jupyter/nbconvert) with [xelatex installed](https://miktex.org/download)
 * [pillow](https://github.com/python-pillow/Pillow)
 
 You must also have Google Chrome installed.

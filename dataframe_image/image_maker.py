@@ -1,7 +1,7 @@
 import platform
 from pathlib import Path
 import shutil
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from subprocess import run
 import base64
 import io
@@ -56,24 +56,24 @@ def png_maker(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, resize=1, 
         nonlocal chrome_path
         css = get_css()
         html = css + self.to_html(max_cols=max_cols, max_rows=max_rows, notebook=True)
-        temp_html = NamedTemporaryFile(suffix='.html')
-        with open(temp_html.name, 'w') as f:
-            f.write(html)
+        temp_dir = TemporaryDirectory()
+        temp_html = Path(temp_dir.name) / 'temp.html'
+        temp_img = Path(temp_dir.name) / 'temp.png'
+        open(temp_html, 'w').write(html)
+        open(temp_img, 'wb')
             
-        temp_img = NamedTemporaryFile(suffix='.png')
         if chrome_path is None:
             chrome_path = get_chrome_path()
 
         args = ['--headless', 
                f'--window-size={ss_width},{ss_height}', 
                 '--hide-scrollbars',
-               f'--screenshot={temp_img.name}',
-                 temp_html.name]
+               f'--screenshot={str(temp_img)}',
+                 str(temp_html)]
 
-        with open(temp_img.name, 'wb') as f:
-            run(executable=chrome_path, args=args, shell=True)
+        run(executable=chrome_path, args=args, shell=True)
         
-        pil_data = Image.open(temp_img.name)
+        pil_data = Image.open(str(temp_img))
         image_arr = np.array(pil_data)
         
         row_avg = image_arr.mean(axis=2).mean(1)
