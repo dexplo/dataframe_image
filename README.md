@@ -2,11 +2,11 @@
 
 A package to convert Jupyter Notebooks to either pdf or markdown documents embedding pandas DataFrames as images instead of their default format.
 
-When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as a simple latex table. When converting to markdown The DataFrame's appearance while running a Jupyter Notebook is much different. Below, we have a pdf showing both the plain text and latex DataFrame representation.
+When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as a simple latex table. When converting to markdown, the DataFrame will be output as HTML, but won't have the correct styling. Below, we have a pdf showing both the plain text and latex DataFrame representation.
 
 ![png](images/cur_nb.png)
 
-This package was created to embed DataFrames into pdf and markdown documents as images so that they appear exactly as they do in a Jupyter Notebook. Here, the same DataFrame as above is show in a pdf converted using dataframe_image.
+This package was created to embed DataFrames into pdf and markdown documents as images so that they appear exactly as they do in a Jupyter Notebook. Here, the same DataFrame as above is shown in a pdf converted using dataframe_image.
 
 ![png](images/ss_pdf.png)
 

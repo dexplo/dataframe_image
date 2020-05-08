@@ -24,24 +24,31 @@ def get_chrome_path():
     # help finding path - https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver#requirements
     system = get_system()
     if system == 'darwin':
-        return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+        paths = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+                 '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser']
+        for path in paths:
+            if Path(path).exists():
+                return path
+        raise OSError('Chrome executable not able to be found on your machine')
     elif system == 'linux':
         paths = [None, '/usr/local/sbin', '/usr/local/bin', '/usr/sbin', 
                  '/usr/bin', '/sbin', '/bin', '/opt/google/chrome']
-        commands = ['google-chrome', 'chrome', 'chromium', 'chromium-browser']
+        commands = ['google-chrome', 'chrome', 'chromium', 'chromium-browser', 'brave-browser']
         for path in paths:
             for cmd in commands:
                 chrome_path = shutil.which(cmd, path=path)
                 if chrome_path:
                     return chrome_path
-        raise ValueError('Chrome executable not able to be found on your machine')
+        raise OSError('Chrome executable not able to be found on your machine')
     elif system == 'windows':
         import winreg
-        loc = r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"
-        handle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, loc)
-        num_values = winreg.QueryInfoKey(handle)[1]
-        if num_values > 0:
-            return winreg.EnumValue(handle, 0)[1]
+        locs = [r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
+                 r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe"]
+        for loc in locs:
+            handle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, loc)
+            num_values = winreg.QueryInfoKey(handle)[1]
+            if num_values > 0:
+                return winreg.EnumValue(handle, 0)[1]
         raise OSError('Cannot find chrome.exe on your windows machine')
 
 def get_css():
