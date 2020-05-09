@@ -97,19 +97,21 @@ class Converter:
             config={"NbConvertBase": {"display_data_priority": self.DATA_DISPLAY_PRIORITY}}
         )
 
-        resources = resources = {"metadata": {"path": str(self.nb_home)}}
+        resources = {"metadata": {"path": str(self.nb_home)}}
         pdf_data, _ = pdf.from_notebook_node(self.nb, resources)
         fn = self.path.with_suffix(".pdf")
         with open(fn, mode="wb") as f:
             f.write(pdf_data)
 
     def to_md(self):
-        images_home = self.nb_home.joinpath("images_from_dataframe_image")
+        new_dir = self.path.stem.replace(' ', '_') + '_files'
+        images_home = self.nb_home / new_dir
         if images_home.is_dir():
             shutil.rmtree(images_home)
         images_home.mkdir()
 
-        resources = {"metadata": {"path": str(self.nb_home)}, "output_files_dir": str(images_home)}
+        resources = {"metadata": {"path": str(self.nb_home)}, 
+                     'output_files_dir': str(new_dir)} # This is relative to the above path
 
         me = MarkdownExporter(
             config={"NbConvertBase": {"display_data_priority": self.DATA_DISPLAY_PRIORITY}}
@@ -118,7 +120,7 @@ class Converter:
 
         # the base64 encoded binary files are saved in output_resources
         for filename, data in output_resources["outputs"].items():
-            with open(filename, "wb") as f:
+            with open(self.nb_home / filename, "wb") as f:
                 f.write(data)
         fn = self.path.with_suffix(".md")
         with open(fn, mode="w") as f:
@@ -141,8 +143,9 @@ def convert(filename, to="pdf", max_rows=30, max_cols=10, ss_width=1000, ss_heig
     The new file will be in the same directory where the 
     notebook resides and use the same name but with appropriate extension.
 
-    When converting to markdown, a folder titled 'images_from_dataframe_image'
-    will be created to hold all of the images.
+    When converting to markdown, a folder with the title 'notebook_title_files'
+    will be created to hold all of the images. All spaces in the name will be 
+    converted to underscores.
 
     Caution, this is computationally expensive and takes a long time to 
     complete with many DataFrames. You may wish to begin by using the 
