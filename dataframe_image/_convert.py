@@ -1,4 +1,3 @@
-from tempfile import TemporaryDirectory
 import base64
 from pathlib import Path
 import shutil
@@ -36,11 +35,16 @@ def get_image_tags(md_source):
     return img_tag_files
 
 class MetaExecutePreprocessor(ExecutePreprocessor):
-    temp_dir = TemporaryDirectory()
-    image_dir = Path(temp_dir.name)
+
+    def preprocess(self, nb, resources=None, km=None):
+        self.nb_home = Path(resources['metadata']['path'])
+        self.final_nb_home = Path(resources['final_nb_home'])
+        self.output_files_dir = Path(resources.get('output_files_dir'))
+        self.cwd_relative_image_dir = self.final_nb_home / self.output_files_dir
+        
+        return super().preprocess(nb, resources, km)
 
     def preprocess_cell(self, cell, resources, cell_index):
-        nb_home = Path(resources['metadata']['path'])
         cell, resources = super().preprocess_cell(cell, resources, cell_index)
         if cell['cell_type'] == 'markdown':
             all_image_files = get_image_files(cell['source'])
@@ -51,14 +55,18 @@ class MetaExecutePreprocessor(ExecutePreprocessor):
                     image_data = response.content
                     ext = '.' + response.headers['Content-Type'].split('/')[-1]
                 else:
-                    image_data = open(nb_home / image_file, 'rb').read()
+                    image_data = open(self.nb_home / image_file, 'rb').read()
                     ext = Path(image_file).suffix
                     
-                new_image_name = f'markdown_image_{cell_index}_{i}{ext}'
-                new_image_filename = self.image_dir / new_image_name
-                with open(new_image_filename, 'wb') as f:
+                new_image_name = f'markdown_{cell_index}_normal_image_{i}{ext}'
+                # Relative to where this conversion is run
+                cwd_relative_image_fn = self.cwd_relative_image_dir / new_image_name
+                # Relative to .ipynb notebook
+                nb_relative_image_fn = self.output_files_dir / new_image_name
+                with open(cwd_relative_image_fn, 'wb') as f:
                     f.write(image_data)
-                cell['source'] = cell['source'].replace(image_file, str(new_image_filename))
+                replace_str = str(nb_relative_image_fn).replace(' ', '%20')
+                cell['source'] = cell['source'].replace(image_file, replace_str)
 
             # find HTML <img> tags
             all_image_tag_files = get_image_tags(cell['source'])
@@ -68,15 +76,18 @@ class MetaExecutePreprocessor(ExecutePreprocessor):
                     image_data = response.content
                     ext = '.' + response.headers['Content-Type'].split('/')[-1]
                 else:
-                    image_data = open(nb_home / src, 'rb').read()
+                    image_data = open(self.nb_home / src, 'rb').read()
                     ext = Path(src).suffix
 
-                new_image_name = f'markdown_image_tag_{cell_index}_{i}{ext}'
-                new_image_filename = self.image_dir / new_image_name
-                with open(new_image_filename, 'wb') as f:
+                new_image_name = f'markdown_{cell_index}_html_image_tag_{i}{ext}'
+                # Relative to where this conversion is run
+                cwd_relative_image_fn = self.cwd_relative_image_dir / new_image_name
+                # Relative to .ipynb notebook
+                nb_relative_image_fn = self.output_files_dir / new_image_name
+                with open(cwd_relative_image_fn, 'wb') as f:
                     f.write(image_data)
                 
-                replace_str = f'![]({new_image_filename})'
+                replace_str = f'![]({nb_relative_image_fn})'.replace(' ', '%20')
                 cell['source'] = cell['source'].replace(entire_tag, replace_str)
 
             # find images attached to markdown through dragging and dropping
@@ -86,24 +97,28 @@ class MetaExecutePreprocessor(ExecutePreprocessor):
                 # Though there can be multiple attachments per cell
                 # So, this should only loop once
                 for j, (mime_type, base64_data) in enumerate(data.items()):
-                    ext = mime_type.split('/')[-1]
-                    new_image_name = f'markdown_attachment_{cell_index}_{i}_{j}.{ext}'
-                    image_fn = self.image_dir / new_image_name
+                    ext = '.' + mime_type.split('/')[-1]
+                    new_image_name = f'markdown_{cell_index}_attachment_{i}_{j}{ext}'
+                    # Relative to where this conversion is run
+                    cwd_relative_image_fn = self.cwd_relative_image_dir / new_image_name
+                    # Relative to .ipynb notebook
+                    nb_relative_image_fn = self.output_files_dir / new_image_name
                     b64_bytes = base64.b64decode(base64_data)
-                    with open(image_fn, 'wb') as f:
+                    with open(cwd_relative_image_fn, 'wb') as f:
                         f.write(b64_bytes)
+                    replace_str = str(nb_relative_image_fn).replace(' ', '%20')
+                    cell['source'] = cell['source'].replace(f'attachment:{image_name}', replace_str)
 
-                cell['source'] = cell['source'].replace(f'attachment:{image_name}', str(image_fn))
-            if all_image_files or all_image_tag_files or attachments:
-                print('new cell source is ','\n', cell['source'], end='\n\n\n\n')
-
-        outputs = cell.get("outputs", [])
+        outputs = cell.get('outputs', [])
         for output in outputs:
-            if "data" in output:
-                if "image/png" in output["data"]:
-                    if output["output_type"] == "execute_result":
-                        output["output_type"] = "display_data"
-                        del output["execution_count"]
+            if 'data' in output:
+                # make this the case for all types of images
+                if {'image/png', 'image/jpeg', 'image/gif', 'image/tiff'} & output['data'].keys():
+                    if output['output_type'] == 'execute_result':
+                        output['output_type'] = 'display_data'
+                        del output['execution_count']
+                    if 'text/html' in output['data']:
+                        del output['data']['text/html']
         return cell, resources
 
 
@@ -146,9 +161,8 @@ class Converter:
         if isinstance(to, str):
             to = [to]
         elif not isinstance(to, list):
-            raise TypeError(
-                "`to` must either be a string or a list. " 'Possible values are "pdf" and "md"'
-            )
+            raise TypeError('`to` must either be a string or a list. '
+                            'Possible values are "pdf" and "md"')
         to = set(to)
         if 'markdown' in to:
             to.remove('markdown')
@@ -194,6 +208,12 @@ class Converter:
         else:
             return self.nb_name + '_files'
 
+    def create_images_dir(self):
+        images_home = self.final_nb_home / self.image_dir_name
+        if images_home.is_dir():
+            shutil.rmtree(images_home)
+        images_home.mkdir()
+
     def execute_notebook(self):
         code = (
             "import pandas as pd;"
@@ -205,15 +225,12 @@ class Converter:
             "del repr_png_maker"
         )
         extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
-        resources = {"metadata": {"path": str(self.nb_home)}}
+        resources = {"metadata": {"path": str(self.nb_home)}, 
+                     'output_files_dir': self.image_dir_name,
+                     'final_nb_home': self.final_nb_home}
         self.ep = MetaExecutePreprocessor(timeout=600, kernel_name="python3", allow_errors=True, 
                                           extra_arguments=extra_arguments, resources=resources)
         self.nb, resources = self.ep.preprocess(self.nb, resources)
-
-        for fn in self.ep.image_dir.iterdir():
-            with open(f'/Users/Ted/Desktop/test/{fn.name}', 'wb') as f:
-                f.write(fn.read_bytes())
-        self.save_notebook_to_file()
 
     def save_notebook_to_file(self):
         if self.save_notebook:
@@ -225,20 +242,21 @@ class Converter:
         pdf = PDFExporter(config={"NbConvertBase": {"display_data_priority": 
                                                     self.DATA_DISPLAY_PRIORITY}})
 
-        resources = {"metadata": {"path": str(self.nb_home.resolve())}}
-        pdf_data, _ = pdf.from_notebook_node(self.nb, resources)
+        # nbconvert uses 
+        resources = {"metadata": {"path": str(self.final_nb_home.resolve()),
+                                  'name': self.document_name},
+                     'output_files_dir': self.image_dir_name}
+        pdf_data, output_resources = pdf.from_notebook_node(self.nb, resources)
         fn = self.final_nb_home / (self.document_name + '.pdf')
+
         with open(fn, mode="wb") as f:
             f.write(pdf_data)
 
     def to_md(self):
-        images_home = self.final_nb_home / self.image_dir_name
-        if images_home.is_dir():
-            shutil.rmtree(images_home)
-        images_home.mkdir()
-
         resources = {"metadata": {"path": str(self.nb_home)}, 
                      'output_files_dir': self.image_dir_name} # This is relative to the above path
+
+        resources = {'output_files_dir': self.image_dir_name} 
 
         me = MarkdownExporter(config={"NbConvertBase": {"display_data_priority": 
                                                         self.DATA_DISPLAY_PRIORITY}})
@@ -253,7 +271,10 @@ class Converter:
             f.write(md_data)
 
     def convert(self):
-        self.execute_notebook()
+        self.create_images_dir()
+        if self.execute:
+            self.execute_notebook()
+        self.save_notebook_to_file()
         for kind in self.to:
             getattr(self, f"to_{kind}")()
 
@@ -322,8 +343,8 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
 
     execute : bool, default `True`
         Whether or not to execute the notebook first. Even if the notebook is 
-        already executed, this must be re-executed in order to hook into the 
-        pandas DataFrame _repr_png_ function.
+        already executed, this must be re-executed in order for the dataframes 
+        to appear as images.
 
     save_notebook : bool, default `False`
         Whether or not to save the notebook with pandas DataFrames as images as 
