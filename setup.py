@@ -29,4 +29,7 @@ setuptools.setup(
     ],
     install_requires=["pandas>=0.24", "nbconvert>=5", "pillow"],
     include_package_data=True,
+    entry_points = {
+        'console_scripts': ['dataframe_image=dataframe_image._command_line:main'],
+    },
 )

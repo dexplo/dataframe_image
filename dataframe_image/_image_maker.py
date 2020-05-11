@@ -54,7 +54,6 @@ def get_chrome_path():
         raise OSError("Chrome executable not able to be found on your machine")
     elif system == "windows":
         import winreg
-
         locs = [
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
