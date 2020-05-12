@@ -12,7 +12,7 @@ import pandas as pd
 from PIL import Image
 
 
-class ScreenshotDataFrame:
+class Screenshot:
 
     def __init__(self, max_rows, max_cols, ss_width, ss_height, resize, chrome_path):
         self.max_rows = max_rows
@@ -128,8 +128,16 @@ class ScreenshotDataFrame:
         img_str = base64.b64encode(buffered.getvalue()).decode()
         return img_str
 
-    def get_html(self, df):
-        return df.to_html(max_cols=self.max_cols, max_rows=self.max_rows, notebook=True)
+    def get_html(self, data):
+        if isinstance(data, pd.DataFrame):
+            html = data.to_html(max_cols=self.max_cols, max_rows=self.max_rows, notebook=True)
+        elif isinstance(data, pd.io.formats.style.Styler):
+            html = data.render()
+        elif isinstance(data, str):
+            html = data
+        else:
+            raise ValueError('Can only convert pandas DataFrames, Styler objects, and raw html')
+        return html 
 
     def run(self, html):
         img_array = self.take_screenshot(html)
@@ -137,23 +145,12 @@ class ScreenshotDataFrame:
         img_str = self.get_base64_image_str(img)
         return img_str
 
-    def repr_png_wrapper(self, kind, use_df_css=True):
-        kind = kind.lower()
-
-        def create_image_from_df(df):
-            html = self.css + self.get_html(df)
-            return self.run(html)
-        
-        def create_image_from_html(html):
+    def repr_png_wrapper(self):
+        def _repr_png_(data):
+            html = self.get_html(data)
             return self.run(html)
 
-        if kind == 'dataframe':
-            return create_image_from_df
-        elif kind == 'raw':
-            return create_image_from_html
-        else:
-            raise ValueError('kind must either be "dataframe" or "raw", not {kind}')
-        
+        return _repr_png_
 
 def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
                   resize=1, chrome_path=None, kind='dataframe'):
@@ -201,5 +198,5 @@ def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
     """
-    sdf = ScreenshotDataFrame(max_rows, max_cols, ss_width, ss_height, resize, chrome_path)
-    return sdf.repr_png_wrapper(kind='dataframe')
+    ss = Screenshot(max_rows, max_cols, ss_width, ss_height, resize, chrome_path)
+    return ss.repr_png_wrapper()
