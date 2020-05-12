@@ -217,12 +217,12 @@ class Converter:
     def execute_notebook(self):
         code = (
             "import pandas as pd;"
-            "from dataframe_image._image_maker import repr_png_maker;"
-            f"pd.DataFrame._repr_png_ = repr_png_maker(max_rows={self.max_rows}, "
+            "from dataframe_image._image_maker import make_repr_png;"
+            f"pd.DataFrame._repr_png_ = make_repr_png(max_rows={self.max_rows}, "
             f"max_cols={self.max_cols}, ss_width={self.ss_width}, "
             f"ss_height={self.ss_height}, resize={self.resize}, "
             f"chrome_path={self.chrome_path});"
-            "del repr_png_maker"
+            "del make_repr_png"
         )
         extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
         resources = {"metadata": {"path": str(self.nb_home)}, 
@@ -242,7 +242,7 @@ class Converter:
         pdf = PDFExporter(config={"NbConvertBase": {"display_data_priority": 
                                                     self.DATA_DISPLAY_PRIORITY}})
 
-        # nbconvert uses 
+        # nbconvert requires the absolute path for pdf exporting
         resources = {"metadata": {"path": str(self.final_nb_home.resolve()),
                                   'name': self.document_name},
                      'output_files_dir': self.image_dir_name}
@@ -253,11 +253,8 @@ class Converter:
             f.write(pdf_data)
 
     def to_md(self):
-        resources = {"metadata": {"path": str(self.nb_home)}, 
-                     'output_files_dir': self.image_dir_name} # This is relative to the above path
-
-        resources = {'output_files_dir': self.image_dir_name} 
-
+        # this relative path gets prepended to the image filename
+        resources = {'output_files_dir': self.image_dir_name}
         me = MarkdownExporter(config={"NbConvertBase": {"display_data_priority": 
                                                         self.DATA_DISPLAY_PRIORITY}})
         md_data, output_resources = me.from_notebook_node(self.nb, resources)
