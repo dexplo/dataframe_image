@@ -5,10 +5,10 @@ from tempfile import TemporaryDirectory
 from subprocess import run
 import base64
 import io
-from functools import wraps
 
 import numpy as np
-import pandas as pd
+from pandas import DataFrame
+from pandas.io.formats.style import Styler
 from PIL import Image
 
 
@@ -129,15 +129,15 @@ class Screenshot:
         return img_str
 
     def get_html(self, data):
-        if isinstance(data, pd.DataFrame):
+        if isinstance(data, DataFrame):
             html = data.to_html(max_cols=self.max_cols, max_rows=self.max_rows, notebook=True)
-        elif isinstance(data, pd.io.formats.style.Styler):
-            html = data.render()
+        elif isinstance(data, Styler):
+            html = data.set_table_attributes('dataframe_image="dataframe"').render()
         elif isinstance(data, str):
             html = data
         else:
             raise ValueError('Can only convert pandas DataFrames, Styler objects, and raw html')
-        return html 
+        return self.css + html 
 
     def run(self, html):
         img_array = self.take_screenshot(html)
@@ -149,11 +149,10 @@ class Screenshot:
         def _repr_png_(data):
             html = self.get_html(data)
             return self.run(html)
-
         return _repr_png_
 
 def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
-                  resize=1, chrome_path=None, kind='dataframe'):
+                  resize=1, chrome_path=None):
     """
     Creates a function that can be assigned to `pd.DataFrame._repr_png_` 
     so that you can test out the appearances of the images in a notebook 
