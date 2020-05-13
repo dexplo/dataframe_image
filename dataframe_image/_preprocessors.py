@@ -134,7 +134,7 @@ class ChangeOutputTypeExecutePreprocessor(ExecutePreprocessor):
 
 class NoExecuteDataFramePreprocessor(Preprocessor):
 
-    ss_creator = staticmethod(make_repr_png())
+    ss_creator = staticmethod(make_repr_png())  
         
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] == 'code':
