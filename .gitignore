@@ -5,3 +5,5 @@ dataframe_image.egg-info/
 dist/
 build/
 .vscode/
+notebooks/Test_1 Notebook_files/
+test_output/
