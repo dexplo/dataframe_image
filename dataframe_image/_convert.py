@@ -1,15 +1,18 @@
 import base64
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import shutil
 import re
 import io
 
 import nbformat
 from nbconvert import MarkdownExporter, PDFExporter
+from nbconvert.preprocessors import ExecutePreprocessor
+from traitlets.config import Config
 
 from ._preprocessors import (MarkdownPreprocessor, 
                              NoExecuteDataFramePreprocessor, 
-                             ChangeOutputTypeExecutePreprocessor)
+                             ChangeOutputTypePreprocessor)
 
 
 class Converter:
@@ -47,6 +50,9 @@ class Converter:
         self.final_nb_home = self.get_new_notebook_home(output_dir)
         self.image_dir_name = self.get_image_dir_name(image_dir_name)
 
+        self.resources = self.get_resources()
+        self.first = True
+
     def get_to(self, to):
         if isinstance(to, str):
             to = [to]
@@ -64,6 +70,8 @@ class Converter:
                     'Possible values are "pdf" or "markdown"/"md"'
                     ' and not {kind}.'
                 )
+        if len(to) == 2:
+            to = ['md', 'pdf']
         return to
 
     def get_notebook(self, limit):
@@ -98,17 +106,19 @@ class Converter:
         else:
             return self.nb_name + '_files'
 
+    def get_resources(self):
+        resources = {'metadata': {'path': str(self.nb_home), 
+                                  'name': self.document_name},
+                     'output_files_dir': self.image_dir_name}
+        return resources
+
     def create_images_dir(self):
         images_home = self.final_nb_home / self.image_dir_name
         if images_home.is_dir():
             shutil.rmtree(images_home)
         images_home.mkdir()
-
-    def process_markdown(self):
-        mp = MarkdownPreprocessor(self.nb_home, self.final_nb_home, self.image_dir_name)
-        self.nb, resources = mp.preprocess(self.nb, {})
-
-    def execute_notebook(self):
+        
+    def get_code_to_run(self):
         code = (
             "import pandas as pd;"
             "from dataframe_image._screenshot import make_repr_png;"
@@ -121,18 +131,37 @@ class Converter:
             "Styler._repr_png_ = _repr_png_;"
             "del make_repr_png, _repr_png_"
         )
-        extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
-        self.ep = ChangeOutputTypeExecutePreprocessor(timeout=600, allow_errors=True,
-                                                      extra_arguments=extra_arguments)
-        resources = {'metadata': {'path': str(self.nb_home)},
-                     'output_files_dir': self.image_dir_name}
-        self.nb, resources = self.ep.preprocess(self.nb, resources)
+        return code
 
-    def no_execute_notebook(self):
-        nep = NoExecuteDataFramePreprocessor()
-        resources = {'output_files_dir': self.image_dir_name}
-        self.nb, resources = nep.preprocess(self.nb, resources)
+    def get_preprocessors(self, to, td=None):
+        preprocessors = []
 
+        # save images in markdown to either a temporary directory(pdf) 
+        # or an actual directory(markdown)
+        if to == 'pdf':
+            td_path = Path(td.name)
+            mp = MarkdownPreprocessor(output_dir=td_path, image_dir_name=td_path)
+        elif to == 'md':
+            mp = MarkdownPreprocessor(output_dir=self.final_nb_home / self.image_dir_name,
+                                      image_dir_name=Path(self.image_dir_name))
+        preprocessors.append(mp)
+
+        if self.execute:
+            code = self.get_code_to_run()
+            extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
+            pp = ExecutePreprocessor(timeout=600, allow_errors=True, 
+                                     extra_arguments=extra_arguments)
+            preprocessors.append(pp)
+        else:
+            preprocessors.append(NoExecuteDataFramePreprocessor())
+
+        preprocessors.append(ChangeOutputTypePreprocessor())
+        return preprocessors
+
+    def preprocess(self, preprocessors):
+        for pp in preprocessors:
+            self.nb, self.resources = pp.preprocess(self.nb, self.resources)
+    
     def save_notebook_to_file(self):
         if self.save_notebook:
             name = self.nb_name + '_dataframe_image.ipynb'
@@ -140,42 +169,46 @@ class Converter:
             nbformat.write(self.nb, file)
 
     def to_pdf(self):
-        pdf = PDFExporter(config={"NbConvertBase": {"display_data_priority": 
+        if self.first:
+            td = TemporaryDirectory()
+            preprocessors = self.get_preprocessors('pdf', td=td)
+            self.preprocess(preprocessors)
+        print(self.resources)
+        pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
                                                     self.DISPLAY_DATA_PRIORITY}})
-        # nbconvert requires the absolute path for pdf exporting
-        resources = {'metadata': {'path': str(self.final_nb_home.resolve()),
-                                  'name': self.document_name},
-                     'output_files_dir': self.image_dir_name}
-        pdf_data, output_resources = pdf.from_notebook_node(self.nb, resources)
+
+        pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         fn = self.final_nb_home / (self.document_name + '.pdf')
-        with open(fn, mode="wb") as f:
+        with open(fn, mode='wb') as f:
             f.write(pdf_data)
 
     def to_md(self):
-        # this relative path gets prepended to the image filename
-        resources = {'output_files_dir': self.image_dir_name}
-        me = MarkdownExporter(config={"NbConvertBase": {"display_data_priority": 
-                                                        self.DISPLAY_DATA_PRIORITY}})
-        md_data, output_resources = me.from_notebook_node(self.nb, resources)
+        if self.first:
+            preprocessors = self.get_preprocessors('md')
+            self.create_images_dir()
+            self.preprocess(preprocessors)
 
+        me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
+                                                        self.DISPLAY_DATA_PRIORITY}})
+        md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
         # the base64 encoded binary files are saved in output_resources
-        for filename, data in output_resources["outputs"].items():
-            with open(self.final_nb_home / filename, "wb") as f:
+        for filename, data in self.resources['outputs'].items():
+            with open(self.final_nb_home / filename, 'wb') as f:
                 f.write(data)
         fn = self.final_nb_home / (self.document_name + '.md')
-        with open(fn, mode="w") as f:
+        with open(fn, mode='w') as f:
             f.write(md_data)
+        self.reset_resources()
+
+    def reset_resources(self):
+        self.first = False
+        del self.resources['outputs']
+        del self.resources['output_extension']
 
     def convert(self):
-        self.create_images_dir()
-        self.process_markdown()
-        if self.execute:
-            self.execute_notebook()
-        else:
-            self.no_execute_notebook()
-        self.save_notebook_to_file()
         for kind in self.to:
-            getattr(self, f"to_{kind}")()
+            getattr(self, f'to_{kind}')()
+        self.save_notebook_to_file()
 
 
 def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
