@@ -173,7 +173,7 @@ class Converter:
             td = TemporaryDirectory()
             preprocessors = self.get_preprocessors('pdf', td=td)
             self.preprocess(preprocessors)
-        print(self.resources)
+
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
                                                     self.DISPLAY_DATA_PRIORITY}})
 
@@ -224,7 +224,8 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
     notebook resides and use the same name but with appropriate extension.
 
     When converting to markdown, a folder with the title 
-    {notebook_name}_files will be created to hold all of the images.
+    {notebook_name}_files will be created to hold all of the images. Choose 
+    the title of this folder with `image_dir_name`.
 
     Caution, this is computationally expensive and takes a long time to 
     complete with many DataFrames. You may wish to begin by using the 
@@ -248,8 +249,8 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
         to the `to_html` DataFrame method.
 
     ss_width : int, default 1000
-        Width of the screenshot. This may need to be increased for larger 
-        monitors. If this value is too small, then smaller DataFrames will 
+        Width of the screenshot in pixels. This may need to be increased for 
+        larger monitors. If this value is too small, then smaller DataFrames will 
         appear larger. It's best to keep this value at least as large as the 
         width of the output section of a Jupyter Notebook.
 
@@ -274,9 +275,9 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
         provided, the current name of the notebook will be used.
 
     execute : bool, default `True`
-        Whether or not to execute the notebook first. Even if the notebook is 
-        already executed, this must be re-executed in order for the dataframes 
-        to appear as images.
+        Whether or not to execute the notebook first. When `False`, all HTML 
+        tables in the output will be converted to images regardless if they 
+        are dataframes or not.
 
     save_notebook : bool, default `False`
         Whether or not to save the notebook with pandas DataFrames as images as 
@@ -284,23 +285,24 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
 
     output_dir: str, default `None`
         Directory where new pdf and/or markdown files will be saved. By default, 
-        this will be in the same directory where the notebook is. The directory 
-        for images will also be created in here. If --save-notebook is set to
+        this will be the same directory as the notebook. The directory 
+        for images will also be created in here. If `save_notebook` is set to
         True, it will be saved here as well.
 
-        Provide a relative path to the current working directory 
-        or an absolute path.
+        Provide a relative or absolute path.
 
     image_dir_name=str, default `None`
         The directory name to save the DataFrame images and any other images
-        produced by the notebook code cells (i.e. plots). This image directory
-        is only produced when creating a markdown document. It will be created
-        within output_dir.
+        produced within the markdown or notebook code cells (i.e. plots). 
+        
+        Only created when converting to markdown. If created, will be saved
+        within `output_dir`.
         
         By default, the directory name will be '{notebook_name}_files'.
         The images themselves will be given names such as output_1_0.png where 
         the first number represents the cell's execution number and the second 
-        is the image number for that particular cell.
+        is the image number for that particular cell. A similar naming convention
+        is used for markdown images.
     """
     c = Converter(filename, to, max_rows, max_cols, ss_width, ss_height, 
                   resize, chrome_path, limit, document_name, execute, 
