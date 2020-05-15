@@ -25,12 +25,13 @@ class Screenshot:
         self.css = self.get_css()
 
     def get_system(self):
-        system = platform.platform().lower()
-        if system.startswith("darwin"):
+        system = platform.system().lower()
+        pf = platform.platform().lower()
+        if pf == 'darwin' or system.startswith("darwin"):
             return "darwin"
-        elif system.startswith("linux"):
+        elif pf == 'linux' or system.startswith('linux'):
             return "linux"
-        elif system[:3] in ("win", "msy", "cyg"):
+        elif pf == 'windows' or system[:3] in ("win", "msy", "cyg"):
             return "windows"
         raise OSError(f"Unsupported OS - {system}")
 
