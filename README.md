@@ -67,7 +67,7 @@ Do not run this command within the same notebook that is being converted.
 
 The command line tool `dataframe_image` will be available upon installation with the same options as the `convert` function from above.
 
-> The command line tool is experimental as of now. Use dataframe_image as a library to ensure
+> The command line tool is experimental as of now. Use dataframe_image as a library for a more stable version.
 
 ```bash
 dataframe_image --to=pdf "my notebook with dataframes.ipynb"
@@ -89,7 +89,7 @@ It is also able to properly save the pdf/markdown and its images in a directory 
 
 ## Dependencies
 
-You must have the following python libraries installed
+You must have the following python libraries installed:
 
 * [pandas](https://github.com/pandas-dev/pandas)
 * [nbconvert](https://github.com/jupyter/nbconvert) which requires latex, xelatex, and pandoc
