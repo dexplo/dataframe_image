@@ -67,8 +67,6 @@ Do not run this command within the same notebook that is being converted.
 
 The command line tool `dataframe_image` will be available upon installation with the same options as the `convert` function from above.
 
-> The command line tool is experimental as of now. Use dataframe_image as a library for a more stable version.
-
 ```bash
 dataframe_image --to=pdf "my notebook with dataframes.ipynb"
 ```
