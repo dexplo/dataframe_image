@@ -1,5 +1,6 @@
 import setuptools
 import re
+from dataframe_image import __version__
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -11,7 +12,7 @@ long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
     name='dataframe_image',
-    version='0.0.7',
+    version=__version__,
     author='Ted Petrou',
     author_email='petrou.theodore@gmail.com',
     description='Embed pandas DataFrames as images in pdf and markdown files when '
