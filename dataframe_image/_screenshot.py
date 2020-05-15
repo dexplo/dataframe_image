@@ -26,14 +26,10 @@ class Screenshot:
 
     def get_system(self):
         system = platform.system().lower()
-        pf = platform.platform().lower()
-        if pf == 'darwin' or system.startswith("darwin"):
-            return "darwin"
-        elif pf == 'linux' or system.startswith('linux'):
-            return "linux"
-        elif pf == 'windows' or system[:3] in ("win", "msy", "cyg"):
-            return "windows"
-        raise OSError(f"Unsupported OS - {system}")
+        if system in ['darwin', 'linux', 'windows']:
+            return system
+        else:
+            raise OSError(f"Unsupported OS - {system}")
 
     def get_chrome_path(self, chrome_path):
         if chrome_path:
