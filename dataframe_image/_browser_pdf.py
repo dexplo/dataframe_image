@@ -1,4 +1,3 @@
-import time
 import asyncio
 import base64
 from pathlib import Path
@@ -57,7 +56,7 @@ async def main(file_name, p):
             await handler(ws, data, 'content')
 
             # fourth - get pdf
-            await asyncio.sleep(2)
+            await asyncio.sleep(1)
             params = {'displayHeaderFooter': False, 'printBackground': True}
             data = {'id': 4, 'method': 'Page.printToPDF', 'params': params}
             pdf_data = await handler(ws, data, 'data')
@@ -105,8 +104,11 @@ class BrowserExporter(Exporter):
         nb_path = Path(resources['metadata']['path'])
         td = TemporaryDirectory(dir=nb_path)
         td_path = Path(td.name)
+        image_dir_name = Path('images')
+        output_dir = td_path / 'images'
+        output_dir.mkdir()
 
-        mp = MarkdownPreprocessor(output_dir=td_path, image_dir_name=td_path)
+        mp = MarkdownPreprocessor(output_dir=output_dir, image_dir_name=image_dir_name)
         nb, resources = mp.preprocess(nb, resources, **kw)
 
         html_data, resources = get_html_data(nb, resources, **kw)

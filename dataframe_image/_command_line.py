@@ -26,6 +26,25 @@ Optional Keyword Arguments
     Type of document to create - either pdf or markdown. Possible values 
     are 'pdf', 'markdown', and 'md'. (default: pdf)
 
+--use 
+    Possible options are 'latex' or 'browser'.
+    Choose to convert using latex or chrome web browser when converting 
+    to pdf. Output is significantly different for each. Use 'latex' when
+    you desire a formal report. Use 'browser' to get output similar to
+    that when printing to pdf within a chrome web browser.
+    (default: latex)
+
+--latex_command
+    Pass in a list of commands that nbconvert will use to convert the 
+    latex document to pdf. The latex document is created temporarily when
+    converting to pdf with the `use` option set to 'latex'.
+
+    If the xelatex command is not found on your machine, then pdflatex 
+    will be substituted for it. You must have latex installed on your 
+    machine for this to work. Get more info on how to install latex -
+    https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex
+    (default: ['xelatex', {filename}, 'quiet'])
+
 --max-rows
     Maximum number of rows to output from DataFrame. This is forwarded to 
     the `to_html` DataFrame method. (default: 30)
@@ -107,6 +126,8 @@ parser = argparse.ArgumentParser(formatter_class=CustomFormatter, add_help=False
 parser.add_argument('filename', default=False)
 parser.add_argument('-h', '--help', action='store_true', dest='help')
 parser.add_argument('--to', type=str, choices=['md', 'pdf', 'markdown'], default='pdf')
+parser.add_argument('--use', type=str, choices=['latex', 'browser'], default='latex')
+parser.add_argument('--latex-command', type=list, default=['xelatex', '{filename}', 'quiet'])
 parser.add_argument('--max-rows', type=int, default=30)
 parser.add_argument('--max-cols', type=int, default=10)
 parser.add_argument('--ss-width', type=int, default=1000)

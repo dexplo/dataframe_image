@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 import shutil
 import re
 import io
+import shutil
 
 import nbformat
 from nbconvert import MarkdownExporter, PDFExporter
@@ -28,21 +29,24 @@ class Converter:
         "text/plain",
     ]
 
-    def __init__(self, filename, to, max_rows, max_cols, ss_width, ss_height, resize, 
-                 chrome_path, limit, document_name, execute, save_notebook, output_dir, 
-                 image_dir_name):
+    def __init__(self, filename, to, use, latex_command, max_rows, max_cols, ss_width, 
+                 ss_height, resize, chrome_path, limit, document_name, execute, save_notebook, 
+                 output_dir, image_dir_name):
         self.filename = Path(filename)
+        self.use = use
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
         self.ss_height = ss_height
         self.resize = resize
         self.chrome_path = chrome_path
+        self.limit = limit
 
         self.nb_home = self.filename.parent
         self.nb_name = self.filename.stem
         self.to = self.get_to(to)
-        self.nb = self.get_notebook(limit)
+        self.latex_command = self.get_latex_command(latex_command)
+        self.nb = self.get_notebook()
 
         self.document_name = self.get_document_name(document_name)
         self.execute = execute
@@ -74,12 +78,31 @@ class Converter:
             to = ['md', 'pdf']
         return to
 
-    def get_notebook(self, limit):
+    def get_latex_command(self, latex_command):
+        if self.use == 'latex' and 'pdf' in self.to:
+            if latex_command is None:
+                texs = ['xelatex', 'pdflatex', 'texi2pdf']
+                final_tex = ''
+                for tex in texs:
+                    if shutil.which(tex):
+                        final_tex = tex
+                        break
+                if not final_tex:
+                    raise OSError('No latex installation found. Try setting `use="browser" to '\
+                                  'convert via browser (without latex).\n'\
+                                  'Find out how to install latex here: '\
+                                  'https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex')
+                latex_command = [final_tex, '{filename}']
+                if final_tex == 'xelatex':
+                    latex_command.append('-quiet')
+            return latex_command
+
+    def get_notebook(self):
         with open(self.filename) as f:
             nb = nbformat.read(f, as_version=4)
 
-        if isinstance(limit, int):
-            nb["cells"] = nb["cells"][:limit]
+        if isinstance(self.limit, int):
+            nb["cells"] = nb["cells"][:self.limit]
 
         return nb
 
@@ -163,12 +186,16 @@ class Converter:
             self.nb, self.resources = pp.preprocess(self.nb, self.resources)
     
     def save_notebook_to_file(self):
+        # TODO: save image dir when pdf
         if self.save_notebook:
             name = self.nb_name + '_dataframe_image.ipynb'
             file = self.final_nb_home / name
             nbformat.write(self.nb, file)
 
     def to_pdf(self):
+        if self.use == 'browser':
+            return self.to_chrome_pdf()
+
         if self.first:
             td = TemporaryDirectory()
             preprocessors = self.get_preprocessors('pdf', td=td)
@@ -178,6 +205,18 @@ class Converter:
                                                     self.DISPLAY_DATA_PRIORITY}})
 
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
+        fn = self.final_nb_home / (self.document_name + '.pdf')
+        with open(fn, mode='wb') as f:
+            f.write(pdf_data)
+
+    def to_chrome_pdf(self):
+        nb = self.get_notebook()
+        from ._browser_pdf import BrowserExporter
+        be = BrowserExporter()
+        
+        self.resources.pop('output_files_dir')
+
+        pdf_data, self.resources = be.from_notebook_node(nb, self.resources)
         fn = self.final_nb_home / (self.document_name + '.pdf')
         with open(fn, mode='wb') as f:
             f.write(pdf_data)
@@ -211,9 +250,10 @@ class Converter:
         self.save_notebook_to_file()
 
 
-def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
-            resize=1, chrome_path=None, limit=None, document_name=None, execute=True, 
-            save_notebook=False, output_dir=None, image_dir_name=None):
+def convert(filename, to='pdf', use='latex', latex_command=None, max_rows=30, 
+            max_cols=10, ss_width=1000, ss_height=900, resize=1, chrome_path=None, 
+            limit=None, document_name=None, execute=True, save_notebook=False, 
+            output_dir=None, image_dir_name=None):
     """
     Convert a Jupyter Notebook to pdf or markdown using images for pandas
     DataFrames instead of their normal latex/markdown representation. 
@@ -239,6 +279,23 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
     to : str or list, default 'pdf'
         Choose conversion format. Either 'pdf' or 'markdown'/'md' or a 
         list with all formats.
+
+    use : 'latex' or 'browser', default 'latex'
+        Choose to convert using latex or chrome web browser when converting 
+        to pdf. Output is significantly different for each. Use 'latex' when
+        you desire a formal report. Use 'browser' to get output similar to
+        that when printing to pdf within a chrome web browser.
+
+    latex_command: list, default None
+        Pass in a list of commands that nbconvert will use to convert the 
+        latex document to pdf. The latex document is created temporarily when
+        converting to pdf with the `use` option set to 'latex'. By default,
+        it is set to this list: ['xelatex', {filename}, 'quiet']
+
+        If the xelatex command is not found on your machine, then pdflatex 
+        will be substituted for it. You must have latex installed on your 
+        machine for this to work. Get more info on how to install latex -
+        https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex
 
     max_rows : int, default 30
         Maximum number of rows to output from DataFrame. This is forwarded to 
@@ -304,7 +361,7 @@ def convert(filename, to='pdf', max_rows=30, max_cols=10, ss_width=1000, ss_heig
         is the image number for that particular cell. A similar naming convention
         is used for markdown images.
     """
-    c = Converter(filename, to, max_rows, max_cols, ss_width, ss_height, 
-                  resize, chrome_path, limit, document_name, execute, 
-                  save_notebook, output_dir, image_dir_name)
+    c = Converter(filename, to, use, latex_command, max_rows, max_cols, 
+                  ss_width, ss_height, resize, chrome_path, limit, document_name, 
+                  execute, save_notebook, output_dir, image_dir_name)
     c.convert()
