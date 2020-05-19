@@ -12,6 +12,60 @@ from pandas.io.formats.style import Styler
 from PIL import Image
 
 
+def get_system():
+    system = platform.system().lower()
+    if system in ['darwin', 'linux', 'windows']:
+        return system
+    else:
+        raise OSError(f"Unsupported OS - {system}")
+
+
+def get_chrome_path(chrome_path=None):
+    system = get_system()
+    if chrome_path:
+        return chrome_path
+    # help finding path - https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver#requirements
+    if system == "darwin":
+        paths = [
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+        ]
+        for path in paths:
+            if Path(path).exists():
+                return path
+        raise OSError("Chrome executable not able to be found on your machine")
+    elif system == "linux":
+        paths = [
+            None,
+            "/usr/local/sbin",
+            "/usr/local/bin",
+            "/usr/sbin",
+            "/usr/bin",
+            "/sbin",
+            "/bin",
+            "/opt/google/chrome",
+        ]
+        commands = ["google-chrome", "chrome", "chromium", "chromium-browser", "brave-browser"]
+        for path in paths:
+            for cmd in commands:
+                chrome_path = shutil.which(cmd, path=path)
+                if chrome_path:
+                    return chrome_path
+        raise OSError("Chrome executable not able to be found on your machine")
+    elif system == "windows":
+        import winreg
+        locs = [
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
+        ]
+        for loc in locs:
+            handle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, loc)
+            num_values = winreg.QueryInfoKey(handle)[1]
+            if num_values > 0:
+                return winreg.EnumValue(handle, 0)[1]
+        raise OSError("Cannot find chrome.exe on your windows machine")
+
+
 class Screenshot:
 
     def __init__(self, max_rows, max_cols, ss_width, ss_height, resize, chrome_path):
@@ -20,60 +74,8 @@ class Screenshot:
         self.ss_width = ss_width
         self.ss_height = ss_height
         self.resize = resize
-        self.system = self.get_system()
-        self.chrome_path = self.get_chrome_path(chrome_path)
+        self.chrome_path = get_chrome_path(chrome_path)
         self.css = self.get_css()
-
-    def get_system(self):
-        system = platform.system().lower()
-        if system in ['darwin', 'linux', 'windows']:
-            return system
-        else:
-            raise OSError(f"Unsupported OS - {system}")
-
-    def get_chrome_path(self, chrome_path):
-        if chrome_path:
-            return chrome_path
-        # help finding path - https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver#requirements
-        if self.system == "darwin":
-            paths = [
-                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-                "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
-            ]
-            for path in paths:
-                if Path(path).exists():
-                    return path
-            raise OSError("Chrome executable not able to be found on your machine")
-        elif self.system == "linux":
-            paths = [
-                None,
-                "/usr/local/sbin",
-                "/usr/local/bin",
-                "/usr/sbin",
-                "/usr/bin",
-                "/sbin",
-                "/bin",
-                "/opt/google/chrome",
-            ]
-            commands = ["google-chrome", "chrome", "chromium", "chromium-browser", "brave-browser"]
-            for path in paths:
-                for cmd in commands:
-                    chrome_path = shutil.which(cmd, path=path)
-                    if chrome_path:
-                        return chrome_path
-            raise OSError("Chrome executable not able to be found on your machine")
-        elif self.system == "windows":
-            import winreg
-            locs = [
-                r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
-                r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
-            ]
-            for loc in locs:
-                handle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, loc)
-                num_values = winreg.QueryInfoKey(handle)[1]
-                if num_values > 0:
-                    return winreg.EnumValue(handle, 0)[1]
-            raise OSError("Cannot find chrome.exe on your windows machine")
 
     def get_css(self):
         mod_dir = Path(__file__).resolve().parent

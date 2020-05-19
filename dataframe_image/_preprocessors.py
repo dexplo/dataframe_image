@@ -3,6 +3,7 @@ from tempfile import TemporaryDirectory
 import base64
 import io
 import re
+import urllib.parse
 
 import requests
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
@@ -69,7 +70,7 @@ class MarkdownPreprocessor(Preprocessor):
                 with open(final_image_fn, 'wb') as f:
                     f.write(image_data)
                 image_dir = self.image_dir_name / new_image_name
-                replace_str = str(image_dir).replace(' ', '%20')
+                replace_str = urllib.parse.quote(str(image_dir))
                 cell['source'] = cell['source'].replace(image_file, replace_str)
 
             # find HTML <img> tags
@@ -89,7 +90,8 @@ class MarkdownPreprocessor(Preprocessor):
                     f.write(image_data)
                 
                 image_dir = self.image_dir_name / new_image_name
-                replace_str = f'![]({image_dir})'.replace(' ', '%20')
+                image_dir = urllib.parse.quote(str(image_dir))
+                replace_str = f'![]({image_dir})'
                 cell['source'] = cell['source'].replace(entire_tag, replace_str)
 
             # find images attached to markdown through dragging and dropping
@@ -107,7 +109,7 @@ class MarkdownPreprocessor(Preprocessor):
                         f.write(b64_bytes)
 
                     image_dir = self.image_dir_name / new_image_name
-                    replace_str = str(image_dir).replace(' ', '%20')
+                    replace_str = urllib.parse.quote(str(image_dir))
                     cell['source'] = cell['source'].replace(f'attachment:{image_name}', replace_str)
         return cell, resources
 

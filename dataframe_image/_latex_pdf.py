@@ -1,6 +1,8 @@
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from nbconvert.exporters import PDFExporter
+
+from nbconvert.exporters import PDFExporter, Exporter, HTMLExporter
 
 from ._preprocessors import MarkdownPreprocessor, NoExecuteDataFramePreprocessor, ChangeOutputTypePreprocessor
 
@@ -9,7 +11,7 @@ td_path = Path(td.name)
 
 class DataFramePDFExporter(PDFExporter):
  
-    export_from_notebook = 'PDF - DataFrame as Image'
+    export_from_notebook = 'PDF - DataFrame as Image (via latex)'
     # must give specific order of preprocessors
     # custom preprocessors are run after default_preprocessors
     preprocessors = [

@@ -14,7 +14,7 @@ from ._preprocessors import (MarkdownPreprocessor,
                              NoExecuteDataFramePreprocessor, 
                              ChangeOutputTypePreprocessor)
 
-
+# TODO: option for type of latex. option for browser
 class Converter:
     KINDS = ['pdf', 'md', 'markdown']
     DISPLAY_DATA_PRIORITY = [
