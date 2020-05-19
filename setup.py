@@ -28,10 +28,11 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    install_requires=['pandas>=0.24', 'nbconvert>=5', 'pillow'],
+    install_requires=['pandas>=0.24', 'nbconvert>=5', 'pillow', 'aiohttp'],
     include_package_data=True,
     entry_points = {
         'console_scripts': ['dataframe_image=dataframe_image._command_line:main'],
-        'nbconvert.exporters': ['dataframe_image_bundler_pdf=dataframe_image._exporters:DataFramePDFExporter']
+        'nbconvert.exporters': ['dataframe_image_latex_pdf=dataframe_image._latex_pdf:DataFramePDFExporter',
+                                'dataframe_image_browser_pdf=dataframe_image._browser_pdf:BrowserExporter']
     },
 )
