@@ -34,7 +34,7 @@ Optional Keyword Arguments
     that when printing to pdf within a chrome web browser.
     (default: latex)
 
---latex_command
+--latex-command
     Pass in a list of commands that nbconvert will use to convert the 
     latex document to pdf. The latex document is created temporarily when
     converting to pdf with the `use` option set to 'latex'.
