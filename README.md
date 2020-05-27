@@ -83,7 +83,7 @@ dataframe_image --to=pdf "my notebook with dataframes.ipynb"
 
 You must have Google Chrome (or Brave) installed in order for dataframe_image to work. The path to Chrome will automatically be found. If Chrome is not in a standard location, set it with the `chrome_path` parameter.
 
-## Publish to Medium (upcoming)
+## Publish to Medium
 
 You can publish your notebooks as Medium blog posts by installing the [`jupyter_to_medium`](https://github.com/dexplot/jupyter_to_medium) package.
 
