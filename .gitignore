@@ -8,3 +8,5 @@ build/
 notebooks/Test_1 Notebook_files/
 test_output/
 site/
+notebooks/
+__init__.pyc
