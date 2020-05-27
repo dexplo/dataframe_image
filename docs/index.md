@@ -1,6 +1,6 @@
 # dataframe_image
 
-[![](https://img.shields.io/pypi/v/bar_chart_race)](https://pypi.org/project/dataframe_image)
+[![](https://img.shields.io/pypi/v/dataframe_image)](https://pypi.org/project/dataframe_image)
 [![PyPI - License](https://img.shields.io/pypi/l/dataframe_image)](LICENSE)
 
 A package to convert Jupyter Notebooks to either PDF or Markdown documents with the following extra functionality not provided directly by nbconvert:
