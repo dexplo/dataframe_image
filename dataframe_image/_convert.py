@@ -31,7 +31,7 @@ class Converter:
 
     def __init__(self, filename, to, use, latex_command, max_rows, max_cols, ss_width, 
                  ss_height, resize, chrome_path, limit, document_name, execute, save_notebook, 
-                 output_dir, image_dir_name):
+                 output_dir, image_dir_name, web_app):
         self.filename = Path(filename)
         self.use = use
         self.max_rows = max_rows
@@ -41,6 +41,7 @@ class Converter:
         self.resize = resize
         self.chrome_path = chrome_path
         self.limit = limit
+        self.web_app = web_app
 
         self.nb_home = self.filename.parent
         self.nb_name = self.filename.stem
@@ -53,6 +54,8 @@ class Converter:
         self.save_notebook = save_notebook
         self.final_nb_home = self.get_new_notebook_home(output_dir)
         self.image_dir_name = self.get_image_dir_name(image_dir_name)
+        
+        self.return_data = {}
 
         self.resources = self.get_resources()
         self.first = True
@@ -72,7 +75,7 @@ class Converter:
                 raise TypeError(
                     "`to` must either be a string or a list. "
                     'Possible values are "pdf" or "markdown"/"md"'
-                    ' and not {kind}.'
+                    f' and not {kind}.'
                 )
         if len(to) == 2:
             to = ['md', 'pdf']
@@ -205,9 +208,12 @@ class Converter:
                                                     self.DISPLAY_DATA_PRIORITY}})
 
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
-        fn = self.final_nb_home / (self.document_name + '.pdf')
-        with open(fn, mode='wb') as f:
-            f.write(pdf_data)
+        if self.web_app:
+            self.return_data['pdf_data'] = pdf_data
+        else:
+            fn = self.final_nb_home / (self.document_name + '.pdf')
+            with open(fn, mode='wb') as f:
+                f.write(pdf_data)
 
     def to_chrome_pdf(self):
         nb = self.get_notebook()
@@ -217,9 +223,12 @@ class Converter:
         self.resources.pop('output_files_dir')
 
         pdf_data, self.resources = be.from_notebook_node(nb, self.resources)
-        fn = self.final_nb_home / (self.document_name + '.pdf')
-        with open(fn, mode='wb') as f:
-            f.write(pdf_data)
+        if self.web_app:
+            self.return_data['pdf_data'] = pdf_data
+        else:
+            fn = self.final_nb_home / (self.document_name + '.pdf')
+            with open(fn, mode='wb') as f:
+                f.write(pdf_data)
 
     def to_md(self):
         if self.first:
@@ -231,12 +240,16 @@ class Converter:
                                                         self.DISPLAY_DATA_PRIORITY}})
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
         # the base64 encoded binary files are saved in output_resources
-        for filename, data in self.resources['outputs'].items():
-            with open(self.final_nb_home / filename, 'wb') as f:
-                f.write(data)
-        fn = self.final_nb_home / (self.document_name + '.md')
-        with open(fn, mode='w') as f:
-            f.write(md_data)
+        if self.web_app:
+            self.return_data['md_data'] = md_data
+            self.return_data['md_images'] = {filename: data in self.resources['outputs'].items()}
+        else:
+            for filename, data in self.resources['outputs'].items():
+                with open(self.final_nb_home / filename, 'wb') as f:
+                    f.write(data)
+            fn = self.final_nb_home / (self.document_name + '.md')
+            with open(fn, mode='w') as f:
+                f.write(md_data)
         self.reset_resources()
 
     def reset_resources(self):
@@ -363,5 +376,5 @@ def convert(filename, to='pdf', use='latex', latex_command=None, max_rows=30,
     """
     c = Converter(filename, to, use, latex_command, max_rows, max_cols, 
                   ss_width, ss_height, resize, chrome_path, limit, document_name, 
-                  execute, save_notebook, output_dir, image_dir_name)
+                  execute, save_notebook, output_dir, image_dir_name, False)
     c.convert()
