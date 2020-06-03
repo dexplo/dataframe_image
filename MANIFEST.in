@@ -1,1 +1,2 @@
-include LICENSE dataframe_image/css/*.css
+include LICENSE dataframe_image/static/*.css dataframe_image/static/*.html
+recursive-include jupyter-config *.json
