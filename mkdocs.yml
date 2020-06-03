@@ -4,9 +4,13 @@ site_author: Ted Petrou
 site_url: https://www.dexplo.org/dataframe_image
 repo_url: https://github.com/dexplo/dataframe_image
 copyright: Copyright @ 2020 Ted Petrou
+google_analytics:
+  - UA-119777567-7
+  - dexplo.org
 
 theme:
   name: material
+  custom_dir: docs/overrides
   features:
     - tabs
 
