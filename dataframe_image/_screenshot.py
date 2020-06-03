@@ -79,7 +79,7 @@ class Screenshot:
 
     def get_css(self):
         mod_dir = Path(__file__).resolve().parent
-        css_file = mod_dir / "css" / "style.css"
+        css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
         return css
