@@ -1,0 +1,307 @@
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .loaderContainer {
+            display: flex;
+            visibility: hidden;
+        }
+
+        .loader {
+            margin-left: 20px;
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="col-sm-7 container">
+        <h1>Download your Notebook as a pdf or markdown file with DataFrames as images.</h1>
+        <br>
+
+        <form method="GET">
+            <fieldset class="form-group">
+                <div class="row">
+                  <legend class="col-form-label col-sm-2 pt-0">Output Format</legend>
+                  <div class="col-sm-8">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="to" 
+                             id="to_pdf" value="pdf" checked="checked">
+                      <label class="form-check-label" for="to_pdf">
+                        PDF
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="to" 
+                             id="to_md" value="md">
+                      <label class="form-check-label" for="to_md">
+                        Markdown
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="to" 
+                               id="to_both" value="both">
+                        <label class="form-check-label" for="to_both">
+                          Both
+                        </label>
+                      </div>
+                  </div>
+                </div>
+            </fieldset>
+
+            <fieldset class="form-group" id="conversionTool">
+                <div class="row">
+                  <legend class="col-form-label col-sm-2 pt-0">Tool used for Conversion to PDF</legend>
+                  <div class="col-sm-8">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="use" 
+                             id="latex" value="latex">
+                      <label class="form-check-label" for="latex">
+                        LaTeX
+                      </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="use" 
+                             id="browser" value="browser">
+                      <label class="form-check-label" for="browser">
+                        Chrome Browser
+                      </label>
+                    </div>
+                  </div>
+                </div>
+            </fieldset>
+
+            <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#optionalItems">Optional Items</button>
+            <div id="optionalItems" class="collapse">
+                <div class="form-group row">
+                    <label for="latex_command" class="col-sm-2 col-form-label">LaTeX Command</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="latex_command" id="latex_command">
+                        <small class="form-text text-muted">LaTeX command to use during conversion. Ignored if using Chrome browser. 
+                            Defaults to 'xelatex {filename} quiet'.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="max_rows" class="col-sm-2 col-form-label">Max DataFrame Rows</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="max_rows" id="max_rows">
+                        <small class="form-text text-muted">Maximum number of rows to use from a DataFrame. Default is 30.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="max_cols" class="col-sm-2 col-form-label">Max DataFrame Columns</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="max_cols" id="max_cols">
+                        <small class="form-text text-muted">Maximum number of columns to use for each DataFrame. Default is 10.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="ss_width" class="col-sm-2 col-form-label">Screenshot Width</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="ss_width" id="ss_width">
+                        <small class="form-text text-muted">Width of the screenshot in pixels. This may need to be increased for 
+                            larger monitors. If this value is too small, then smaller DataFrames 
+                            will appear larger. It's best to keep this value at least as large as 
+                            the width of the output section of a Jupyter Notebook. (default: 1000)
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="ss_height" class="col-sm-2 col-form-label">Screenshot Height</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="ss_height" id="ss_height">
+                        <small class="form-text text-muted">Height of the screen shot. The height of the image is automatically 
+                            cropped so that only the relevant parts of the DataFrame are shown.
+                            (default: 900)
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="resize" class="col-sm-2 col-form-label">Resize Factor</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="resize" id="resize">
+                        <small class="form-text text-muted">Relative resizing of image. Higher numbers produce smaller images. 
+                            The Pillow `Image.resize` method is used for this. (default: 1)
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="chrome_path" class="col-sm-2 col-form-label">Chrome Path</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="chrome_path" id="chrome_path">
+                        <small class="form-text text-muted">Path to your machine's chrome executable. By default, it is 
+                            automatically found. Use this when chrome is not automatically found.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="limit" class="col-sm-2 col-form-label">Limit Cells</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="limit" id="limit">
+                        <small class="form-text text-muted">Limit the number of cells in the notebook for conversion. This is 
+                            useful to test conversion of a large notebook on a smaller subset.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="document_name" class="col-sm-2 col-form-label">Document Name</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="document_name" id="document_name">
+                        <small class="form-text text-muted">Name of newly created pdf/markdown document without the extension. 
+                            If not provided, the name of the notebook will be used.
+                        </small>
+                    </div>
+                </div>
+
+                <fieldset class="form-group">
+                    <div class="row">
+                    <legend class="col-form-label col-sm-2 pt-0">Execute Notebook First</legend>
+                    <div class="col-sm-8">
+                        <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="execute" 
+                                id="execute_yes" value="True">
+                        <label class="form-check-label" for="execute_yes">
+                            Yes
+                        </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="execute" 
+                                id="execute_no" value="False" checked="checked">
+                        <label class="form-check-label" for="execute_no">
+                            No
+                        </label>
+                        </div>
+                    </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                    <div class="row">
+                    <legend class="col-form-label col-sm-2 pt-0">Save Notebook</legend>
+                    <div class="col-sm-8">
+                        <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="save_notebook" 
+                                id="save_notebook_yes" value="True">
+                        <label class="form-check-label" for="save_notebook_yes">
+                            Yes
+                        </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="save_notebook" 
+                                id="save_notebook_no" value="False" checked="checked">
+                        <label class="form-check-label" for="save_notebook_no">
+                            No
+                        </label>
+                        </div>
+                        <small class="form-text text-muted">Whether or not to save the notebook with DataFrames as images as a new 
+                            notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'</small>
+                    </div>
+                    </div>
+                </fieldset>
+
+                <div class="form-group row">
+                    <label for="output_dir" class="col-sm-2 col-form-label">Output Directory</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="output_dir" id="output_dir">
+                        <small class="form-text text-muted">Directory where new pdf and/or markdown files will be saved. By default,
+                            this will be in the same directory where the notebook is. The directory 
+                            for images will also be created in here. If --save-notebook is set to
+                            True, it will be saved here as well.
+                        
+                            Provide a relative path to the current working directory 
+                            or an absolute path.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="image_dir" class="col-sm-2 col-form-label">Image Directory</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="image_dir" id="image_dir">
+                        <small class="form-text text-muted">The directory name to store the DataFrame images and any other images
+                            produced by the notebook code cells (i.e. plots). This image directory
+                            is only produced when creating a markdown document. It will be created
+                            within output_dir.
+                        
+                            By default, the name will be '{notebook_name}_files'.
+                            The images themselves will be given names such as output_1_0.png where 
+                            the first number represents the cell's execution number and the second 
+                            is the image number for that particular cell.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="bundler" value="dataframe_image_bundler">
+            <input type="hidden" name="app_status" value="waiting">
+            <br>
+            <div class="form-group row d-flex flex-column justify-content-center align-items-center">
+                <input type="submit" class="btn btn-primary text-center col-sm-4" value="Download">
+                <small class="form-text text-muted"></small>
+            </div>
+        </form>
+    </div>
+
+    <div class="loaderContainer">
+        <div>
+            Generating your documents   
+        </div>
+        <div class="loader"></div>
+    </div>
+</body>
+
+<script>
+    $("input[name='to']").change(function(event) {
+        val = $("input[name='to']:checked").val()
+        if (val == "pdf" | val =="both"){
+            $('#conversionTool').css('visibility', 'visible');
+        }
+        else {
+            $('#conversionTool').css('visibility', 'hidden');
+        }
+    });
+
+    $('form').on('submit', function(event) {
+        event.preventDefault();
+
+        val = $("input[name='to']:checked").val()
+        if (val == "pdf" | val =="both"){
+            if(!$("input[name='use']").is(':checked')) {
+                alert('When converting to PDF, you are required to select the tool used for conversion.');
+                return;
+            }
+        }
+        $('.loaderContainer').css('visibility', 'visible');
+        $('form').css('visibility', 'hidden');
+        this.submit();
+    });
+</script>

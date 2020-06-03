@@ -1,0 +1,24 @@
+<body>
+    <h1>Success! Conversion completed successfully</h1>
+</body>
+
+<script> 
+    window.onload = function() {{
+        const byteCharacters = atob("{s}");
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {{
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }}
+        const byteArray = new Uint8Array(byteNumbers);
+        const file = new Blob([byteArray], {{type: "application/pdf"}});
+
+        var url = window.URL.createObjectURL(file);
+        var a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = '{filename}.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+    }}
+</script>
