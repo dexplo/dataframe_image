@@ -16,7 +16,7 @@ long_description = re.sub(pat, repl, long_description)
 
 setuptools.setup(
     name='dataframe_image',
-    version=__version__,
+    version=version,
     author='Ted Petrou',
     author_email='petrou.theodore@gmail.com',
     description='Embed pandas DataFrames as images in pdf and markdown files when '
