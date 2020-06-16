@@ -1,6 +1,10 @@
 import setuptools
 import re
-from dataframe_image import __version__
+
+with open('dataframe_image/__init__.py', 'r') as f:
+    for line in f:
+        if line.startswith('__version__'):
+            version = line.split("'")[1]
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
@@ -32,7 +36,9 @@ setuptools.setup(
     include_package_data=True,
     entry_points = {
         'console_scripts': ['dataframe_image=dataframe_image._command_line:main'],
-        'nbconvert.exporters': ['dataframe_image_latex_pdf=dataframe_image._latex_pdf:DataFramePDFExporter',
-                                'dataframe_image_browser_pdf=dataframe_image._browser_pdf:BrowserExporter']
+        # 'nbconvert.exporters': ['dataframe_image_latex_pdf=dataframe_image._latex_pdf:DataFramePDFExporter',
+        #                         'dataframe_image_browser_pdf=dataframe_image._browser_pdf:BrowserExporter']
     },
+    data_files=[("etc/jupyter/nbconfig/notebook.d", [
+                "jupyter-config/nbconfig/notebook.d/dataframe_image.json"])],
 )
