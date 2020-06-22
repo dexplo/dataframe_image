@@ -12,10 +12,11 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from traitlets.config import Config
 
 from ._preprocessors import (MarkdownPreprocessor, 
-                             NoExecuteDataFramePreprocessor, 
-                             ChangeOutputTypePreprocessor)
+                                     NoExecuteDataFramePreprocessor, 
+                                     ChangeOutputTypePreprocessor)
+from ._screenshot import Screenshot
 
-# TODO: option for type of latex. option for browser
+
 class Converter:
     KINDS = ['pdf', 'md', 'markdown']
     DISPLAY_DATA_PRIORITY = [
@@ -29,11 +30,12 @@ class Converter:
         "text/plain",
     ]
 
-    def __init__(self, filename, to, use, latex_command, max_rows, max_cols, ss_width, 
+    def __init__(self, filename, to, use, centerdf, latex_command, max_rows, max_cols, ss_width, 
                  ss_height, resize, chrome_path, limit, document_name, execute, save_notebook, 
                  output_dir, image_dir_name, web_app):
         self.filename = Path(filename)
         self.use = use
+        self.centerdf = centerdf
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
@@ -56,7 +58,6 @@ class Converter:
         self.image_dir_name = self.get_image_dir_name(image_dir_name)
         
         self.return_data = {}
-
         self.resources = self.get_resources()
         self.first = True
 
@@ -148,7 +149,7 @@ class Converter:
         code = (
             "import pandas as pd;"
             "from dataframe_image._screenshot import make_repr_png;"
-            f"_repr_png_ = make_repr_png(max_rows={self.max_rows}, "
+            f"_repr_png_ = make_repr_png(centerdf={self.centerdf}, max_rows={self.max_rows}, "
             f"max_cols={self.max_cols}, ss_width={self.ss_width}, "
             f"ss_height={self.ss_height}, resize={self.resize}, "
             f"chrome_path={self.chrome_path});"
@@ -179,7 +180,10 @@ class Converter:
                                      extra_arguments=extra_arguments)
             preprocessors.append(pp)
         else:
-            preprocessors.append(NoExecuteDataFramePreprocessor())
+            ss = Screenshot(centerdf=self.centerdf, max_rows=self.max_rows, max_cols=self.max_cols,
+                            ss_width=self.ss_width, ss_height=self.ss_height, resize=self.resize, 
+                            chrome_path=self.chrome_path)
+            preprocessors.append(NoExecuteDataFramePreprocessor(ss=ss))
 
         preprocessors.append(ChangeOutputTypePreprocessor())
         return preprocessors
@@ -263,10 +267,10 @@ class Converter:
         self.save_notebook_to_file()
 
 
-def convert(filename, to='pdf', use='latex', latex_command=None, max_rows=30, 
-            max_cols=10, ss_width=1000, ss_height=900, resize=1, chrome_path=None, 
-            limit=None, document_name=None, execute=True, save_notebook=False, 
-            output_dir=None, image_dir_name=None):
+def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None, 
+            max_rows=30, max_cols=10, ss_width=1000, ss_height=900, resize=1, 
+            chrome_path=None, limit=None, document_name=None, execute=True, 
+            save_notebook=False, output_dir=None, image_dir_name=None):
     """
     Convert a Jupyter Notebook to pdf or markdown using images for pandas
     DataFrames instead of their normal latex/markdown representation. 
@@ -298,6 +302,11 @@ def convert(filename, to='pdf', use='latex', latex_command=None, max_rows=30,
         to pdf. Output is significantly different for each. Use 'latex' when
         you desire a formal report. Use 'browser' to get output similar to
         that when printing to pdf within a chrome web browser.
+
+    centerdf : bool, default True
+        Choose whether to center the DataFrames or not in the image. By 
+        default, this is True, though in Jupyter Notebooks, they are 
+        left-aligned. Use False to make left-aligned.
 
     latex_command: list, default None
         Pass in a list of commands that nbconvert will use to convert the 
@@ -374,7 +383,7 @@ def convert(filename, to='pdf', use='latex', latex_command=None, max_rows=30,
         is the image number for that particular cell. A similar naming convention
         is used for markdown images.
     """
-    c = Converter(filename, to, use, latex_command, max_rows, max_cols, 
+    c = Converter(filename, to, use, centerdf, latex_command, max_rows, max_cols, 
                   ss_width, ss_height, resize, chrome_path, limit, document_name, 
                   execute, save_notebook, output_dir, image_dir_name, False)
     c.convert()
