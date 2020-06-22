@@ -1,19 +1,19 @@
-table {
+table {{
     background-color: transparent;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin-left:0;
-    margin-right:0;
+    margin-left:{left};
+    margin-right:{right};
     border:none;
     border-collapse: collapse;
     border-spacing:0;
     color:black;
     font-size:18px;
     table-layout:fixed;
-    }
-thead {
+    }}
+thead {{
     border-bottom:1px solid black;vertical-align:bottom;
-    }
-tr, th, td {
+    }}
+tr, th, td {{
     text-align:right;
     vertical-align: middle;
     padding:0.5em 0.5em;
@@ -21,14 +21,14 @@ tr, th, td {
     white-space:normal;
     max-width:none;
     border:none;
-    }
-th {
+    }}
+th {{
     font-weight:bold; 
     text-align:left;
-    }
-tbody tr:nth-child(odd){
+    }}
+tbody tr:nth-child(odd){{
     background:#f5f5f5;
-    }
-    :link{
+    }}
+    :link{{
     text-decoration:underline;
-}
+}}
