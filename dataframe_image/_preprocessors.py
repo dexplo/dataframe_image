@@ -7,9 +7,9 @@ import urllib.parse
 
 import requests
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
-from traitlets import Instance, Unicode
+from traitlets import Instance
 
-from ._screenshot import make_repr_png
+from ._screenshot import Screenshot
 
 def get_image_files(md_source):
     '''
@@ -114,10 +114,9 @@ class MarkdownPreprocessor(Preprocessor):
         return cell, resources
 
 
-ss_creator = make_repr_png()
-
-
 class NoExecuteDataFramePreprocessor(Preprocessor):
+
+    ss = Instance(klass=Screenshot)
         
     def preprocess_cell(self, cell, resources, index):
         if cell['cell_type'] == 'code':
@@ -126,7 +125,8 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
                 if 'data' in output and 'text/html' in output['data']:
                     html = output['data']['text/html']
                     if '</table>' in html and '</style>' in html:
-                        output['data'] = {'image/png': ss_creator(html)}
+                        html = self.ss.get_html(html)
+                        output['data'] = {'image/png': self.ss.run(html)}
         return cell, resources  
 
 
