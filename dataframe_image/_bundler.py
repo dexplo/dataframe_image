@@ -4,19 +4,20 @@ import base64
 
 from tornado import gen
 
-from ._convert import Converter
 
 def _jupyter_bundlerextension_paths():
     return [{
         "name": "dataframe_image_bundler",
         "module_name": "dataframe_image._bundler",
-        "label" : "PDF - DataFrame as Image",
+        "label" : "DataFrame as Image",
         "group" : "download",
     }]
 
-def convert(model, handler):
 
-    arguments = ['to', 'use', 'latex_command', 'max_rows', 'max_cols', 
+def convert(model, handler):
+    from ._convert import Converter
+
+    arguments = ['to', 'use', 'centerdf', 'latex_command', 'max_rows', 'max_cols', 
                  'ss_width', 'ss_height', 'resize', 'chrome_path', 'limit', 
                  'document_name', 'execute', 'save_notebook', 'output_dir', 'image_dir_name']
 
@@ -27,6 +28,7 @@ def convert(model, handler):
     if kwargs['to'] == 'both':
         kwargs['to'] = ['md', 'pdf']
     kwargs['use'] == kwargs['use'] or None
+    kwargs['centerdf'] = kwargs['centerdf'] == "True"
     kwargs['latex_command'] = [tag.strip() for tag in kwargs['latex_command'].split()]
     kwargs['max_rows'] = 30 if kwargs['max_rows'] == '' else int(kwargs['max_rows'])
     kwargs['max_cols'] = 10 if kwargs['max_cols'] == '' else int(kwargs['max_cols'])
@@ -43,7 +45,9 @@ def convert(model, handler):
     kwargs['web_app'] = True
    
     try:
+        print(kwargs['centerdf'] )
         c = Converter(**kwargs)
+        print(c.centerdf)
         c.convert()
         data = c.return_data
     except Exception as e:
@@ -58,10 +62,12 @@ def convert(model, handler):
 
     return data
 
+
 def read_static_file(name):
     mod_path = Path(__file__).parent
     html_path = mod_path / 'static' / name
     return open(html_path).read()
+
 
 def get_html_fail(data):
     error_data = data['error_data']
@@ -70,7 +76,7 @@ def get_html_fail(data):
     return html.format(error_message=error_message)
 
 
-# @gen.coroutine # asynchoronous execution
+# synchronous execution
 def bundle(handler, model):
     """
     Parameters
@@ -86,6 +92,7 @@ def bundle(handler, model):
         html = read_static_file('form.html')
         handler.write(html)
     elif app_status == 'waiting':
+        print('in waiting')
         data = convert(model, handler)        
         if data['app_status'] == 'fail':
             html = get_html_fail(data)
