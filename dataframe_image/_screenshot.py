@@ -6,7 +6,6 @@ from subprocess import run
 import base64
 import io
 
-import numpy as np
 from pandas import DataFrame
 from pandas.io.formats.style import Styler
 from PIL import Image
@@ -68,7 +67,8 @@ def get_chrome_path(chrome_path=None):
 
 class Screenshot:
 
-    def __init__(self, max_rows, max_cols, ss_width, ss_height, resize, chrome_path):
+    def __init__(self, centerdf, max_rows, max_cols, ss_width, ss_height, resize, chrome_path):
+        self.centerdf = centerdf
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
@@ -82,6 +82,9 @@ class Screenshot:
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
+
+        left, right = ('auto', 'auto') if self.centerdf else (0, 0)
+        css = css.format(left=left, right=right)
         return css
 
     def take_screenshot(self, html):
@@ -101,20 +104,23 @@ class Screenshot:
             str(temp_html),
         ]
         run(executable=self.chrome_path, args=args)
-        pillow_data = Image.open(str(temp_img))
-        return np.array(pillow_data)
+        img_bytes = open(temp_img, 'rb').read()
+        buffer = io.BytesIO(img_bytes)
+        return buffer
 
-    def finalize_image(self, image_arr):
-        row_avg = image_arr.mean(axis=2).mean(1)
-        first_row = max(0, np.where(row_avg != 255)[0][0] - 20)
-        last_row = image_arr.shape[0] - np.where(row_avg[::-1] != 255)[0][0] + 10
+    def finalize_image(self, buffer):
+        from PIL import Image, ImageChops
 
-        # not cropping width so that images appear the same size
-        # column_avg = image_arr.mean(axis=2).mean(axis=0)[::-1]
-        # last_col = image_arr.shape[1] - np.where(column_avg != 255)[0][0] + 10
+        img = Image.open(buffer)
+        img_gray = img.convert('L')
+        bg = Image.new('L', img.size, 255)
+        diff = ImageChops.difference(img_gray, bg)
+        diff = ImageChops.add(diff, diff, 2.0, -100)
+        bbox = diff.getbbox()
+        new_y_max = bbox[-1] + 10
+        x_max = img.size[0]
+        img = img.crop((0, 0, x_max, new_y_max))
 
-        image_arr = image_arr[first_row:last_row, :]
-        img = Image.fromarray(image_arr)
         if self.resize != 1:
             w, h = img.size
             w, h = int(w // self.resize), int(h // self.resize)
@@ -150,7 +156,7 @@ class Screenshot:
             return self.run(html)
         return _repr_png_
 
-def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
+def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
                   resize=1, chrome_path=None):
     """
     Creates a function that can be assigned to `pd.DataFrame._repr_png_` 
@@ -170,6 +176,11 @@ def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
 
     Parameters
     ----------
+    centerdf : bool, default True
+        Choose whether to center the DataFrames or not in the image. By 
+        default, this is True, though in Jupyter Notebooks, they are 
+        left-aligned. Use False to make left-aligned.
+
     max_rows : int, default 30
         Maximum number of rows to output from DataFrame. This is forwarded to 
         the `to_html` DataFrame method.
@@ -196,5 +207,6 @@ def make_repr_png(max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
     """
-    ss = Screenshot(max_rows, max_cols, ss_width, ss_height, resize, chrome_path)
+    print('in make_repr', centerdf)
+    ss = Screenshot(centerdf, max_rows, max_cols, ss_width, ss_height, resize, chrome_path)
     return ss.repr_png_wrapper()
