@@ -11,6 +11,7 @@ import aiohttp
 
 from ._screenshot import get_chrome_path
 from ._preprocessors import MarkdownPreprocessor
+from . import _my_asyncio as my_asyncio
 
 async def handler(ws, data, key=None):
     await ws.send_json(data)
@@ -62,6 +63,7 @@ async def main(file_name, p):
             pdf_data = await handler(ws, data, 'data')
             pdf_data = base64.b64decode(pdf_data)
             return pdf_data
+    
 
 def launch_chrome():
     chrome_path = get_chrome_path()
@@ -88,14 +90,12 @@ def write_html_data(td_path, html_data):
 
 def get_pdf_data(file_name, p):
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future = executor.submit(asyncio.run, main(file_name, p))
+        future = executor.submit(my_asyncio.run, main(file_name, p))
     return future.result()
 
 
 class BrowserExporter(Exporter):
-
-    export_from_notebook = 'PDF - DataFrame as Image (via browser)'
-
+    
     def _file_extension_default(self):
         return '.pdf'
 

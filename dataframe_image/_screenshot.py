@@ -6,10 +6,6 @@ from subprocess import run
 import base64
 import io
 
-from pandas import DataFrame
-from pandas.io.formats.style import Styler
-from PIL import Image
-
 
 def get_system():
     system = platform.system().lower()
@@ -20,9 +16,11 @@ def get_system():
 
 
 def get_chrome_path(chrome_path=None):
-    system = get_system()
     if chrome_path:
         return chrome_path
+
+    system = get_system()
+    
     # help finding path - https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver#requirements
     if system == "darwin":
         paths = [
@@ -134,6 +132,9 @@ class Screenshot:
         return img_str
 
     def get_html(self, data):
+        from pandas import DataFrame
+        from pandas.io.formats.style import Styler
+
         if isinstance(data, DataFrame):
             html = data.to_html(max_cols=self.max_cols, max_rows=self.max_rows, notebook=True)
         elif isinstance(data, Styler):
@@ -155,6 +156,7 @@ class Screenshot:
             html = self.get_html(data)
             return self.run(html)
         return _repr_png_
+
 
 def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
                   resize=1, chrome_path=None):
@@ -207,6 +209,5 @@ def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, ss_hei
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
     """
-    print('in make_repr', centerdf)
     ss = Screenshot(centerdf, max_rows, max_cols, ss_width, ss_height, resize, chrome_path)
     return ss.repr_png_wrapper()

@@ -45,12 +45,12 @@ def convert(model, handler):
     kwargs['web_app'] = True
    
     try:
-        print(kwargs['centerdf'] )
         c = Converter(**kwargs)
-        print(c.centerdf)
         c.convert()
         data = c.return_data
     except Exception as e:
+        import sys, traceback
+        traceback.print_exc(file=sys.stdout)
         data = {'app_status': 'fail', 
                 'error_data': str(e)}
     else:
@@ -60,7 +60,7 @@ def convert(model, handler):
             data = {'app_status': 'fail', 
                     'error_data': 'Error: \n' + str(data)}
 
-    return data
+    return data, kwargs
 
 
 def read_static_file(name):
@@ -74,6 +74,31 @@ def get_html_fail(data):
     error_message = json.dumps(error_data)
     html = read_static_file('fail.html')
     return html.format(error_message=error_message)
+
+
+def get_js(filename, data, kwargs):
+    if kwargs['to'] == 'pdf' and not kwargs['save_notebook']:
+        app_type = 'pdf'
+        s = base64.b64encode(data['pdf_data']).decode()
+    else:
+        app_type = 'zip'
+        from zipfile import ZipFile, ZIP_DEFLATED
+        with ZipFile(f'{filename}.zip', "w", compression=ZIP_DEFLATED) as zf:
+            if 'md_data' in data:
+                zf.writestr(f'{filename}.md', data['md_data'])
+                for fn, val in data['md_images'].items():
+                    zf.writestr(fn, val)
+            if 'pdf_data' in data:
+                zf.writestr(f'{filename}.pdf', data['pdf_data'])
+            if kwargs['save_notebook']:
+                zf.writestr(f'{filename}.ipynb', data['notebook'])
+
+
+        with open(f'{filename}.zip', 'rb') as zf:
+            s = base64.b64encode(zf.read()).decode()
+
+    js = read_static_file('download.html').format(s=s, filename=filename, app_type=app_type)
+    return js
 
 
 # synchronous execution
@@ -92,14 +117,12 @@ def bundle(handler, model):
         html = read_static_file('form.html')
         handler.write(html)
     elif app_status == 'waiting':
-        print('in waiting')
-        data = convert(model, handler)        
+        data, kwargs = convert(model, handler)        
         if data['app_status'] == 'fail':
             html = get_html_fail(data)
             handler.write(html)
             handler.finish()
         else:
             filename = Path(model['name']).stem
-            s = base64.b64encode(data['pdf_data']).decode()
-            js = read_static_file('download.html').format(s=s, filename=filename)
+            js = get_js(filename, data, kwargs)
             handler.write(js)

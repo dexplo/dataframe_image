@@ -12,8 +12,8 @@ from nbconvert.preprocessors import ExecutePreprocessor
 from traitlets.config import Config
 
 from ._preprocessors import (MarkdownPreprocessor, 
-                                     NoExecuteDataFramePreprocessor, 
-                                     ChangeOutputTypePreprocessor)
+                             NoExecuteDataFramePreprocessor, 
+                             ChangeOutputTypePreprocessor)
 from ._screenshot import Screenshot
 
 
@@ -44,6 +44,7 @@ class Converter:
         self.chrome_path = chrome_path
         self.limit = limit
         self.web_app = web_app
+        self.td = TemporaryDirectory()
 
         self.nb_home = self.filename.parent
         self.nb_name = self.filename.stem
@@ -160,16 +161,20 @@ class Converter:
         )
         return code
 
-    def get_preprocessors(self, to, td=None):
+    def get_preprocessors(self, to):
         preprocessors = []
 
-        # save images in markdown to either a temporary directory(pdf) 
+        # save images in markdown to either a temporary directory(pdf or web app) 
         # or an actual directory(markdown)
+        td_path = Path(self.td.name)
         if to == 'pdf':
-            td_path = Path(td.name)
             mp = MarkdownPreprocessor(output_dir=td_path, image_dir_name=td_path)
         elif to == 'md':
-            mp = MarkdownPreprocessor(output_dir=self.final_nb_home / self.image_dir_name,
+            if self.web_app:
+                output_dir = td_path
+            else:
+                output_dir = self.final_nb_home / self.image_dir_name
+            mp = MarkdownPreprocessor(output_dir=output_dir,
                                       image_dir_name=Path(self.image_dir_name))
         preprocessors.append(mp)
 
@@ -197,15 +202,20 @@ class Converter:
         if self.save_notebook:
             name = self.nb_name + '_dataframe_image.ipynb'
             file = self.final_nb_home / name
-            nbformat.write(self.nb, file)
+            if self.web_app:
+                buffer = io.StringIO()
+                nbformat.write(self.nb, buffer)
+                buffer.seek(0)
+                self.return_data['notebook'] = buffer.read()
+            else:
+                nbformat.write(self.nb, file)
 
     def to_pdf(self):
         if self.use == 'browser':
             return self.to_chrome_pdf()
 
         if self.first:
-            td = TemporaryDirectory()
-            preprocessors = self.get_preprocessors('pdf', td=td)
+            preprocessors = self.get_preprocessors('pdf')
             self.preprocess(preprocessors)
 
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
@@ -237,7 +247,8 @@ class Converter:
     def to_md(self):
         if self.first:
             preprocessors = self.get_preprocessors('md')
-            self.create_images_dir()
+            if not self.web_app:
+                self.create_images_dir()
             self.preprocess(preprocessors)
 
         me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
@@ -246,7 +257,13 @@ class Converter:
         # the base64 encoded binary files are saved in output_resources
         if self.web_app:
             self.return_data['md_data'] = md_data
-            self.return_data['md_images'] = {filename: data in self.resources['outputs'].items()}
+            outputs = self.resources['outputs']
+            for file in Path(self.td.name).iterdir():
+                with open(file, 'rb') as f:
+                    fn = str(Path(self.image_dir_name) / file.name)
+                    print(fn)
+                    outputs[fn] = f.read()
+            self.return_data['md_images'] = outputs
         else:
             for filename, data in self.resources['outputs'].items():
                 with open(self.final_nb_home / filename, 'wb') as f:
