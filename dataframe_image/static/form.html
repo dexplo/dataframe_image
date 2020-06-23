@@ -111,7 +111,7 @@
                 </div>
             </fieldset>
 
-            <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#optionalItems">Optional Items</button>
+            <button type="button" id="toggleButton"  class="btn btn-info" data-toggle="collapse" data-target="#optionalItems">Optional Items</button>
             <div id="optionalItems" class="collapse">
                 <div class="form-group row">
                     <label for="latex_command" class="col-sm-2 col-form-label">LaTeX Command</label>
@@ -245,42 +245,11 @@
                         </label>
                         </div>
                         <small class="form-text text-muted">Whether or not to save the notebook with DataFrames as images as a new 
-                            notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'</small>
+                            notebook.</small>
                     </div>
                     </div>
                 </fieldset>
-
-                <div class="form-group row">
-                    <label for="output_dir" class="col-sm-2 col-form-label">Output Directory</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="output_dir" id="output_dir">
-                        <small class="form-text text-muted">Directory where new pdf and/or markdown files will be saved. By default,
-                            this will be in the same directory where the notebook is. The directory 
-                            for images will also be created in here. If --save-notebook is set to
-                            True, it will be saved here as well.
-                        
-                            Provide a relative path to the current working directory 
-                            or an absolute path.
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="image_dir" class="col-sm-2 col-form-label">Image Directory</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="image_dir" id="image_dir">
-                        <small class="form-text text-muted">The directory name to store the DataFrame images and any other images
-                            produced by the notebook code cells (i.e. plots). This image directory
-                            is only produced when creating a markdown document. It will be created
-                            within output_dir.
-                        
-                            By default, the name will be '{notebook_name}_files'.
-                            The images themselves will be given names such as output_1_0.png where 
-                            the first number represents the cell's execution number and the second 
-                            is the image number for that particular cell.
-                        </small>
-                    </div>
-                </div>
+                
             </div>
 
             <input type="hidden" name="bundler" value="dataframe_image_bundler">
@@ -322,8 +291,9 @@
                 return;
             }
         }
-        $('.loaderContainer').css('visibility', 'visible');
+        $('#toggleButton').click()
         $('form').css('visibility', 'hidden');
+        $('.loaderContainer').css('visibility', 'visible');
         this.submit();
     });
 </script>
