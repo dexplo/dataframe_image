@@ -10,13 +10,13 @@
             byteNumbers[i] = byteCharacters.charCodeAt(i);
         }}
         const byteArray = new Uint8Array(byteNumbers);
-        const file = new Blob([byteArray], {{type: "application/pdf"}});
+        const file = new Blob([byteArray], {{type: "application/{app_type}"}});
 
         var url = window.URL.createObjectURL(file);
         var a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = '{filename}.pdf';
+        a.download = '{filename}.{app_type}';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
