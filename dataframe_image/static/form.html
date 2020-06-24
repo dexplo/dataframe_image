@@ -13,6 +13,7 @@
         .loaderContainer {
             display: flex;
             visibility: hidden;
+            justify-content: center;
         }
 
         .loader {
@@ -32,6 +33,7 @@
 
     </style>
 </head>
+
 <body>
     <div class="col-sm-7 container">
         <h1>Download your Notebook as a pdf or markdown file with DataFrames as images.</h1>
@@ -245,7 +247,7 @@
                         </label>
                         </div>
                         <small class="form-text text-muted">Whether or not to save the notebook with DataFrames as images as a new 
-                            notebook.</small>
+                            ipynb file.</small>
                     </div>
                     </div>
                 </fieldset>
@@ -291,9 +293,10 @@
                 return;
             }
         }
-        $('#toggleButton').click()
+        $('.collapse').collapse('hide')
         $('#conversionTool').css('visibility', 'hidden');
         $('form').css('visibility', 'hidden');
+        $('form').css('height', '0px')
         $('.loaderContainer').css('visibility', 'visible');
         this.submit();
     });
