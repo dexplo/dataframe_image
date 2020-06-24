@@ -69,9 +69,10 @@ class MarkdownPreprocessor(Preprocessor):
                 final_image_fn = self.output_dir / new_image_name
                 with open(final_image_fn, 'wb') as f:
                     f.write(image_data)
-                image_dir = self.image_dir_name / new_image_name
-                replace_str = urllib.parse.quote(str(image_dir))
-                cell['source'] = cell['source'].replace(image_file, replace_str)
+                image_relative_path = str(self.image_dir_name / new_image_name)
+                # replace original image file location with new relative path
+                cell['source'] = cell['source'].replace(image_file, image_relative_path)
+                resources['temp_images'].append(image_relative_path)
 
             # find HTML <img> tags
             all_image_tag_files = get_image_tags(cell['source'])
@@ -89,10 +90,10 @@ class MarkdownPreprocessor(Preprocessor):
                 with open(final_image_fn, 'wb') as f:
                     f.write(image_data)
                 
-                image_dir = self.image_dir_name / new_image_name
-                image_dir = urllib.parse.quote(str(image_dir))
-                replace_str = f'![]({image_dir})'
+                image_relative_path = str(self.image_dir_name / new_image_name)
+                replace_str = f'![]({image_relative_path})'
                 cell['source'] = cell['source'].replace(entire_tag, replace_str)
+                resources['temp_images'].append(image_relative_path)
 
             # find images attached to markdown through dragging and dropping
             attachments = cell.get('attachments', {})
@@ -108,9 +109,10 @@ class MarkdownPreprocessor(Preprocessor):
                     with open(final_image_fn, 'wb') as f:
                         f.write(b64_bytes)
 
-                    image_dir = self.image_dir_name / new_image_name
-                    replace_str = urllib.parse.quote(str(image_dir))
-                    cell['source'] = cell['source'].replace(f'attachment:{image_name}', replace_str)
+                    image_relative_path = str(self.image_dir_name / new_image_name)
+                    cell['source'] = cell['source'].replace(f'attachment:{image_name}', image_relative_path)
+                    resources['temp_images'].append(image_relative_path)
+                    
         return cell, resources
 
 
