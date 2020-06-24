@@ -19,7 +19,7 @@ def convert(model, handler):
 
     arguments = ['to', 'use', 'centerdf', 'latex_command', 'max_rows', 'max_cols', 
                  'ss_width', 'ss_height', 'resize', 'chrome_path', 'limit', 
-                 'document_name', 'execute', 'save_notebook', 'output_dir', 'image_dir_name']
+                 'document_name', 'execute', 'save_notebook']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']
@@ -40,27 +40,30 @@ def convert(model, handler):
     kwargs['document_name'] = kwargs['document_name'] or None
     kwargs['execute'] = kwargs['execute'] == "True"
     kwargs['save_notebook'] = kwargs['save_notebook'] == "True"
-    kwargs['output_dir'] = kwargs['output_dir'] or None
-    kwargs['image_dir_name'] = kwargs['image_dir_name'] or None
+    kwargs['output_dir'] = None
+    kwargs['image_dir_name'] = None
     kwargs['web_app'] = True
    
     try:
-        c = Converter(**kwargs)
-        c.convert()
-        data = c.return_data
+        converter = Converter(**kwargs)
+        converter.convert()
     except Exception as e:
-        import sys, traceback
-        traceback.print_exc(file=sys.stdout)
-        data = {'app_status': 'fail', 
-                'error_data': str(e)}
-    else:
-        if 'pdf_data' in data or 'md_data' in data:
-            data['app_status'] = "success"
-        else:
-            data = {'app_status': 'fail', 
-                    'error_data': 'Error: \n' + str(data)}
+        import traceback
+        error_name = type(e).__name__
+        error = f'{error_name}: {str(e)}'
+        tb = traceback.format_exc()
+        msg = error + f'\n\n{tb}'
 
-    return data, kwargs
+        converter.success = False
+        converter.error_msg = msg
+    else:
+        if 'pdf_data' in converter.return_data or 'md_data' in converter.return_data:
+            converter.success = True
+        else:
+            converter.success = False
+            converter.error_msg = 'Error: \n' + str(converter.return_data)
+
+    return converter
 
 
 def read_static_file(name):
@@ -69,35 +72,30 @@ def read_static_file(name):
     return open(html_path).read()
 
 
-def get_html_fail(data):
-    error_data = data['error_data']
-    error_message = json.dumps(error_data)
-    html = read_static_file('fail.html')
-    return html.format(error_message=error_message)
-
-
-def get_js(filename, data, kwargs):
-    if kwargs['to'] == 'pdf' and not kwargs['save_notebook']:
+def get_js(converter):
+    fn = converter.document_name
+    data = converter.return_data
+    
+    if converter.to == ['pdf'] and not converter.save_notebook:
         app_type = 'pdf'
         s = base64.b64encode(data['pdf_data']).decode()
     else:
         app_type = 'zip'
         from zipfile import ZipFile, ZIP_DEFLATED
-        with ZipFile(f'{filename}.zip', "w", compression=ZIP_DEFLATED) as zf:
+        with ZipFile(f'{fn}.zip', "w", compression=ZIP_DEFLATED) as zf:
             if 'md_data' in data:
-                zf.writestr(f'{filename}.md', data['md_data'])
-                for fn, val in data['md_images'].items():
-                    zf.writestr(fn, val)
+                zf.writestr(f'{fn}.md', data['md_data'])
+                for image_fn, val in data['md_images'].items():
+                    zf.writestr(image_fn, val)
             if 'pdf_data' in data:
-                zf.writestr(f'{filename}.pdf', data['pdf_data'])
-            if kwargs['save_notebook']:
-                zf.writestr(f'{filename}.ipynb', data['notebook'])
+                zf.writestr(f'{fn}.pdf', data['pdf_data'])
+            if converter.save_notebook:
+                zf.writestr(f'{fn}.ipynb', data['notebook'])
 
-
-        with open(f'{filename}.zip', 'rb') as zf:
+        with open(f'{fn}.zip', 'rb') as zf:
             s = base64.b64encode(zf.read()).decode()
 
-    js = read_static_file('download.html').format(s=s, filename=filename, app_type=app_type)
+    js = read_static_file('download.html').format(s=s, filename=fn, app_type=app_type)
     return js
 
 
@@ -117,12 +115,12 @@ def bundle(handler, model):
         html = read_static_file('form.html')
         handler.write(html)
     elif app_status == 'waiting':
-        data, kwargs = convert(model, handler)        
-        if data['app_status'] == 'fail':
-            html = get_html_fail(data)
-            handler.write(html)
-            handler.finish()
-        else:
-            filename = Path(model['name']).stem
-            js = get_js(filename, data, kwargs)
+        converter = convert(model, handler)
+        if converter.success: 
+            js = get_js(converter)
             handler.write(js)
+        else:
+            html = read_static_file('fail.html').format(error_msg=converter.error_msg)
+            handler.write(html)
+    handler.finish()
+            
