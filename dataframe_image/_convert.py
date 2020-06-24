@@ -5,6 +5,7 @@ import shutil
 import re
 import io
 import shutil
+import urllib.parse
 
 import nbformat
 from nbconvert import MarkdownExporter, PDFExporter
@@ -79,6 +80,7 @@ class Converter:
                     'Possible values are "pdf" or "markdown"/"md"'
                     f' and not {kind}.'
                 )
+        to = list(to)
         if len(to) == 2:
             to = ['md', 'pdf']
         return to
@@ -137,6 +139,7 @@ class Converter:
     def get_resources(self):
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.document_name},
+                     'temp_images': [],
                      'output_files_dir': self.image_dir_name}
         return resources
 
@@ -167,15 +170,12 @@ class Converter:
         # save images in markdown to either a temporary directory(pdf or web app) 
         # or an actual directory(markdown)
         td_path = Path(self.td.name)
-        if to == 'pdf':
+        if to == 'pdf' or self.web_app:
             mp = MarkdownPreprocessor(output_dir=td_path, image_dir_name=td_path)
         elif to == 'md':
-            if self.web_app:
-                output_dir = td_path
-            else:
-                output_dir = self.final_nb_home / self.image_dir_name
-            mp = MarkdownPreprocessor(output_dir=output_dir,
-                                      image_dir_name=Path(self.image_dir_name))
+            output_dir = self.final_nb_home / self.image_dir_name
+            image_dir_name=Path(self.image_dir_name)
+            mp = MarkdownPreprocessor(output_dir=output_dir, image_dir_name=image_dir_name)
         preprocessors.append(mp)
 
         if self.execute:
@@ -220,7 +220,6 @@ class Converter:
 
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
                                                     self.DISPLAY_DATA_PRIORITY}})
-
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         if self.web_app:
             self.return_data['pdf_data'] = pdf_data
@@ -255,13 +254,17 @@ class Converter:
                                                         self.DISPLAY_DATA_PRIORITY}})
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
         # the base64 encoded binary files are saved in output_resources
+        for old in self.resources['temp_images']:
+            new = Path(self.image_dir_name) / Path(old).name
+            new = urllib.parse.quote(str(new))
+            md_data = md_data.replace(old, new)
+
         if self.web_app:
             self.return_data['md_data'] = md_data
             outputs = self.resources['outputs']
             for file in Path(self.td.name).iterdir():
                 with open(file, 'rb') as f:
                     fn = str(Path(self.image_dir_name) / file.name)
-                    print(fn)
                     outputs[fn] = f.read()
             self.return_data['md_images'] = outputs
         else:
