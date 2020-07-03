@@ -18,7 +18,7 @@ def convert(model, handler):
     from ._convert import Converter
 
     arguments = ['to', 'use', 'centerdf', 'latex_command', 'max_rows', 'max_cols', 
-                 'ss_width', 'ss_height', 'resize', 'chrome_path', 'limit', 
+                 'ss_width', 'ss_height', 'chrome_path', 'limit', 
                  'document_name', 'execute', 'save_notebook']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
@@ -34,7 +34,6 @@ def convert(model, handler):
     kwargs['max_cols'] = 10 if kwargs['max_cols'] == '' else int(kwargs['max_cols'])
     kwargs['ss_width'] = 1000 if kwargs['ss_width'] == '' else int(kwargs['ss_width'])
     kwargs['ss_height'] = 900 if kwargs['ss_height'] == '' else int(kwargs['ss_height'])
-    kwargs['resize'] = 1 if kwargs['resize'] == '' else float(kwargs['resize'])
     kwargs['chrome_path'] = kwargs['chrome_path'] or None
     kwargs['limit'] = None if kwargs['limit'] == '' else int(kwargs['limit'])
     kwargs['document_name'] = kwargs['document_name'] or None
