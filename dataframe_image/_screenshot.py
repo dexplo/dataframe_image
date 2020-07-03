@@ -1,10 +1,13 @@
 import platform
-from pathlib import Path
 import shutil
-from tempfile import TemporaryDirectory
-from subprocess import run
+import subprocess
 import base64
 import io
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+import numpy as np
+from matplotlib import image as mimage
 
 
 def get_system():
@@ -16,12 +19,10 @@ def get_system():
 
 
 def get_chrome_path(chrome_path=None):
+    system = get_system()
     if chrome_path:
         return chrome_path
 
-    system = get_system()
-    
-    # help finding path - https://github.com/SeleniumHQ/selenium/wiki/ChromeDriver#requirements
     if system == "darwin":
         paths = [
             "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -65,13 +66,11 @@ def get_chrome_path(chrome_path=None):
 
 class Screenshot:
 
-    def __init__(self, centerdf, max_rows, max_cols, ss_width, ss_height, resize, chrome_path):
-        self.centerdf = centerdf
+    def __init__(self, max_rows, max_cols, ss_width, ss_height, chrome_path):
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
         self.ss_height = ss_height
-        self.resize = resize
         self.chrome_path = get_chrome_path(chrome_path)
         self.css = self.get_css()
 
@@ -80,9 +79,6 @@ class Screenshot:
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
-
-        left, right = ('auto', 'auto') if self.centerdf else (0, 0)
-        css = css.format(left=left, right=right)
         return css
 
     def take_screenshot(self, html):
@@ -101,54 +97,36 @@ class Screenshot:
             f"--screenshot={str(temp_img)}",
             str(temp_html),
         ]
-        run(executable=self.chrome_path, args=args)
+        subprocess.run(executable=self.chrome_path, args=args)
         img_bytes = open(temp_img, 'rb').read()
         buffer = io.BytesIO(img_bytes)
         return buffer
 
     def finalize_image(self, buffer):
-        from PIL import Image, ImageChops
+        img = mimage.imread(buffer)
+        img2d = img.mean(axis=2) == 1
+        all_white = img2d.all(axis=0)
+        diff = np.diff(all_white)
+        left = diff.argmax()
+        right = diff[::-1].argmax()
+        max_crop = int(img.shape[1] * .15)
+        left = min(left, max_crop)
+        right = -min(right, max_crop)
 
-        img = Image.open(buffer)
-        img_gray = img.convert('L')
-        bg = Image.new('L', img.size, 255)
-        diff = ImageChops.difference(img_gray, bg)
-        diff = ImageChops.add(diff, diff, 2.0, -100)
-        bbox = diff.getbbox()
-        new_y_max = bbox[-1] + 10
-        x_max = img.size[0]
-        img = img.crop((0, 0, x_max, new_y_max))
+        all_white = img2d.all(axis=1)
+        diff = np.diff(all_white)
+        top = diff.argmax()
+        bottom = -diff[::-1].argmax()
+        new_img = img[top:bottom, left:right]
 
-        if self.resize != 1:
-            w, h = img.size
-            w, h = int(w // self.resize), int(h // self.resize)
-            img = img.resize((w, h), Image.ANTIALIAS)
-        return img
-
-    def get_base64_image_str(self, img):
-        buffered = io.BytesIO()
-        img.save(buffered, format="png", quality=95)
-        img_str = base64.b64encode(buffered.getvalue()).decode()
+        buffer = io.BytesIO()
+        mimage.imsave(buffer, new_img)
+        img_str = base64.b64encode(buffer.getvalue()).decode()
         return img_str
 
-    def get_html(self, data):
-        from pandas import DataFrame
-        from pandas.io.formats.style import Styler
-
-        if isinstance(data, DataFrame):
-            html = data.to_html(max_cols=self.max_cols, max_rows=self.max_rows, notebook=True)
-        elif isinstance(data, Styler):
-            html = data.set_table_attributes('dataframe_image="dataframe"').render()
-        elif isinstance(data, str):
-            html = data
-        else:
-            raise ValueError('Can only convert pandas DataFrames, Styler objects, and raw html')
-        return self.css + html 
-
     def run(self, html):
-        img_array = self.take_screenshot(html)
-        img = self.finalize_image(img_array)
-        img_str = self.get_base64_image_str(img)
+        buffer = self.take_screenshot(self.css + html)
+        img_str = self.finalize_image(buffer)
         return img_str
 
     def repr_png_wrapper(self):
@@ -158,8 +136,8 @@ class Screenshot:
         return _repr_png_
 
 
-def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, ss_height=900, 
-                  resize=1, chrome_path=None):
+def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, 
+                  ss_height=900, chrome_path=None):
     """
     Creates a function that can be assigned to `pd.DataFrame._repr_png_` 
     so that you can test out the appearances of the images in a notebook 
@@ -201,13 +179,9 @@ def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, ss_hei
         Height of the screen shot. The height of the image is automatically 
         cropped so that only the relevant parts of the DataFrame are shown.
 
-    resize : int or float, default 1
-        Relative resizing of image. Higher numbers produce smaller images. 
-        The Pillow `Image.resize` method is used for this.
-
     chrome_path : str, default None
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
     """
-    ss = Screenshot(centerdf, max_rows, max_cols, ss_width, ss_height, resize, chrome_path)
+    ss = Screenshot(centerdf, max_rows, max_cols, ss_width, ss_height, chrome_path)
     return ss.repr_png_wrapper()

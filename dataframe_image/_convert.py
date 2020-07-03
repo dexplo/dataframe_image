@@ -32,7 +32,7 @@ class Converter:
     ]
 
     def __init__(self, filename, to, use, centerdf, latex_command, max_rows, max_cols, ss_width, 
-                 ss_height, resize, chrome_path, limit, document_name, execute, save_notebook, 
+                 ss_height, chrome_path, limit, document_name, execute, save_notebook, 
                  output_dir, image_dir_name, web_app):
         self.filename = Path(filename)
         self.use = use
@@ -41,7 +41,6 @@ class Converter:
         self.max_cols = max_cols
         self.ss_width = ss_width
         self.ss_height = ss_height
-        self.resize = resize
         self.chrome_path = chrome_path
         self.limit = limit
         self.web_app = web_app
@@ -155,7 +154,7 @@ class Converter:
             "from dataframe_image._screenshot import make_repr_png;"
             f"_repr_png_ = make_repr_png(centerdf={self.centerdf}, max_rows={self.max_rows}, "
             f"max_cols={self.max_cols}, ss_width={self.ss_width}, "
-            f"ss_height={self.ss_height}, resize={self.resize}, "
+            f"ss_height={self.ss_height}, "
             f"chrome_path={self.chrome_path});"
             "pd.DataFrame._repr_png_ = _repr_png_;"
             "from pandas.io.formats.style import Styler;"
@@ -186,7 +185,7 @@ class Converter:
             preprocessors.append(pp)
         else:
             ss = Screenshot(centerdf=self.centerdf, max_rows=self.max_rows, max_cols=self.max_cols,
-                            ss_width=self.ss_width, ss_height=self.ss_height, resize=self.resize, 
+                            ss_width=self.ss_width, ss_height=self.ss_height, 
                             chrome_path=self.chrome_path)
             preprocessors.append(NoExecuteDataFramePreprocessor(ss=ss))
 
@@ -288,7 +287,7 @@ class Converter:
 
 
 def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None, 
-            max_rows=30, max_cols=10, ss_width=1000, ss_height=900, resize=1, 
+            max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
             chrome_path=None, limit=None, document_name=None, execute=True, 
             save_notebook=False, output_dir=None, image_dir_name=None):
     """
@@ -357,10 +356,6 @@ def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None,
         Height of the screen shot. The height of the image is automatically 
         cropped so that only the relevant parts of the DataFrame are shown.
 
-    resize : int or float, default 1
-        Relative resizing of image. Higher numbers produce smaller images. 
-        The Pillow `Image.resize` method is used for this.
-
     chrome_path : str, default `None`
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
@@ -404,6 +399,6 @@ def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None,
         is used for markdown images.
     """
     c = Converter(filename, to, use, centerdf, latex_command, max_rows, max_cols, 
-                  ss_width, ss_height, resize, chrome_path, limit, document_name, 
+                  ss_width, ss_height, chrome_path, limit, document_name, 
                   execute, save_notebook, output_dir, image_dir_name, False)
     c.convert()
