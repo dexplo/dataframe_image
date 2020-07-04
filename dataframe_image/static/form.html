@@ -96,16 +96,16 @@
                 <legend class="col-form-label col-sm-2 pt-0">Center DataFrames</legend>
                 <div class="col-sm-8">
                     <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="centerdf" 
-                            id="centerdf_yes" value="True" checked="checked">
-                    <label class="form-check-label" for="centerdf_yes">
+                    <input class="form-check-input" type="radio" name="center_df" 
+                            id="center_df_yes" value="True" checked="checked">
+                    <label class="form-check-label" for="center_df_yes">
                         Yes
                     </label>
                     </div>
                     <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="centerdf" 
-                            id="centerdf_no" value="False">
-                    <label class="form-check-label" for="centerdf_no">
+                    <input class="form-check-input" type="radio" name="center_df" 
+                            id="center_df_no" value="False">
+                    <label class="form-check-label" for="center_df_no">
                         No
                     </label>
                     </div>
@@ -249,6 +249,32 @@
                         <small class="form-text text-muted">Whether or not to save the notebook with DataFrames as images as a new 
                             ipynb file.</small>
                     </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="form-group">
+                    <div class="row">
+                      <legend class="col-form-label col-sm-2 pt-0">Table Conversion</legend>
+                      <div class="col-sm-8">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="table_conversion" 
+                                 id="table_chrome" value="chrome" checked="checked">
+                          <label class="form-check-label" for="table_chrome">
+                            Screenshot with Chrome
+                          </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="table_conversion" 
+                                 id="table_matplotlib" value="matplotlib">
+                          <label class="form-check-label" for="table_matplotlib">
+                            Matplotlib
+                          </label>
+                        </div>
+                        <small class="form-text text-muted">By default, DataFrames are converted to images 
+                            by taking screenshots with Chrome. If this does not work, select the matplotlib option,
+                            which will always work.
+                        </small>
+                      </div>
                     </div>
                 </fieldset>
                 
