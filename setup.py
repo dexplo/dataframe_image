@@ -32,12 +32,11 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
-    install_requires=['pandas>=0.24', 'nbconvert>=5', 'pillow', 'aiohttp'],
+    install_requires=['pandas>=0.24', 'nbconvert>=5', 'aiohttp', 
+                      'matplotlib>=3.1', 'beautifulsoup4'],
     include_package_data=True,
     entry_points = {
         'console_scripts': ['dataframe_image=dataframe_image._command_line:main'],
-        # 'nbconvert.exporters': ['dataframe_image_latex_pdf=dataframe_image._latex_pdf:DataFramePDFExporter',
-        #                         'dataframe_image_browser_pdf=dataframe_image._browser_pdf:BrowserExporter']
     },
     data_files=[("etc/jupyter/nbconfig/notebook.d", [
                 "jupyter-config/nbconfig/notebook.d/dataframe_image.json"])],
