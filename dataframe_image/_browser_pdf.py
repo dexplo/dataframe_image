@@ -80,6 +80,14 @@ def get_html_data(nb, resources, **kw):
     he = HTMLExporter()
     html_data, resources = he.from_notebook_node(nb, resources, **kw)
     html_data = html_data.replace('@media print', '@media xxprintxx')
+
+    # replace images with base64 strings
+    for key, value in resources['image_data_dict'].items():
+        ext = key.split('.')[-1]
+        value = base64.b64encode(value).decode()
+        data = f'data:image/{ext};base64, {value}'
+        html_data = html_data.replace(key, data)
+        
     return html_data, resources
 
 def write_html_data(td_path, html_data):
@@ -101,14 +109,10 @@ class BrowserExporter(Exporter):
 
     def from_notebook_node(self, nb, resources=None, **kw):
         p = launch_chrome()
-        nb_path = Path(resources['metadata']['path'])
-        td = TemporaryDirectory(dir=nb_path)
+        td = TemporaryDirectory()
         td_path = Path(td.name)
-        image_dir_name = Path('images')
-        output_dir = td_path / 'images'
-        output_dir.mkdir()
 
-        mp = MarkdownPreprocessor(output_dir=output_dir, image_dir_name=image_dir_name)
+        mp = MarkdownPreprocessor()
         nb, resources = mp.preprocess(nb, resources, **kw)
 
         html_data, resources = get_html_data(nb, resources, **kw)

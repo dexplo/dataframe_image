@@ -31,18 +31,19 @@ class Converter:
         "text/plain",
     ]
 
-    def __init__(self, filename, to, use, centerdf, latex_command, max_rows, max_cols, ss_width, 
+    def __init__(self, filename, to, use, center_df, latex_command, max_rows, max_cols, ss_width, 
                  ss_height, chrome_path, limit, document_name, execute, save_notebook, 
-                 output_dir, image_dir_name, web_app):
+                 output_dir, table_conversion, web_app):
         self.filename = Path(filename)
         self.use = use
-        self.centerdf = centerdf
+        self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
         self.ss_height = ss_height
         self.chrome_path = chrome_path
         self.limit = limit
+        self.table_conversion = table_conversion
         self.web_app = web_app
         self.td = TemporaryDirectory()
 
@@ -56,11 +57,12 @@ class Converter:
         self.execute = execute
         self.save_notebook = save_notebook
         self.final_nb_home = self.get_new_notebook_home(output_dir)
-        self.image_dir_name = self.get_image_dir_name(image_dir_name)
+        self.image_dir_name = self.nb_name + '_files'
         
         self.return_data = {}
         self.resources = self.get_resources()
         self.first = True
+        self.preprocess()
 
     def get_to(self, to):
         if isinstance(to, str):
@@ -129,30 +131,25 @@ class Converter:
         else:
             return Path(self.nb_home)
 
-    def get_image_dir_name(self, image_dir_name):
-        if image_dir_name:
-            return image_dir_name
-        else:
-            return self.nb_name + '_files'
-
     def get_resources(self):
+        if self.table_conversion == 'chrome':
+            converter = Screenshot(center_df=self.center_df, max_rows=self.max_rows, 
+                                    max_cols=self.max_cols, ss_width=self.ss_width, 
+                                    ss_height=self.ss_height, chrome_path=self.chrome_path).run
+        else:
+            from ._matplotlib_table import converter
+
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.document_name},
-                     'temp_images': [],
-                     'output_files_dir': self.image_dir_name}
+                     'converter': converter,
+                     'image_data_dict': {}}
         return resources
-
-    def create_images_dir(self):
-        images_home = self.final_nb_home / self.image_dir_name
-        if images_home.is_dir():
-            shutil.rmtree(images_home)
-        images_home.mkdir()
         
     def get_code_to_run(self):
         code = (
             "import pandas as pd;"
             "from dataframe_image._screenshot import make_repr_png;"
-            f"_repr_png_ = make_repr_png(centerdf={self.centerdf}, max_rows={self.max_rows}, "
+            f"_repr_png_ = make_repr_png(center_df={self.center_df}, max_rows={self.max_rows}, "
             f"max_cols={self.max_cols}, ss_width={self.ss_width}, "
             f"ss_height={self.ss_height}, "
             f"chrome_path={self.chrome_path});"
@@ -163,18 +160,10 @@ class Converter:
         )
         return code
 
-    def get_preprocessors(self, to):
+    def preprocess(self):
         preprocessors = []
-
-        # save images in markdown to either a temporary directory(pdf or web app) 
-        # or an actual directory(markdown)
         td_path = Path(self.td.name)
-        if to == 'pdf' or self.web_app:
-            mp = MarkdownPreprocessor(output_dir=td_path, image_dir_name=td_path)
-        elif to == 'md':
-            output_dir = self.final_nb_home / self.image_dir_name
-            image_dir_name=Path(self.image_dir_name)
-            mp = MarkdownPreprocessor(output_dir=output_dir, image_dir_name=image_dir_name)
+        mp = MarkdownPreprocessor()
         preprocessors.append(mp)
 
         if self.execute:
@@ -184,45 +173,22 @@ class Converter:
                                      extra_arguments=extra_arguments)
             preprocessors.append(pp)
         else:
-            ss = Screenshot(centerdf=self.centerdf, max_rows=self.max_rows, max_cols=self.max_cols,
-                            ss_width=self.ss_width, ss_height=self.ss_height, 
-                            chrome_path=self.chrome_path)
-            preprocessors.append(NoExecuteDataFramePreprocessor(ss=ss))
+            preprocessors.append(NoExecuteDataFramePreprocessor())
 
         preprocessors.append(ChangeOutputTypePreprocessor())
-        return preprocessors
 
-    def preprocess(self, preprocessors):
         for pp in preprocessors:
             self.nb, self.resources = pp.preprocess(self.nb, self.resources)
-    
-    def save_notebook_to_file(self):
-        # TODO: save image dir when pdf
-        if self.save_notebook:
-            name = self.nb_name + '_dataframe_image.ipynb'
-            file = self.final_nb_home / name
-            if self.web_app:
-                buffer = io.StringIO()
-                nbformat.write(self.nb, buffer)
-                buffer.seek(0)
-                self.return_data['notebook'] = buffer.read()
-            else:
-                nbformat.write(self.nb, file)
 
     def to_pdf(self):
         if self.use == 'browser':
             return self.to_chrome_pdf()
 
-        if self.first:
-            preprocessors = self.get_preprocessors('pdf')
-            self.preprocess(preprocessors)
-
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
                                                     self.DISPLAY_DATA_PRIORITY}})
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
-        if self.web_app:
-            self.return_data['pdf_data'] = pdf_data
-        else:
+        self.return_data['pdf_data'] = pdf_data
+        if not self.web_app:
             fn = self.final_nb_home / (self.document_name + '.pdf')
             with open(fn, mode='wb') as f:
                 f.write(pdf_data)
@@ -231,45 +197,40 @@ class Converter:
         nb = self.get_notebook()
         from ._browser_pdf import BrowserExporter
         be = BrowserExporter()
-        
-        self.resources.pop('output_files_dir')
 
         pdf_data, self.resources = be.from_notebook_node(nb, self.resources)
-        if self.web_app:
-            self.return_data['pdf_data'] = pdf_data
-        else:
+        self.return_data['pdf_data'] = pdf_data
+        if not self.web_app:
             fn = self.final_nb_home / (self.document_name + '.pdf')
             with open(fn, mode='wb') as f:
                 f.write(pdf_data)
 
     def to_md(self):
-        if self.first:
-            preprocessors = self.get_preprocessors('md')
-            if not self.web_app:
-                self.create_images_dir()
-            self.preprocess(preprocessors)
-
         me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
                                                         self.DISPLAY_DATA_PRIORITY}})
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
         # the base64 encoded binary files are saved in output_resources
-        for old in self.resources['temp_images']:
-            new = Path(self.image_dir_name) / Path(old).name
-            new = urllib.parse.quote(str(new))
-            md_data = md_data.replace(old, new)
+
+        image_data_dict = {**self.resources['outputs'], **self.resources['image_data_dict']}
+        for filename in image_data_dict:
+            new = str(Path(self.image_dir_name) / filename)
+            new = urllib.parse.quote(new)
+            md_data = md_data.replace(filename, new)
 
         if self.web_app:
             self.return_data['md_data'] = md_data
-            outputs = self.resources['outputs']
-            for file in Path(self.td.name).iterdir():
-                with open(file, 'rb') as f:
-                    fn = str(Path(self.image_dir_name) / file.name)
-                    outputs[fn] = f.read()
-            self.return_data['md_images'] = outputs
+            self.return_data['md_images'] = image_data_dict
+            self.return_data['image_dir_name'] = self.image_dir_name
         else:
-            for filename, data in self.resources['outputs'].items():
-                with open(self.final_nb_home / filename, 'wb') as f:
-                    f.write(data)
+            image_dir = self.final_nb_home / self.image_dir_name
+            if image_dir.is_dir():
+                shutil.rmtree(image_dir)
+            image_dir.mkdir()
+
+            for filename, value in image_data_dict:
+                with open(image_dir / filename, 'wb') as f:
+                    f.write(value)
+            
             fn = self.final_nb_home / (self.document_name + '.md')
             with open(fn, mode='w') as f:
                 f.write(md_data)
@@ -280,16 +241,28 @@ class Converter:
         del self.resources['outputs']
         del self.resources['output_extension']
 
+    def save_notebook_to_file(self):
+        # TODO: save image dir when pdf
+        if self.save_notebook:
+            name = self.nb_name + '_dataframe_image.ipynb'
+            file = self.final_nb_home / name
+            if self.web_app:
+                buffer = io.StringIO()
+                nbformat.write(self.nb, buffer)
+                self.return_data['notebook'] = buffer.getvalue()
+            else:
+                nbformat.write(self.nb, file)
+
     def convert(self):
         for kind in self.to:
             getattr(self, f'to_{kind}')()
         self.save_notebook_to_file()
 
 
-def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None, 
-            max_rows=30, max_cols=10, ss_width=1000, ss_height=900,
+def convert(filename, to='pdf', use='latex', center_df=True, latex_command=None, 
+            max_rows=30, max_cols=10, ss_width=1400, ss_height=900,
             chrome_path=None, limit=None, document_name=None, execute=True, 
-            save_notebook=False, output_dir=None, image_dir_name=None):
+            save_notebook=False, output_dir=None, table_conversion='chrome'):
     """
     Convert a Jupyter Notebook to pdf or markdown using images for pandas
     DataFrames instead of their normal latex/markdown representation. 
@@ -300,8 +273,7 @@ def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None,
     notebook resides and use the same name but with appropriate extension.
 
     When converting to markdown, a folder with the title 
-    {notebook_name}_files will be created to hold all of the images. Choose 
-    the title of this folder with `image_dir_name`.
+    {notebook_name}_files will be created to hold all of the images.
 
     Caution, this is computationally expensive and takes a long time to 
     complete with many DataFrames. You may wish to begin by using the 
@@ -322,7 +294,7 @@ def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None,
         you desire a formal report. Use 'browser' to get output similar to
         that when printing to pdf within a chrome web browser.
 
-    centerdf : bool, default True
+    center_df : bool, default True
         Choose whether to center the DataFrames or not in the image. By 
         default, this is True, though in Jupyter Notebooks, they are 
         left-aligned. Use False to make left-aligned.
@@ -346,7 +318,7 @@ def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None,
         Maximum number of columns to output from DataFrame. This is forwarded 
         to the `to_html` DataFrame method.
 
-    ss_width : int, default 1000
+    ss_width : int, default 1400
         Width of the screenshot in pixels. This may need to be increased for 
         larger monitors. If this value is too small, then smaller DataFrames will 
         appear larger. It's best to keep this value at least as large as the 
@@ -377,28 +349,22 @@ def convert(filename, to='pdf', use='latex', centerdf=True, latex_command=None,
         Whether or not to save the notebook with pandas DataFrames as images as 
         a new notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'
 
-    output_dir: str, default `None`
+    output_dir : str, default `None`
         Directory where new pdf and/or markdown files will be saved. By default, 
         this will be the same directory as the notebook. The directory 
         for images will also be created in here. If `save_notebook` is set to
         True, it will be saved here as well.
 
         Provide a relative or absolute path.
-
-    image_dir_name=str, default `None`
-        The directory name to save the DataFrame images and any other images
-        produced within the markdown or notebook code cells (i.e. plots). 
-        
-        Only created when converting to markdown. If created, will be saved
-        within `output_dir`.
-        
-        By default, the directory name will be '{notebook_name}_files'.
-        The images themselves will be given names such as output_1_0.png where 
-        the first number represents the cell's execution number and the second 
-        is the image number for that particular cell. A similar naming convention
-        is used for markdown images.
+    
+    table_conversion : 'chrome' or 'matplotlib'
+        DataFrames (and other tables) will be inserted in your document
+        as an image using a screenshot from Chrome. If this doesn't
+        work, use matplotlib, which will always work and produce
+        similar results.
     """
-    c = Converter(filename, to, use, centerdf, latex_command, max_rows, max_cols, 
+    c = Converter(filename, to, use, center_df, latex_command, max_rows, max_cols, 
                   ss_width, ss_height, chrome_path, limit, document_name, 
-                  execute, save_notebook, output_dir, image_dir_name, False)
+                  execute, save_notebook, output_dir, table_conversion, 
+                  web_app=False)
     c.convert()

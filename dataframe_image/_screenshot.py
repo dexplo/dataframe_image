@@ -66,7 +66,8 @@ def get_chrome_path(chrome_path=None):
 
 class Screenshot:
 
-    def __init__(self, max_rows, max_cols, ss_width, ss_height, chrome_path):
+    def __init__(self, center_df, max_rows, max_cols, ss_width, ss_height, chrome_path):
+        self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
@@ -79,6 +80,7 @@ class Screenshot:
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
+        css = css.format(left='auto', right='auto')
         return css
 
     def take_screenshot(self, html):
@@ -136,7 +138,7 @@ class Screenshot:
         return _repr_png_
 
 
-def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000, 
+def make_repr_png(center_df=True, max_rows=30, max_cols=10, ss_width=1400, 
                   ss_height=900, chrome_path=None):
     """
     Creates a function that can be assigned to `pd.DataFrame._repr_png_` 
@@ -156,7 +158,7 @@ def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000,
 
     Parameters
     ----------
-    centerdf : bool, default True
+    center_df : bool, default True
         Choose whether to center the DataFrames or not in the image. By 
         default, this is True, though in Jupyter Notebooks, they are 
         left-aligned. Use False to make left-aligned.
@@ -169,7 +171,7 @@ def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000,
         Maximum number of columns to output from DataFrame. This is forwarded 
         to the `to_html` DataFrame method.
 
-    ss_width : int, default 1000
+    ss_width : int, default 1400
         Width of the screenshot. This may need to be increased for larger 
         monitors. If this value is too small, then smaller DataFrames will 
         appear larger. It's best to keep this value at least as large as the 
@@ -183,5 +185,5 @@ def make_repr_png(centerdf=True, max_rows=30, max_cols=10, ss_width=1000,
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
     """
-    ss = Screenshot(centerdf, max_rows, max_cols, ss_width, ss_height, chrome_path)
+    ss = Screenshot(center_df, max_rows, max_cols, ss_width, ss_height, chrome_path)
     return ss.repr_png_wrapper()

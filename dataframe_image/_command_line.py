@@ -64,10 +64,6 @@ Optional Keyword Arguments
     cropped so that only the relevant parts of the DataFrame are shown.
     (default: 900)
 
---resize
-    Relative resizing of image. Higher numbers produce smaller images. 
-    The Pillow `Image.resize` method is used for this. (default: 1)
-
 --chrome-path
     Path to your machine's chrome executable. By default, it is 
     automatically found. Use this when chrome is not automatically found.
@@ -99,16 +95,12 @@ Optional Keyword Arguments
     Provide a relative path to the current working directory 
     or an absolute path.
 
---image-dir
-    The directory name to store the DataFrame images and any other images
-    produced by the notebook code cells (i.e. plots). This image directory
-    is only produced when creating a markdown document. It will be created
-    within output_dir.
-
-    By default, the name will be '{notebook_name}_files'.
-    The images themselves will be given names such as output_1_0.png where 
-    the first number represents the cell's execution number and the second 
-    is the image number for that particular cell.
+--table-conversion
+    DataFrames (and other tables) will be inserted in your document
+    as an image using a screenshot from Chrome. If this doesn't
+    work, use matplotlib, which will always work and produce
+    similar results.
+    Valid values are 'chrome' or 'matplotlib' (default: 'chrome')
 
 
 Examples
@@ -132,14 +124,13 @@ parser.add_argument('--max-rows', type=int, default=30)
 parser.add_argument('--max-cols', type=int, default=10)
 parser.add_argument('--ss-width', type=int, default=1000)
 parser.add_argument('--ss-height', type=int, default=900)
-parser.add_argument('--resize', type=float, default=1)
 parser.add_argument('--chrome-path')
 parser.add_argument('--limit', type=int)
 parser.add_argument('--document-name')
 parser.add_argument('--execute', type=bool, default=True)
 parser.add_argument('--save-notebook', type=bool, default=False)
 parser.add_argument('--output-dir')
-parser.add_argument('--image-dir-name')
+parser.add_argument('--table-conversion', type=str, choices=['chrome', 'matplotlib'], default='chrome')
 
 def main():
     if len(sys.argv) == 1 or '-h' in sys.argv or '--help' in sys.argv:

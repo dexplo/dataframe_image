@@ -35,7 +35,7 @@ class DataFramePDFExporter(PDFExporter):
     # must give specific order of preprocessors
     # custom preprocessors are run after default_preprocessors
     preprocessors = [
-        MarkdownPreprocessor(output_dir=td_path, image_dir_name=td_path),
+        MarkdownPreprocessor(),
         NoExecuteDataFramePreprocessor,
         ChangeOutputTypePreprocessor,
         'nbconvert.preprocessors.TagRemovePreprocessor',

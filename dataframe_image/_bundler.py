@@ -1,6 +1,6 @@
-from pathlib import Path
 import json
 import base64
+from pathlib import Path
 
 from tornado import gen
 
@@ -17,9 +17,9 @@ def _jupyter_bundlerextension_paths():
 def convert(model, handler):
     from ._convert import Converter
 
-    arguments = ['to', 'use', 'centerdf', 'latex_command', 'max_rows', 'max_cols', 
+    arguments = ['to', 'use', 'center_df', 'latex_command', 'max_rows', 'max_cols', 
                  'ss_width', 'ss_height', 'chrome_path', 'limit', 
-                 'document_name', 'execute', 'save_notebook']
+                 'document_name', 'execute', 'save_notebook', 'table_conversion']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']
@@ -28,11 +28,11 @@ def convert(model, handler):
     if kwargs['to'] == 'both':
         kwargs['to'] = ['md', 'pdf']
     kwargs['use'] == kwargs['use'] or None
-    kwargs['centerdf'] = kwargs['centerdf'] == "True"
+    kwargs['center_df'] = kwargs['center_df'] == "True"
     kwargs['latex_command'] = [tag.strip() for tag in kwargs['latex_command'].split()]
     kwargs['max_rows'] = 30 if kwargs['max_rows'] == '' else int(kwargs['max_rows'])
     kwargs['max_cols'] = 10 if kwargs['max_cols'] == '' else int(kwargs['max_cols'])
-    kwargs['ss_width'] = 1000 if kwargs['ss_width'] == '' else int(kwargs['ss_width'])
+    kwargs['ss_width'] = 1400 if kwargs['ss_width'] == '' else int(kwargs['ss_width'])
     kwargs['ss_height'] = 900 if kwargs['ss_height'] == '' else int(kwargs['ss_height'])
     kwargs['chrome_path'] = kwargs['chrome_path'] or None
     kwargs['limit'] = None if kwargs['limit'] == '' else int(kwargs['limit'])
@@ -40,7 +40,6 @@ def convert(model, handler):
     kwargs['execute'] = kwargs['execute'] == "True"
     kwargs['save_notebook'] = kwargs['save_notebook'] == "True"
     kwargs['output_dir'] = None
-    kwargs['image_dir_name'] = None
     kwargs['web_app'] = True
    
     try:
@@ -84,8 +83,10 @@ def get_js(converter):
         with ZipFile(f'{fn}.zip', "w", compression=ZIP_DEFLATED) as zf:
             if 'md_data' in data:
                 zf.writestr(f'{fn}.md', data['md_data'])
+                image_dir_name = Path(data['image_dir_name'])
                 for image_fn, val in data['md_images'].items():
-                    zf.writestr(image_fn, val)
+                    image_final_fn = str(image_dir_name / image_fn)
+                    zf.writestr(image_final_fn, val)
             if 'pdf_data' in data:
                 zf.writestr(f'{fn}.pdf', data['pdf_data'])
             if converter.save_notebook:
