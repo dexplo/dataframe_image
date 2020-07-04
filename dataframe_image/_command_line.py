@@ -77,9 +77,7 @@ Optional Keyword Arguments
     If not provided, the name of the notebook will be used.
 
 --execute
-    Whether or not to execute the notebook first. When False, all HTML 
-    tables in the output will be converted to images regardless if they 
-    are dataframes or not. (default: True)
+    Whether or not to execute the notebook first. (default: False)
 
 --save-notebook
     Whether or not to save the notebook with DataFrames as images as a new 
@@ -127,7 +125,7 @@ parser.add_argument('--ss-height', type=int, default=900)
 parser.add_argument('--chrome-path')
 parser.add_argument('--limit', type=int)
 parser.add_argument('--document-name')
-parser.add_argument('--execute', type=bool, default=True)
+parser.add_argument('--execute', type=bool, default=False)
 parser.add_argument('--save-notebook', type=bool, default=False)
 parser.add_argument('--output-dir')
 parser.add_argument('--table-conversion', type=str, choices=['chrome', 'matplotlib'], default='chrome')

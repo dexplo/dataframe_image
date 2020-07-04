@@ -62,7 +62,6 @@ class Converter:
         self.return_data = {}
         self.resources = self.get_resources()
         self.first = True
-        self.preprocess()
 
     def get_to(self, to):
         if isinstance(to, str):
@@ -162,7 +161,6 @@ class Converter:
 
     def preprocess(self):
         preprocessors = []
-        td_path = Path(self.td.name)
         mp = MarkdownPreprocessor()
         preprocessors.append(mp)
 
@@ -180,32 +178,8 @@ class Converter:
         for pp in preprocessors:
             self.nb, self.resources = pp.preprocess(self.nb, self.resources)
 
-    def to_pdf(self):
-        if self.use == 'browser':
-            return self.to_chrome_pdf()
-
-        pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
-                                                    self.DISPLAY_DATA_PRIORITY}})
-        pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
-        self.return_data['pdf_data'] = pdf_data
-        if not self.web_app:
-            fn = self.final_nb_home / (self.document_name + '.pdf')
-            with open(fn, mode='wb') as f:
-                f.write(pdf_data)
-
-    def to_chrome_pdf(self):
-        nb = self.get_notebook()
-        from ._browser_pdf import BrowserExporter
-        be = BrowserExporter()
-
-        pdf_data, self.resources = be.from_notebook_node(nb, self.resources)
-        self.return_data['pdf_data'] = pdf_data
-        if not self.web_app:
-            fn = self.final_nb_home / (self.document_name + '.pdf')
-            with open(fn, mode='wb') as f:
-                f.write(pdf_data)
-
     def to_md(self):
+        self.preprocess()
         me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
                                                         self.DISPLAY_DATA_PRIORITY}})
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
@@ -236,6 +210,34 @@ class Converter:
                 f.write(md_data)
         self.reset_resources()
 
+    def to_pdf(self):
+        if self.use == 'browser':
+            return self.to_chrome_pdf()
+
+        self.resources['temp_dir'] = Path(self.td.name)
+        self.preprocess()
+        pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
+                                                    self.DISPLAY_DATA_PRIORITY}})
+        pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
+        self.return_data['pdf_data'] = pdf_data
+        if not self.web_app:
+            fn = self.final_nb_home / (self.document_name + '.pdf')
+            with open(fn, mode='wb') as f:
+                f.write(pdf_data)
+
+    def to_chrome_pdf(self):
+        self.preprocess()
+
+        from ._browser_pdf import BrowserExporter
+        be = BrowserExporter()
+
+        pdf_data, self.resources = be.from_notebook_node(self.nb, self.resources)
+        self.return_data['pdf_data'] = pdf_data
+        if not self.web_app:
+            fn = self.final_nb_home / (self.document_name + '.pdf')
+            with open(fn, mode='wb') as f:
+                f.write(pdf_data)
+
     def reset_resources(self):
         self.first = False
         del self.resources['outputs']
@@ -261,7 +263,7 @@ class Converter:
 
 def convert(filename, to='pdf', use='latex', center_df=True, latex_command=None, 
             max_rows=30, max_cols=10, ss_width=1400, ss_height=900,
-            chrome_path=None, limit=None, document_name=None, execute=True, 
+            chrome_path=None, limit=None, document_name=None, execute=False, 
             save_notebook=False, output_dir=None, table_conversion='chrome'):
     """
     Convert a Jupyter Notebook to pdf or markdown using images for pandas
@@ -340,10 +342,8 @@ def convert(filename, to='pdf', use='latex', center_df=True, latex_command=None,
         Name of newly created pdf/markdown document without the extension. If not
         provided, the current name of the notebook will be used.
 
-    execute : bool, default `True`
-        Whether or not to execute the notebook first. When `False`, all HTML 
-        tables in the output will be converted to images regardless if they 
-        are dataframes or not.
+    execute : bool, default `False`
+        Whether or not to execute the notebook first.
 
     save_notebook : bool, default `False`
         Whether or not to save the notebook with pandas DataFrames as images as 

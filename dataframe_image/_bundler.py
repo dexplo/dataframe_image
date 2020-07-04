@@ -18,8 +18,8 @@ def convert(model, handler):
     from ._convert import Converter
 
     arguments = ['to', 'use', 'center_df', 'latex_command', 'max_rows', 'max_cols', 
-                 'ss_width', 'ss_height', 'chrome_path', 'limit', 
-                 'document_name', 'execute', 'save_notebook', 'table_conversion']
+                 'ss_width', 'ss_height', 'chrome_path', 'limit', 'document_name', 
+                 'execute', 'save_notebook', 'table_conversion']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']
