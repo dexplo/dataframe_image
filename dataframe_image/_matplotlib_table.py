@@ -13,19 +13,20 @@ from matplotlib.backends.backend_agg import RendererAgg
 
 class TableMaker:
     
-    def __init__(self, html):
-        self.original_fontsize = 22
-        self.fontsize = self.original_fontsize
-        self.figwidth = 20
+    def __init__(self, fontsize=14, encode_base64=True, limit_crop=True, for_document=True):
+        self.original_fontsize = fontsize
+        self.encode_base64 = encode_base64
+        self.limit_crop = limit_crop
+        self.for_document = for_document
+        self.figwidth = .1
+        self.figheight = .1
+        if self.for_document:
+            self.figwidth = 20
+            self.figheight = 4
         self.dpi = 100
-        self.text_fig = Figure(dpi=self.dpi)
-        self.renderer = RendererAgg(20, 4, self.dpi)
-        self.rows, self.num_header_rows = self.parse_html(html)
-        self.col_widths = self.calculate_col_widths()
-        self.row_heights = self.get_row_heights()
-        self.fig = self.create_figure()
         
     def parse_html(self, html):
+        html = html.replace('<br>', '\n')
         rows, num_header_rows = self.parse_into_rows(html)
         num_cols = sum(val[-1] for val in rows[0])
         new_rows = []
@@ -130,7 +131,7 @@ class TableMaker:
         max_col_widths = all_text_widths.max(axis=0)        
         mult = 1
         total_width = self.figwidth * self.dpi
-        if sum(max_col_widths) >= total_width:
+        if self.for_document and sum(max_col_widths) >= total_width:
             while mult > .5:
                 mult *= .9
                 for idx in np.argsort(-max_col_widths):
@@ -232,10 +233,17 @@ class TableMaker:
         bbox = Bbox([[start - .1, y * h], [end + .1, h]])
         buffer = io.BytesIO()
         self.fig.savefig(buffer, bbox_inches=bbox)
-        return base64.b64encode(buffer.getvalue()).decode()
+        img_str = buffer.getvalue()
+        if self.encode_base64:
+            img_str = base64.b64encode(img_str).decode()
+        return img_str
 
-
-def converter(html):
-    html = html.replace('<br>', '\n')
-    tm = TableMaker(html)
-    return tm.print_table()
+    def run(self, html):
+        self.fontsize = self.original_fontsize
+        self.text_fig = Figure(dpi=self.dpi)
+        self.renderer = RendererAgg(self.figwidth, self.figheight, self.dpi)
+        self.rows, self.num_header_rows = self.parse_html(html)
+        self.col_widths = self.calculate_col_widths()
+        self.row_heights = self.get_row_heights()
+        self.fig = self.create_figure()
+        return self.print_table()

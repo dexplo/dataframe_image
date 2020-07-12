@@ -10,12 +10,10 @@ import urllib.parse
 import nbformat
 from nbconvert import MarkdownExporter, PDFExporter
 from nbconvert.preprocessors import ExecutePreprocessor
-from traitlets.config import Config
 
 from ._preprocessors import (MarkdownPreprocessor, 
                              NoExecuteDataFramePreprocessor, 
                              ChangeOutputTypePreprocessor)
-from ._screenshot import Screenshot
 
 
 class Converter:
@@ -31,8 +29,8 @@ class Converter:
         "text/plain",
     ]
 
-    def __init__(self, filename, to, use, center_df, latex_command, max_rows, max_cols, ss_width, 
-                 ss_height, chrome_path, limit, document_name, execute, save_notebook, 
+    def __init__(self, filename, to, use, center_df, latex_command, max_rows, max_cols, 
+                 ss_width, ss_height, chrome_path, limit, document_name, execute, save_notebook, 
                  output_dir, table_conversion, web_app):
         self.filename = Path(filename)
         self.use = use
@@ -132,11 +130,13 @@ class Converter:
 
     def get_resources(self):
         if self.table_conversion == 'chrome':
+            from ._screenshot import Screenshot
             converter = Screenshot(center_df=self.center_df, max_rows=self.max_rows, 
                                     max_cols=self.max_cols, ss_width=self.ss_width, 
                                     ss_height=self.ss_height, chrome_path=self.chrome_path).run
         else:
-            from ._matplotlib_table import converter
+            from ._matplotlib_table import TableMaker
+            converter = TableMaker(fontsize=22).run
 
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.document_name},

@@ -66,69 +66,106 @@ def get_chrome_path(chrome_path=None):
 
 class Screenshot:
 
-    def __init__(self, center_df, max_rows, max_cols, ss_width, ss_height, chrome_path):
+    def __init__(self, center_df=True, max_rows=None, max_cols=None, ss_width=None, 
+                 ss_height=None, chrome_path=None, fontsize=18, encode_base64=True, 
+                 limit_crop=True):
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.ss_width = ss_width
         self.ss_height = ss_height
         self.chrome_path = get_chrome_path(chrome_path)
-        self.css = self.get_css()
+        self.css = self.get_css(fontsize)
+        self.encode_base64 = encode_base64
+        self.limit_crop = limit_crop
 
-    def get_css(self):
+    def get_css(self, fontsize):
         mod_dir = Path(__file__).resolve().parent
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
-        css = css.format(left='auto', right='auto')
+        css = css.format(left='auto', right='auto', fontsize=fontsize)
         return css
 
-    def take_screenshot(self, html):
+    def take_screenshot(self):
         temp_dir = TemporaryDirectory()
         temp_html = Path(temp_dir.name) / "temp.html"
         temp_img = Path(temp_dir.name) / "temp.png"
-        open(temp_html, "w").write(html)
-        open(temp_img, "wb")            
+        with open(temp_html, "w") as f:
+            f.write(self.html)
 
-        args = [
-            "--enable-logging",
-            "--disable-gpu",
-            "--headless",
-            f"--window-size={self.ss_width},{self.ss_height}",
-            "--hide-scrollbars",
-            f"--screenshot={str(temp_img)}",
-            str(temp_html),
-        ]
-        subprocess.run(executable=self.chrome_path, args=args)
-        img_bytes = open(temp_img, 'rb').read()
+        with open(temp_img, "wb") as f:        
+            args = [
+                "--enable-logging",
+                "--disable-gpu",
+                "--headless"
+                ]
+
+            if self.ss_width and self.ss_height:
+                args.append(f"--window-size={self.ss_width},{self.ss_height}")
+
+            args += [
+                "--hide-scrollbars",
+                f"--screenshot={str(temp_img)}",
+                str(temp_html)
+                ]
+
+            subprocess.run(executable=self.chrome_path, args=args)
+
+        with open(temp_img, 'rb') as f:
+            img_bytes = f.read()
+
         buffer = io.BytesIO(img_bytes)
-        return buffer
-
-    def finalize_image(self, buffer):
         img = mimage.imread(buffer)
+        return self.possibly_enlarge(img)
+
+    def possibly_enlarge(self, img):
+        enlarge = False
         img2d = img.mean(axis=2) == 1
-        all_white = img2d.all(axis=0)
-        diff = np.diff(all_white)
-        left = diff.argmax()
-        right = diff[::-1].argmax()
-        max_crop = int(img.shape[1] * .15)
-        left = min(left, max_crop)
-        right = -min(right, max_crop)
 
-        all_white = img2d.all(axis=1)
-        diff = np.diff(all_white)
-        top = diff.argmax()
-        bottom = -diff[::-1].argmax()
+        all_white_vert = img2d.all(axis=0)
+        # must be all white for 30 pixels in a row to trigger stop
+        if all_white_vert[-30:].sum() != 30:
+            self.ss_width = int(self.ss_width * 1.5)
+            enlarge = True
+
+        all_white_horiz = img2d.all(axis=1)
+        if all_white_horiz[-30:].sum() != 30:
+            self.ss_height = int(self.ss_height * 1.5)
+            enlarge = True
+            
+        if enlarge:
+            return self.take_screenshot()
+
+        return self.crop(img, all_white_vert, all_white_horiz)
+
+    def crop(self, img, all_white_vert, all_white_horiz):
+        diff_vert = np.diff(all_white_vert)
+        left = diff_vert.argmax()
+        right = -diff_vert[::-1].argmax()
+        if self.limit_crop:
+            max_crop = int(img.shape[1] * .15)
+            left = min(left, max_crop)
+            right = max(right, -max_crop)
+
+        diff_horiz = np.diff(all_white_horiz)
+        top = diff_horiz.argmax()
+        bottom = -diff_horiz[::-1].argmax()
         new_img = img[top:bottom, left:right]
+        return new_img
 
+    def finalize_image(self, img):        
         buffer = io.BytesIO()
-        mimage.imsave(buffer, new_img)
-        img_str = base64.b64encode(buffer.getvalue()).decode()
+        mimage.imsave(buffer, img)
+        img_str = buffer.getvalue()
+        if self.encode_base64:
+            img_str = base64.b64encode(img_str).decode()
         return img_str
 
     def run(self, html):
-        buffer = self.take_screenshot(self.css + html)
-        img_str = self.finalize_image(buffer)
+        self.html = self.css + html
+        img = self.take_screenshot()
+        img_str = self.finalize_image(img)
         return img_str
 
     def repr_png_wrapper(self):
