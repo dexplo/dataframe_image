@@ -10,7 +10,7 @@ with open('README.md', 'r') as fh:
     long_description = fh.read()
 
 pat = r'!\[png\]\('
-repl = r'![png](https://raw.githubusercontent.com/dexplo/dataframe_image/master/'
+repl = r'![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/'
 
 long_description = re.sub(pat, repl, long_description)
 
@@ -32,12 +32,11 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
     ],
+    python_requires='>=3.6',
     install_requires=['pandas>=0.24', 'nbconvert>=5', 'aiohttp', 
                       'matplotlib>=3.1', 'beautifulsoup4'],
     include_package_data=True,
-    entry_points = {
-        'console_scripts': ['dataframe_image=dataframe_image._command_line:main'],
-    },
+    entry_points = {'console_scripts': ['dataframe_image=dataframe_image._command_line:main']},
     data_files=[("etc/jupyter/nbconfig/notebook.d", [
                 "jupyter-config/nbconfig/notebook.d/dataframe_image.json"])],
 )
