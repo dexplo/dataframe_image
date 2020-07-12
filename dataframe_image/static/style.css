@@ -7,7 +7,7 @@ table {{
     border-collapse: collapse;
     border-spacing:0;
     color:black;
-    font-size:18px;
+    font-size:{fontsize}px;
     table-layout:fixed;
     }}
 thead {{
