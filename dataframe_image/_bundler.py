@@ -9,7 +9,7 @@ def _jupyter_bundlerextension_paths():
     return [{
         "name": "dataframe_image_bundler",
         "module_name": "dataframe_image._bundler",
-        "label" : "DataFrame as Image",
+        "label" : "DataFrame as Image (PDF or MD)",
         "group" : "download",
     }]
 
