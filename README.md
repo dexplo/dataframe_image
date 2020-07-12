@@ -52,20 +52,22 @@ In a separate Python script, import the `dataframe_image` package and pass the f
                 to='pdf',
                 use='latex',
                 latex_command=None,
+                center_df=True,
                 max_rows=30,
                 max_cols=10,
-                ss_width=1000,
+                ss_width=1400,
                 ss_height=900,
                 chrome_path=None,
                 limit=None,
                 document_name=None,
-                execute=True,
+                execute=False,
                 save_notebook=False,
-                output_dir=None
+                output_dir=None,
+                table_conversion='chrome'
                 )
 ```
 
-By default, the new file(s) will be saved in the same directory where the notebook resides. The notebook will also be executed (by default) before being exported, so do not run this command within the same notebook that is being converted, or else you will get stuck in an infinite loop.
+By default, the new file(s) will be saved in the same directory where the notebook resides. Do not run this command within the same notebook that is being converted.
 
 ### From the Command Line
 
@@ -83,13 +85,9 @@ You must have Google Chrome (or Brave) installed in order for dataframe_image to
 
 If do not have Chrome installed or cannot get it to work properly, you can alternatively use matplotlib to convert the DataFrames to images. Select this option by setting the `table_conversion` parameter to `'matplotlib'`.
 
-## Publish to Medium
-
-You can publish your notebooks as Medium blog posts by installing the [`jupyter_to_medium`](https://github.com/dexplot/jupyter_to_medium) package.
-
 ## Just Export DataFrames
 
-You can export DataFrames directly as images from the DataFrame object itself. Import both pandas and dataframe_image and you will now have access to the `dfi` special accessor. Use the `export` method to save the DataFrame as an image in a specific location.
+You can export DataFrames directly as images from the DataFrame object itself. Import both pandas and dataframe_image and you will have access to the `dfi` special accessor. Use the `export` method to save the DataFrame as an image in a specific location.
 
 ```python
 >>> import pandas as pd
@@ -101,6 +99,10 @@ You can export DataFrames directly as images from the DataFrame object itself. I
 ## Extras
 
 This package also embeds any images added to markdown cells as **attachments** (done by dragging and dropping the image) as well as those referenced by HTML `<img>` tags. It is also able to properly save the pdf/markdown and its images in a directory outside of where it is located.
+
+### Publish to Medium
+
+You can publish your notebooks as Medium blog posts by installing the [`jupyter_to_medium`](https://github.com/dexplot/jupyter_to_medium) package.
 
 ## Dependencies
 
