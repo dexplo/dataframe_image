@@ -3,12 +3,12 @@
 [![](https://img.shields.io/pypi/v/dataframe_image)](https://pypi.org/project/dataframe_image)
 [![PyPI - License](https://img.shields.io/pypi/l/dataframe_image)](LICENSE)
 
-A package to convert Jupyter Notebooks to either PDF or Markdown documents with the following extra functionality not provided directly by nbconvert:
+A package to convert Jupyter Notebooks to PDF and/or Markdown documents with the following extra functionality not provided directly by nbconvert:
 
 * Embedding pandas DataFrames into the final PDF or Markdown as they appear in the notebook
-* Downloading the notebook as a PDF appearing exactly as it does in your browser (using the print as PDF feature from chrome)
+* Downloading the notebook as a PDF appearing exactly as it does in a Chrome browser (using the print as PDF feature)
 * Extracting all images in markdown (inline, reference, attachments, and `<img>` tags)
-* Allowing the new document to be saved anywhere in your filesystem and correctly linking to resources
+* Allowing the new document to be saved anywhere in your filesystem and correctly linking the resources
 
 ## Motivation
 
@@ -30,21 +30,21 @@ There are three different ways to use dataframe_image:
 * As a Python library
 * From the command line
 
-To get access to all of the available options, use it as a library or from the command line. Using it within the notebook allows you to download the notebook as PDF via latex or via the browser.
-
 ### Within a Jupyter Notebook
 
-Upon installation, two new options will appear in your Jupyter Notebook under `File -> Download as -> PDF - DataFrame as Image (via latex)` and `PDF - DataFrame as Image (via browser)`. Each option produces a distinctly different output. Using latex, a formal report with numbered sections will be returned. Using the browser, you'll get a near replica of how the notebook appears in your browser.
+Upon installation, the option `DataFrame as Image (PDF or MD)` will appear in the menu `File -> Download as`. Clicking this option will open up a new browser tab with a short form that needs to be completed.
 
-The conversion process is time consuming as screenshots of each DataFrame will be taken and then embedded into a pdf. A new blank tab will open during the processing. It will appear as nothing is happening. When processing is complete, the document will be downloaded. Converting via browser is significantly faster as it uses chromes built-in print-to-pdf capabilities.
+![png](docs/images/form.png)
 
-When using this option, the notebook will NOT be executed. Make sure to execute the notebook first.
+If converting to PDF, you must choose to convert via LaTeX or Chrome Browser. Conversion via LaTeX requires you to have LaTeX installed on your machine. Instructions for doing so can be found at the bottom of this page. When converting via LaTeX, the Chrome browser is still used to take screenshots of each DataFrame in your notebook and is a somewhat time consuming processs.
 
-![png](docs/images/nb_download.png)
+Conversion via Chrome browser is much quicker and is nearly the same as choosing File (from the browser application menu and NOT the notebook) and selecting print as PDF.
+
+The two PDF files will look quite different, with the LaTeX version looking like a book and the browser version looking nearly identical to how it appears on your screen.
 
 ### As a Python Library
 
-In a separate Python script, import the `dataframe_image` package and pass the file name of your notebook to the `convert` function. By default, a PDF using latex will be produced. Set the `use` option to 'browser' to get the other version. Using dataframe_image as a Python library provides you with all of the available options, including downloading as a Markdown document.
+In a separate Python script, import the `dataframe_image` package and pass the file name of your notebook to the `convert` function. By default, a PDF using LaTeX will be produced. Set the `use` parameter to 'browser' to get the other version.
 
 ```python
 >>> import dataframe_image as dfi
@@ -56,20 +56,16 @@ In a separate Python script, import the `dataframe_image` package and pass the f
                 max_cols=10,
                 ss_width=1000,
                 ss_height=900,
-                resize=1,
                 chrome_path=None,
                 limit=None,
                 document_name=None,
                 execute=True,
                 save_notebook=False,
-                output_dir=None,
-                image_dir_name=None
+                output_dir=None
                 )
 ```
 
-By default, the new file(s) will be saved in the same directory where the notebook resides.
-
-Do not run this command within the same notebook that is being converted.
+By default, the new file(s) will be saved in the same directory where the notebook resides. The notebook will also be executed (by default) before being exported, so do not run this command within the same notebook that is being converted, or else you will get stuck in an infinite loop.
 
 ### From the Command Line
 
@@ -81,11 +77,26 @@ dataframe_image --to=pdf "my notebook with dataframes.ipynb"
 
 ## Finding Google Chrome
 
-You must have Google Chrome (or Brave) installed in order for dataframe_image to work. The path to Chrome will automatically be found. If Chrome is not in a standard location, set it with the `chrome_path` parameter.
+You must have Google Chrome (or Brave) installed in order for dataframe_image to work. The path to Chrome should automatically be found. If Chrome is not in a standard location, set it with the `chrome_path` parameter.
+
+### Using matplotlib instead of Chrome
+
+If do not have Chrome installed or cannot get it to work properly, you can alternatively use matplotlib to convert the DataFrames to images. Select this option by setting the `table_conversion` parameter to `'matplotlib'`.
 
 ## Publish to Medium
 
 You can publish your notebooks as Medium blog posts by installing the [`jupyter_to_medium`](https://github.com/dexplot/jupyter_to_medium) package.
+
+## Just Export DataFrames
+
+You can export DataFrames directly as images from the DataFrame object itself. Import both pandas and dataframe_image and you will now have access to the `dfi` special accessor. Use the `export` method to save the DataFrame as an image in a specific location.
+
+```python
+>>> import pandas as pd
+>>> import dataframe_image
+>>> df = pd.read_csv('some_data.csv')
+>>> df.dfi.export('mydf.png')
+```
 
 ## Extras
 
@@ -97,7 +108,8 @@ You must have the following python libraries installed:
 
 * [pandas](https://github.com/pandas-dev/pandas)
 * [nbconvert](https://github.com/jupyter/nbconvert) which requires latex, xelatex, and pandoc
-* [pillow](https://github.com/python-pillow/Pillow)
+* [matplotlib](http://matplotlib.org/)
+* [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 * [aiohttp](https://docs.aiohttp.org/en/stable/index.html)
 
 ## Installing LaTeX
