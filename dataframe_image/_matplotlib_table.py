@@ -20,9 +20,11 @@ class TableMaker:
         self.for_document = for_document
         self.figwidth = .1
         self.figheight = .1
+        self.wrap_length = 30
         if self.for_document:
             self.figwidth = 20
             self.figheight = 4
+            self.wrap_length = 10
         self.dpi = 100
         
     def parse_html(self, html):
@@ -159,8 +161,8 @@ class TableMaker:
         new_texts = []
         new_max_width = 0
         for i, (text, col_width) in enumerate(zip(texts, col_widths)):
-            if col_width > mult * max_width and len(text) > 10:
-                width = max(10, int(len(text) * mult))
+            if col_width > mult * max_width and len(text) > self.wrap_length:
+                width = max(self.wrap_length, int(len(text) * mult))
                 new_text = textwrap.fill(text, width, break_long_words=False)
                 new_texts.append(new_text)
                 new_max_width = max(new_max_width, self.get_text_width(new_text))
