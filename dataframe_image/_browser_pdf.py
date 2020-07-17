@@ -10,7 +10,6 @@ from nbconvert.exporters import Exporter, HTMLExporter
 import aiohttp
 
 from ._screenshot import get_chrome_path
-from ._preprocessors import MarkdownPreprocessor
 from . import _my_asyncio as my_asyncio
 
 async def handler(ws, data, key=None):
@@ -111,9 +110,6 @@ class BrowserExporter(Exporter):
         p = launch_chrome()
         td = TemporaryDirectory()
         td_path = Path(td.name)
-
-        mp = MarkdownPreprocessor()
-        nb, resources = mp.preprocess(nb, resources, **kw)
 
         html_data, resources = get_html_data(nb, resources, **kw)
         resources['output_extension'] = '.pdf'
