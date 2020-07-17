@@ -174,7 +174,6 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
         return cell, resources 
 
 
-
 class ChangeOutputTypePreprocessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, cell_index):

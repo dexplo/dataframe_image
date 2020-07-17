@@ -66,14 +66,13 @@ def get_chrome_path(chrome_path=None):
 
 class Screenshot:
 
-    def __init__(self, center_df=True, max_rows=None, max_cols=None, ss_width=None, 
-                 ss_height=None, chrome_path=None, fontsize=18, encode_base64=True, 
-                 limit_crop=True):
+    def __init__(self, center_df=True, max_rows=None, max_cols=None, chrome_path=None, 
+                 fontsize=18, encode_base64=True, limit_crop=True):
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
-        self.ss_width = ss_width
-        self.ss_height = ss_height
+        self.ss_width = 1400
+        self.ss_height = 900
         self.chrome_path = get_chrome_path(chrome_path)
         self.css = self.get_css(fontsize)
         self.encode_base64 = encode_base64
@@ -84,7 +83,7 @@ class Screenshot:
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
-        css = css.format(left='auto', right='auto', fontsize=fontsize)
+        css = css.format(fontsize=fontsize)
         return css
 
     def take_screenshot(self):
@@ -169,29 +168,22 @@ class Screenshot:
         return img_str
 
     def repr_png_wrapper(self):
-        def _repr_png_(data):
-            html = self.get_html(data)
-            return self.run(html)
+        from pandas.io.formats.style import Styler
+        ss = self
+        def _repr_png_(self):
+            if isinstance(self, Styler):
+                html = self.render()
+            else:
+                html = self.to_html(max_rows=ss.max_rows, max_cols=ss.max_cols)
+            return ss.run(html)
         return _repr_png_
 
 
-def make_repr_png(center_df=True, max_rows=30, max_cols=10, ss_width=1400, 
-                  ss_height=900, chrome_path=None):
+def make_repr_png(center_df=True, max_rows=30, max_cols=10, chrome_path=None):
     """
-    Creates a function that can be assigned to `pd.DataFrame._repr_png_` 
-    so that you can test out the appearances of the images in a notebook 
-    before you convert.
-
-    >>> import pandas as pd
-    >>> from dataframe_image import repr_png_maker
-    >>> pd.DataFrame._repr_png_ = repr_png_maker() # pass desired arguments
-    >>> df = pd.DataFrame({'a': [1, 5, 6]})
-    >>> from IPython.display import display_png
-    >>> display_png(df)
-
-    There is no need to use this function in the notebook that you want to 
-    convert to pdf or markdown. Use `dataframe_image.convert` in a separate 
-    script for that.
+    Used to create a _repr_png_ method for DataFrames and Styler objects
+    so that nbconvert can use it to create images directly when 
+    executing the notebook before conversion to pdf/markdown.
 
     Parameters
     ----------
@@ -208,19 +200,9 @@ def make_repr_png(center_df=True, max_rows=30, max_cols=10, ss_width=1400,
         Maximum number of columns to output from DataFrame. This is forwarded 
         to the `to_html` DataFrame method.
 
-    ss_width : int, default 1400
-        Width of the screenshot. This may need to be increased for larger 
-        monitors. If this value is too small, then smaller DataFrames will 
-        appear larger. It's best to keep this value at least as large as the 
-        width of the output section of a Jupyter Notebook.
-
-    ss_height : int, default 900
-        Height of the screen shot. The height of the image is automatically 
-        cropped so that only the relevant parts of the DataFrame are shown.
-
     chrome_path : str, default None
         Path to your machine's chrome executable. When `None`, it is 
         automatically found. Use this when chrome is not automatically found.
     """
-    ss = Screenshot(center_df, max_rows, max_cols, ss_width, ss_height, chrome_path)
+    ss = Screenshot(center_df, max_rows, max_cols, chrome_path)
     return ss.repr_png_wrapper()

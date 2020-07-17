@@ -34,6 +34,46 @@ Optional Keyword Arguments
     that when printing to pdf within a chrome web browser.
     (default: latex)
 
+--center-df
+    Choose whether to center the DataFrames or not in the image. By 
+    default, this is True, though in Jupyter Notebooks, they are 
+    left-aligned. Use False to make left-aligned. (default: True)
+
+--max-rows
+    Maximum number of rows to output from DataFrame. This is forwarded to 
+    the `to_html` DataFrame method. (default: 30)
+
+--max-cols
+    Maximum number of columns to output from DataFrame. This is forwarded 
+    to the `to_html` DataFrame method. (deault: 10)
+
+--execute
+    Whether or not to execute the notebook first. (default: False)
+
+--save-notebook
+    Whether or not to save the notebook with DataFrames as images as a new 
+    notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'
+    (default: False)
+
+--limit
+    Limit the number of cells in the notebook for conversion. This is 
+    useful to test conversion of a large notebook on a smaller subset.
+
+--document-name
+    Name of newly created pdf/markdown document without the extension. 
+    If not provided, the name of the notebook will be used.
+
+--table-conversion
+    DataFrames (and other tables) will be inserted in your document
+    as an image using a screenshot from Chrome. If this doesn't
+    work, use matplotlib, which will always work and produce
+    similar results.
+    Valid values are 'chrome' or 'matplotlib' (default: 'chrome')
+
+--chrome-path
+    Path to your machine's chrome executable. By default, it is 
+    automatically found. Use this when chrome is not automatically found.
+
 --latex-command
     Pass in a list of commands that nbconvert will use to convert the 
     latex document to pdf. The latex document is created temporarily when
@@ -45,60 +85,12 @@ Optional Keyword Arguments
     https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex
     (default: ['xelatex', {filename}, 'quiet'])
 
---max-rows
-    Maximum number of rows to output from DataFrame. This is forwarded to 
-    the `to_html` DataFrame method. (default: 30)
-
---max-cols
-    Maximum number of columns to output from DataFrame. This is forwarded 
-    to the `to_html` DataFrame method. (deault: 10)
-
---ss-width
-    Width of the screenshot in pixels. This may need to be increased for 
-    larger monitors. If this value is too small, then smaller DataFrames 
-    will appear larger. It's best to keep this value at least as large as 
-    the width of the output section of a Jupyter Notebook. (default: 1000)
-
---ss-height
-    Height of the screen shot. The height of the image is automatically 
-    cropped so that only the relevant parts of the DataFrame are shown.
-    (default: 900)
-
---chrome-path
-    Path to your machine's chrome executable. By default, it is 
-    automatically found. Use this when chrome is not automatically found.
-
---limit
-    Limit the number of cells in the notebook for conversion. This is 
-    useful to test conversion of a large notebook on a smaller subset.
-
---document-name
-    Name of newly created pdf/markdown document without the extension. 
-    If not provided, the name of the notebook will be used.
-
---execute
-    Whether or not to execute the notebook first. (default: False)
-
---save-notebook
-    Whether or not to save the notebook with DataFrames as images as a new 
-    notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'
-    (default: False)
-
 --output-dir
     Directory where new pdf and/or markdown files will be saved. By default,
     this will be in the same directory where the notebook is. The directory 
     for images will also be created in here. If --save-notebook is set to
-    True, it will be saved here as well.
-
-    Provide a relative path to the current working directory 
-    or an absolute path.
-
---table-conversion
-    DataFrames (and other tables) will be inserted in your document
-    as an image using a screenshot from Chrome. If this doesn't
-    work, use matplotlib, which will always work and produce
-    similar results.
-    Valid values are 'chrome' or 'matplotlib' (default: 'chrome')
+    True, it will be saved here as well. Provide a relative path to the 
+    current working directory or an absolute path.
 
 
 Examples
@@ -117,18 +109,17 @@ parser.add_argument('filename', default=False)
 parser.add_argument('-h', '--help', action='store_true', dest='help')
 parser.add_argument('--to', type=str, choices=['md', 'pdf', 'markdown'], default='pdf')
 parser.add_argument('--use', type=str, choices=['latex', 'browser'], default='latex')
-parser.add_argument('--latex-command', type=list, default=['xelatex', '{filename}', 'quiet'])
+parser.add_argument('--center-df', type=bool, default=True)
 parser.add_argument('--max-rows', type=int, default=30)
 parser.add_argument('--max-cols', type=int, default=10)
-parser.add_argument('--ss-width', type=int, default=1000)
-parser.add_argument('--ss-height', type=int, default=900)
-parser.add_argument('--chrome-path')
-parser.add_argument('--limit', type=int)
-parser.add_argument('--document-name')
 parser.add_argument('--execute', type=bool, default=False)
 parser.add_argument('--save-notebook', type=bool, default=False)
-parser.add_argument('--output-dir')
+parser.add_argument('--limit', type=int)
+parser.add_argument('--document-name')
 parser.add_argument('--table-conversion', type=str, choices=['chrome', 'matplotlib'], default='chrome')
+parser.add_argument('--chrome-path')
+parser.add_argument('--latex-command', type=list, default=['xelatex', '{filename}', 'quiet'])
+parser.add_argument('--output-dir')
 
 def main():
     if len(sys.argv) == 1 or '-h' in sys.argv or '--help' in sys.argv:

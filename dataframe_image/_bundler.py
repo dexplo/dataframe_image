@@ -9,7 +9,7 @@ def _jupyter_bundlerextension_paths():
     return [{
         "name": "dataframe_image_bundler",
         "module_name": "dataframe_image._bundler",
-        "label" : "DataFrame as Image (PDF or MD)",
+        "label" : "DataFrame as Image (PDF or Markdown)",
         "group" : "download",
     }]
 
@@ -17,9 +17,9 @@ def _jupyter_bundlerextension_paths():
 def convert(model, handler):
     from ._convert import Converter
 
-    arguments = ['to', 'use', 'center_df', 'latex_command', 'max_rows', 'max_cols', 
-                 'ss_width', 'ss_height', 'chrome_path', 'limit', 'document_name', 
-                 'execute', 'save_notebook', 'table_conversion']
+    arguments = ['to', 'use', 'center_df', 'max_rows', 'max_cols', 'execute', 
+                 'save_notebook', 'limit', 'document_name', 'table_conversion', 
+                 'chrome_path', 'latex_command']
 
     kwargs = {arg: handler.get_query_argument(arg, None) for arg in arguments}
     path = model['path']
@@ -29,16 +29,14 @@ def convert(model, handler):
         kwargs['to'] = ['md', 'pdf']
     kwargs['use'] == kwargs['use'] or None
     kwargs['center_df'] = kwargs['center_df'] == "True"
-    kwargs['latex_command'] = [tag.strip() for tag in kwargs['latex_command'].split()]
     kwargs['max_rows'] = 30 if kwargs['max_rows'] == '' else int(kwargs['max_rows'])
     kwargs['max_cols'] = 10 if kwargs['max_cols'] == '' else int(kwargs['max_cols'])
-    kwargs['ss_width'] = 1400 if kwargs['ss_width'] == '' else int(kwargs['ss_width'])
-    kwargs['ss_height'] = 900 if kwargs['ss_height'] == '' else int(kwargs['ss_height'])
-    kwargs['chrome_path'] = kwargs['chrome_path'] or None
-    kwargs['limit'] = None if kwargs['limit'] == '' else int(kwargs['limit'])
-    kwargs['document_name'] = kwargs['document_name'] or None
     kwargs['execute'] = kwargs['execute'] == "True"
     kwargs['save_notebook'] = kwargs['save_notebook'] == "True"
+    kwargs['limit'] = None if kwargs['limit'] == '' else int(kwargs['limit'])
+    kwargs['document_name'] = kwargs['document_name'] or None
+    kwargs['chrome_path'] = kwargs['chrome_path'] or None
+    kwargs['latex_command'] = [tag.strip() for tag in kwargs['latex_command'].split()]
     kwargs['output_dir'] = None
     kwargs['web_app'] = True
    
@@ -99,7 +97,7 @@ def get_js(converter):
     return js
 
 
-# synchronous execution
+# synchronous execution - maybe change so other notebook commands can be executed
 def bundle(handler, model):
     """
     Parameters
