@@ -83,7 +83,8 @@ class Screenshot:
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
-        css = css.format(fontsize=fontsize)
+        justify = 'center' if self.center_df else 'left'
+        css = css.format(fontsize=fontsize, justify=justify)
         return css
 
     def take_screenshot(self):
@@ -172,9 +173,9 @@ class Screenshot:
         ss = self
         def _repr_png_(self):
             if isinstance(self, Styler):
-                html = self.render()
+                html = '<div>' + self.render() + '</div>'
             else:
-                html = self.to_html(max_rows=ss.max_rows, max_cols=ss.max_cols)
+                html = self.to_html(max_rows=ss.max_rows, max_cols=ss.max_cols, notebook=True)
             return ss.run(html)
         return _repr_png_
 
