@@ -1,18 +1,21 @@
 table {{
     background-color: transparent;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    margin-left:{left};
-    margin-right:{right};
     border:none;
     border-collapse: collapse;
     border-spacing:0;
     color:black;
     font-size:{fontsize}px;
     table-layout:fixed;
+    grid-column: 1;
+    grid-row: 1;
     }}
+
 thead {{
-    border-bottom:1px solid black;vertical-align:bottom;
+    border-bottom:1px solid black;
+    vertical-align:bottom;
     }}
+
 tr, th, td {{
     text-align:right;
     vertical-align: middle;
@@ -22,13 +25,25 @@ tr, th, td {{
     max-width:none;
     border:none;
     }}
+
 th {{
     font-weight:bold; 
     text-align:left;
     }}
+
 tbody tr:nth-child(odd){{
     background:#f5f5f5;
     }}
     :link{{
     text-decoration:underline;
+}}
+
+div {{
+    display: grid;
+    justify-content: center;
+}}
+
+p {{
+  grid-column: 1;
+  grid-row: 2;
 }}
