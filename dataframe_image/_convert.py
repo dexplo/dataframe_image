@@ -156,23 +156,18 @@ class Converter:
         return code
 
     def preprocess(self):
-        preprocessors = []
-        mp = MarkdownPreprocessor()
-        preprocessors.append(mp)
-
         if self.execute:
             code = self.get_code_to_run()
             extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
-            pp = ExecutePreprocessor(timeout=600, allow_errors=True, 
-                                     extra_arguments=extra_arguments)
-            preprocessors.append(pp)
+            pp = ExecutePreprocessor(allow_errors=True, extra_arguments=extra_arguments)
+            pp.preprocess(self.nb, self.resources)
         else:
-            preprocessors.append(NoExecuteDataFramePreprocessor())
+            NoExecuteDataFramePreprocessor().preprocess(self.nb, self.resources)
 
-        preprocessors.append(ChangeOutputTypePreprocessor())
-
-        for pp in preprocessors:
-            self.nb, self.resources = pp.preprocess(self.nb, self.resources)
+        ChangeOutputTypePreprocessor().preprocess(self.nb, self.resources)
+        from copy import deepcopy
+        self.nb_copy = deepcopy(self.nb)
+        MarkdownPreprocessor().preprocess(self.nb, self.resources)
 
     def to_md(self):
         self.preprocess()
@@ -210,6 +205,7 @@ class Converter:
         if self.use == 'browser':
             return self.to_chrome_pdf()
 
+        # Must run preprocess
         self.resources['temp_dir'] = Path(self.td.name)
         self.preprocess()
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
@@ -222,13 +218,13 @@ class Converter:
                 f.write(pdf_data)
 
     def to_chrome_pdf(self):
-        self.preprocess()
-
         from ._browser_pdf import BrowserExporter
+        if self.first:
+            self.preprocess()
         be = BrowserExporter()
-
         pdf_data, self.resources = be.from_notebook_node(self.nb, self.resources)
         self.return_data['pdf_data'] = pdf_data
+        
         if not self.web_app:
             fn = self.final_nb_home / (self.document_name + '.pdf')
             with open(fn, mode='wb') as f:
@@ -242,14 +238,17 @@ class Converter:
     def save_notebook_to_file(self):
         # TODO: save image dir when pdf
         if self.save_notebook:
+            for cell in self.nb_copy['cells']:
+                if cell['cell_type'] == 'code':
+                    for output in cell['outputs']:
+                        data = output.get('data', {})
+                        html = data.get('text/html', '')
+                        if 'image/png' in data and '</table>' in html:
+                            data.pop('text/html')
+
             name = self.nb_name + '_dataframe_image.ipynb'
             file = self.final_nb_home / name
-            if self.web_app:
-                buffer = io.StringIO()
-                nbformat.write(self.nb, buffer)
-                self.return_data['notebook'] = buffer.getvalue()
-            else:
-                nbformat.write(self.nb, file)
+            nbformat.write(self.nb_copy, file)
 
     def convert(self):
         for kind in self.to:
