@@ -49,6 +49,7 @@ def convert(model, handler):
         error = f'{error_name}: {str(e)}'
         tb = traceback.format_exc()
         msg = error + f'\n\n{tb}'
+        msg = msg.replace('\n', '<br>')
 
         converter.success = False
         converter.error_msg = msg
