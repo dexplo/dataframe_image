@@ -29,16 +29,14 @@ class Converter:
         "text/plain",
     ]
 
-    def __init__(self, filename, to, use, center_df, latex_command, max_rows, max_cols, 
-                 ss_width, ss_height, chrome_path, limit, document_name, execute, save_notebook, 
-                 output_dir, table_conversion, web_app):
+    def __init__(self, filename, to, use, center_df, max_rows, max_cols, execute, 
+                 save_notebook, limit, document_name, table_conversion, chrome_path, 
+                 latex_command, output_dir, web_app):
         self.filename = Path(filename)
         self.use = use
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
-        self.ss_width = ss_width
-        self.ss_height = ss_height
         self.chrome_path = chrome_path
         self.limit = limit
         self.table_conversion = table_conversion
@@ -132,8 +130,7 @@ class Converter:
         if self.table_conversion == 'chrome':
             from ._screenshot import Screenshot
             converter = Screenshot(center_df=self.center_df, max_rows=self.max_rows, 
-                                    max_cols=self.max_cols, ss_width=self.ss_width, 
-                                    ss_height=self.ss_height, chrome_path=self.chrome_path).run
+                                    max_cols=self.max_cols, chrome_path=self.chrome_path).run
         else:
             from ._matplotlib_table import TableMaker
             converter = TableMaker(fontsize=22).run
@@ -148,9 +145,8 @@ class Converter:
         code = (
             "import pandas as pd;"
             "from dataframe_image._screenshot import make_repr_png;"
-            f"_repr_png_ = make_repr_png(center_df={self.center_df}, max_rows={self.max_rows}, "
-            f"max_cols={self.max_cols}, ss_width={self.ss_width}, "
-            f"ss_height={self.ss_height}, "
+            f"_repr_png_ = make_repr_png(center_df={self.center_df}, "
+            f"max_rows={self.max_rows}, max_cols={self.max_cols}, "
             f"chrome_path={self.chrome_path});"
             "pd.DataFrame._repr_png_ = _repr_png_;"
             "from pandas.io.formats.style import Styler;"
@@ -261,10 +257,10 @@ class Converter:
         self.save_notebook_to_file()
 
 
-def convert(filename, to='pdf', use='latex', center_df=True, latex_command=None, 
-            max_rows=30, max_cols=10, ss_width=1400, ss_height=900,
-            chrome_path=None, limit=None, document_name=None, execute=False, 
-            save_notebook=False, output_dir=None, table_conversion='chrome'):
+def convert(filename, to='pdf', use='latex', center_df=True, max_rows=30, 
+            max_cols=10, execute=False, save_notebook=False, limit=None, 
+            document_name=None, table_conversion='chrome', chrome_path=None, 
+            latex_command=None, output_dir=None):
     """
     Convert a Jupyter Notebook to pdf or markdown using images for pandas
     DataFrames instead of their normal latex/markdown representation. 
@@ -301,6 +297,39 @@ def convert(filename, to='pdf', use='latex', center_df=True, latex_command=None,
         default, this is True, though in Jupyter Notebooks, they are 
         left-aligned. Use False to make left-aligned.
 
+    max_rows : int, default 30
+        Maximum number of rows to output from DataFrame. This is forwarded to 
+        the `to_html` DataFrame method.
+
+    max_cols : int, default 10
+        Maximum number of columns to output from DataFrame. This is forwarded 
+        to the `to_html` DataFrame method.
+
+    execute : bool, default `False`
+        Whether or not to execute the notebook first.
+
+    save_notebook : bool, default `False`
+        Whether or not to save the notebook with pandas DataFrames as images as 
+        a new notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'
+
+    limit : int, default `None`
+        Limit the number of cells in the notebook for conversion. This is 
+        useful to test conversion of a large notebook on a smaller subset. 
+
+    document_name : str, default `None`
+        Name of newly created pdf/markdown document without the extension. If not
+        provided, the current name of the notebook will be used.
+    
+    table_conversion : 'chrome' or 'matplotlib'
+        DataFrames (and other tables) will be inserted in your document
+        as an image using a screenshot from Chrome. If this doesn't
+        work, use matplotlib, which will always work and produce
+        similar results.
+
+    chrome_path : str, default `None`
+        Path to your machine's chrome executable. When `None`, it is 
+        automatically found. Use this when chrome is not automatically found.
+
     latex_command: list, default None
         Pass in a list of commands that nbconvert will use to convert the 
         latex document to pdf. The latex document is created temporarily when
@@ -312,59 +341,13 @@ def convert(filename, to='pdf', use='latex', center_df=True, latex_command=None,
         machine for this to work. Get more info on how to install latex -
         https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex
 
-    max_rows : int, default 30
-        Maximum number of rows to output from DataFrame. This is forwarded to 
-        the `to_html` DataFrame method.
-
-    max_cols : int, default 10
-        Maximum number of columns to output from DataFrame. This is forwarded 
-        to the `to_html` DataFrame method.
-
-    ss_width : int, default 1400
-        Width of the screenshot in pixels. This may need to be increased for 
-        larger monitors. If this value is too small, then smaller DataFrames will 
-        appear larger. It's best to keep this value at least as large as the 
-        width of the output section of a Jupyter Notebook.
-
-    ss_height : int, default 900
-        Height of the screen shot. The height of the image is automatically 
-        cropped so that only the relevant parts of the DataFrame are shown.
-
-    chrome_path : str, default `None`
-        Path to your machine's chrome executable. When `None`, it is 
-        automatically found. Use this when chrome is not automatically found.
-
-    limit : int, default `None`
-        Limit the number of cells in the notebook for conversion. This is 
-        useful to test conversion of a large notebook on a smaller subset. 
-
-    document_name : str, default `None`
-        Name of newly created pdf/markdown document without the extension. If not
-        provided, the current name of the notebook will be used.
-
-    execute : bool, default `False`
-        Whether or not to execute the notebook first.
-
-    save_notebook : bool, default `False`
-        Whether or not to save the notebook with pandas DataFrames as images as 
-        a new notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'
-
     output_dir : str, default `None`
         Directory where new pdf and/or markdown files will be saved. By default, 
         this will be the same directory as the notebook. The directory 
         for images will also be created in here. If `save_notebook` is set to
-        True, it will be saved here as well.
-
-        Provide a relative or absolute path.
-    
-    table_conversion : 'chrome' or 'matplotlib'
-        DataFrames (and other tables) will be inserted in your document
-        as an image using a screenshot from Chrome. If this doesn't
-        work, use matplotlib, which will always work and produce
-        similar results.
+        True, it will be saved here as well. Provide a relative or absolute path.
     """
-    c = Converter(filename, to, use, center_df, latex_command, max_rows, max_cols, 
-                  ss_width, ss_height, chrome_path, limit, document_name, 
-                  execute, save_notebook, output_dir, table_conversion, 
-                  web_app=False)
+    c = Converter(filename, to, use, center_df, max_rows, max_cols, execute, 
+                  save_notebook, limit, document_name, table_conversion, chrome_path, 
+                  latex_command, output_dir, web_app=False)
     c.convert()
