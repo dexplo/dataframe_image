@@ -113,23 +113,16 @@
                 </div>
             </fieldset>
 
-            <button type="button" id="toggleButton"  class="btn btn-info" data-toggle="collapse" data-target="#optionalItems">Optional Items</button>
+            <button type="button" id="toggleButton"  class="btn btn-info" data-toggle="collapse" 
+                    data-target="#optionalItems">Optional Items</button>
             <div id="optionalItems" class="collapse">
-                <div class="form-group row">
-                    <label for="latex_command" class="col-sm-2 col-form-label">LaTeX Command</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="latex_command" id="latex_command">
-                        <small class="form-text text-muted">LaTeX command to use during conversion. Ignored if using Chrome browser. 
-                            Defaults to 'xelatex {filename} quiet'.
-                        </small>
-                    </div>
-                </div>
 
                 <div class="form-group row">
                     <label for="max_rows" class="col-sm-2 col-form-label">Max DataFrame Rows</label>
                     <div class="col-sm-8">
                         <input type="text" class="form-control" name="max_rows" id="max_rows">
-                        <small class="form-text text-muted">Maximum number of rows to use from a DataFrame. Default is 30.
+                        <small class="form-text text-muted">Maximum number of rows to use for 
+                                                            each DataFrame. Default is 30.
                         </small>
                     </div>
                 </div>
@@ -138,60 +131,8 @@
                     <label for="max_cols" class="col-sm-2 col-form-label">Max DataFrame Columns</label>
                     <div class="col-sm-8">
                         <input type="text" class="form-control" name="max_cols" id="max_cols">
-                        <small class="form-text text-muted">Maximum number of columns to use for each DataFrame. Default is 10.
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="ss_width" class="col-sm-2 col-form-label">Screenshot Width</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="ss_width" id="ss_width">
-                        <small class="form-text text-muted">Width of the screenshot in pixels. This may need to be increased for 
-                            larger monitors. If this value is too small, then smaller DataFrames 
-                            will appear larger. It's best to keep this value at least as large as 
-                            the width of the output section of a Jupyter Notebook. (default: 1000)
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="ss_height" class="col-sm-2 col-form-label">Screenshot Height</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="ss_height" id="ss_height">
-                        <small class="form-text text-muted">Height of the screen shot. The height of the image is automatically 
-                            cropped so that only the relevant parts of the DataFrame are shown.
-                            (default: 900)
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="chrome_path" class="col-sm-2 col-form-label">Chrome Path</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="chrome_path" id="chrome_path">
-                        <small class="form-text text-muted">Path to your machine's chrome executable. By default, it is 
-                            automatically found. Use this when chrome is not automatically found.
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="limit" class="col-sm-2 col-form-label">Limit Cells</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="limit" id="limit">
-                        <small class="form-text text-muted">Limit the number of cells in the notebook for conversion. This is 
-                            useful to test conversion of a large notebook on a smaller subset.
-                        </small>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label for="document_name" class="col-sm-2 col-form-label">Document Name</label>
-                    <div class="col-sm-8">
-                        <input type="text" class="form-control" name="document_name" id="document_name">
-                        <small class="form-text text-muted">Name of newly created pdf/markdown document without the extension. 
-                            If not provided, the name of the notebook will be used.
+                        <small class="form-text text-muted">Maximum number of columns to use for 
+                                                            each DataFrame. Default is 10.
                         </small>
                     </div>
                 </div>
@@ -236,11 +177,33 @@
                             No
                         </label>
                         </div>
-                        <small class="form-text text-muted">Whether or not to save the notebook with DataFrames as images as a new 
-                            ipynb file.</small>
+                        <small class="form-text text-muted">Whether or not to save the notebook 
+                            with DataFrames as images as a new ipynb file.</small>
                     </div>
                     </div>
                 </fieldset>
+
+                <div class="form-group row">
+                    <label for="limit" class="col-sm-2 col-form-label">Limit Cells</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="limit" id="limit">
+                        <small class="form-text text-muted">Limit the number of cells in the 
+                            notebook for conversion. This is useful to test conversion of a 
+                            large notebook on a smaller subset.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="document_name" class="col-sm-2 col-form-label">Document Name</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="document_name" id="document_name">
+                        <small class="form-text text-muted">Name of newly created pdf/markdown 
+                            document without the extension. If not provided, the name of the 
+                            notebook will be used.
+                        </small>
+                    </div>
+                </div>
 
                 <fieldset class="form-group">
                     <div class="row">
@@ -261,12 +224,33 @@
                           </label>
                         </div>
                         <small class="form-text text-muted">By default, DataFrames are converted to images 
-                            by taking screenshots with Chrome. If this does not work, select the matplotlib option,
-                            which will always work.
+                            by taking screenshots with the Chrome browser. If this does not work, 
+                            select the matplotlib option, which will always work.
                         </small>
                       </div>
                     </div>
                 </fieldset>
+
+                <div class="form-group row">
+                    <label for="chrome_path" class="col-sm-2 col-form-label">Chrome Path</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="chrome_path" id="chrome_path">
+                        <small class="form-text text-muted">Path to your machine's chrome 
+                            executable. By default, it is automatically found. Use this when 
+                            chrome is not automatically found.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="latex_command" class="col-sm-2 col-form-label">LaTeX Command</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" name="latex_command" id="latex_command">
+                        <small class="form-text text-muted">LaTeX command to use during conversion. 
+                            Ignored if using Chrome browser. Defaults to 'xelatex {filename} quiet'.
+                        </small>
+                    </div>
+                </div>
                 
             </div>
 
