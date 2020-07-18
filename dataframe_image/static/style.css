@@ -40,7 +40,7 @@ tbody tr:nth-child(odd){{
 
 div {{
     display: grid;
-    justify-content: center;
+    justify-content: {justify};
 }}
 
 p {{
