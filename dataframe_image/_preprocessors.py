@@ -99,7 +99,7 @@ class MarkdownPreprocessor(Preprocessor):
                 ext = Path(src).suffix
                 if ext.startswith('.jpg'):
                     ext = '.jpeg'
-                new_image_name = f'markdown_{cell_index}_html_image_tag_{i}{ext}'
+                new_image_name = f'markdown_{cell_index}_local_image_tag_{i}{ext}'
                 image_data = open(nb_home / src, 'rb').read()
                 image_data_dict[new_image_name] = image_data
                 cell['source'] = cell['source'].replace(entire_tag, f'![]({new_image_name})')
