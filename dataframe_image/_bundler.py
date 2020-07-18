@@ -73,7 +73,7 @@ def get_js(converter):
     fn = converter.document_name
     data = converter.return_data
     
-    if converter.to == ['pdf'] and not converter.save_notebook:
+    if converter.to == ['pdf']:
         app_type = 'pdf'
         s = base64.b64encode(data['pdf_data']).decode()
     else:
@@ -88,8 +88,6 @@ def get_js(converter):
                     zf.writestr(image_final_fn, val)
             if 'pdf_data' in data:
                 zf.writestr(f'{fn}.pdf', data['pdf_data'])
-            if converter.save_notebook:
-                zf.writestr(f'{fn}.ipynb', data['notebook'])
 
         with open(f'{fn}.zip', 'rb') as zf:
             s = base64.b64encode(zf.read()).decode()
