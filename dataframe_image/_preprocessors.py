@@ -4,13 +4,14 @@ import base64
 import io
 import re
 import urllib.parse
+import importlib
 
 import mistune
 import requests
 from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
 
 
-def get_image_files(md_source, is_pdf):
+def get_image_files(md_source, only_http=False):
     '''
     Return all image files from a markdown cell
 
@@ -27,9 +28,14 @@ def get_image_files(md_source, is_pdf):
     image_files = []
     for file in possible_image_files:
         p = file.strip()
-        save_http = is_pdf or not p.startswith('http')
-        if p not in image_files and not p.startswith('attachment') and save_http:
-            image_files.append(p)
+        is_http = p.startswith('http://') or p.startswith('https://')
+        is_attachment = p.startswith('attachment')
+        if p not in image_files:
+            if is_http:
+                if only_http:
+                    image_files.append(p)
+            elif not (is_attachment or only_http):
+                image_files.append(p)
     return image_files
 
 
@@ -42,6 +48,7 @@ def replace_md_tables(md_source, converter, cell_index):
         nonlocal i
         md = match.group()
         html = mistune.markdown(md, escape=False)
+        html = '<div>' + html + '</div>'
         image_data = base64.b64decode(converter(html))
         new_image_name = f'markdown_{cell_index}_table_{i}.png'
         image_data_dict[new_image_name] = image_data
@@ -53,10 +60,20 @@ def replace_md_tables(md_source, converter, cell_index):
     return md_source
 
 
-def get_image_tags(md_source):
+def get_image_tags(md_source, only_http=False):
     pat_img_tag = r'''(<img.*?[sS][rR][Cc]\s*=\s*['"](.*?)['"].*?/>)'''
     img_tag_files = re.findall(pat_img_tag, md_source)
-    return img_tag_files
+
+    kept_files = []
+    for entire_tag, src in img_tag_files:
+        is_http = src.startswith('http://') or src.startswith('https://')
+        if is_http:
+            if only_http:
+                kept_files.append((entire_tag, src))
+        elif not only_http:
+            kept_files.append((entire_tag, src))
+
+    return kept_files
 
 
 class MarkdownPreprocessor(Preprocessor):
@@ -64,61 +81,28 @@ class MarkdownPreprocessor(Preprocessor):
     def preprocess_cell(self, cell, resources, cell_index):
         nb_home = Path(resources['metadata']['path'])
         image_data_dict = resources['image_data_dict']
-        temp_dir = resources.get('temp_dir')
-        is_pdf = bool(temp_dir)
         if cell['cell_type'] == 'markdown':
-
             # find normal markdown images 
-            # can normal images be http?
-            all_image_files = get_image_files(cell['source'], is_pdf)
+            all_image_files = get_image_files(cell['source'])
             for i, image_file in enumerate(all_image_files):
-                if image_file.startswith('http://') or image_file.startswith('https://'):
-                    r = requests.get(image_file)
-                    image_data = r.content
-                else:
-                    image_data = open(nb_home / image_file, 'rb').read()
                 ext = Path(image_file).suffix
                 if ext.startswith('.jpg'):
                     ext = '.jpeg'
-
-                if ext == '.gif':
-                    from PIL import Image
-                    gif = Image.open(io.BytesIO(image_data))
-                    buffer = io.BytesIO()
-                    gif.save(buffer, 'png')
-                    image_data = buffer.getvalue()
-                    ext = '.png'
-                    
                 new_image_name = f'markdown_{cell_index}_normal_image_{i}{ext}'
-                if is_pdf:
-                    new_image_name = str(temp_dir / new_image_name)
-                    open(new_image_name, 'wb').write(image_data)
+                image_data = open(nb_home / image_file, 'rb').read()
                 cell['source'] = cell['source'].replace(image_file, new_image_name)
                 image_data_dict[new_image_name] = image_data
 
             # find HTML <img> tags
             all_image_tag_files = get_image_tags(cell['source'])
             for i, (entire_tag, src) in enumerate(all_image_tag_files):
-                if src.startswith('http://') or src.startswith('https://'):
-                    if is_pdf:
-                        r = requests.get(src)
-                        image_data = r.content
-                    else:
-                        cell['source'] = cell['source'].replace(entire_tag, f'![]({src})')
-                        next
-                else:
-                    image_data = open(nb_home / src, 'rb').read()
-                    ext = Path(src).suffix
-                    if ext.startswith('.jpg'):
-                        ext = '.jpeg'
-                
+                ext = Path(src).suffix
+                if ext.startswith('.jpg'):
+                    ext = '.jpeg'
                 new_image_name = f'markdown_{cell_index}_html_image_tag_{i}{ext}'
-                if temp_dir:
-                    new_image_name = str(temp_dir / new_image_name)
-                    open(new_image_name, 'wb').write(image_data)
-                replace_str = f'![]({new_image_name})'
+                image_data = open(nb_home / src, 'rb').read()
                 image_data_dict[new_image_name] = image_data
-                cell['source'] = cell['source'].replace(entire_tag, replace_str)
+                cell['source'] = cell['source'].replace(entire_tag, f'![]({new_image_name})')
 
             # find images attached to markdown through dragging and dropping
             attachments = cell.get('attachments', {})
@@ -131,12 +115,8 @@ class MarkdownPreprocessor(Preprocessor):
                     if ext == 'jpg':
                         ext = 'jpeg'
                     new_image_name = f'markdown_{cell_index}_attachment_{i}_{j}.{ext}'
-                    
                     image_data = base64.b64decode(base64_data)
                     image_data_dict[new_image_name] = image_data
-                    if temp_dir:
-                        new_image_name = str(temp_dir / new_image_name)
-                        open(new_image_name, 'wb').write(image_data)
                     cell['source'] = cell['source'].replace(f'attachment:{image_name}', new_image_name)
 
             # find markdown tables
@@ -185,3 +165,40 @@ class ChangeOutputTypePreprocessor(Preprocessor):
                         output['output_type'] = 'display_data'
                         del output['execution_count']
         return cell, resources
+
+
+class MarkdownHTTPPreprocessor(Preprocessor):
+
+    def preprocess_cell(self, cell, resources, cell_index):
+        nb_home = Path(resources['metadata']['path'])
+        image_data_dict = resources['image_data_dict']
+        temp_dir = resources['temp_dir']
+        if cell['cell_type'] == 'markdown':
+            all_image_files = get_image_files(cell['source'], True)
+            for i, image_file in enumerate(all_image_files):
+                ext = Path(image_file).suffix
+                if ext.startswith('.jpg'):
+                    ext = '.jpeg'
+                
+                image_data = requests.get(image_file).content
+                new_image_name = f'markdown_{cell_index}_normal_http_image_{i}{ext}'
+                new_image_name = str(temp_dir / new_image_name)
+                cell['source'] = cell['source'].replace(image_file, new_image_name)
+                with open(new_image_name, 'wb') as f:
+                    f.write(image_data)
+
+            # find HTML <img> tags
+            all_image_tag_files = get_image_tags(cell['source'], True)
+            for i, (entire_tag, src) in enumerate(all_image_tag_files):
+                ext = Path(src).suffix
+                if ext.startswith('.jpg'):
+                    ext = '.jpeg'
+
+                image_data = requests.get(src).content
+                new_image_name = f'markdown_{cell_index}_html_image_tag_{i}{ext}'
+                new_image_name = str(temp_dir / new_image_name)
+                cell['source'] = cell['source'].replace(entire_tag, f'![]({new_image_name})')
+                with open(new_image_name, 'wb') as f:
+                    f.write(image_data)
+
+        return cell, resources 
