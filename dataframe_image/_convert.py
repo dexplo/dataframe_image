@@ -15,6 +15,8 @@ from ._preprocessors import (MarkdownPreprocessor,
                              NoExecuteDataFramePreprocessor, 
                              ChangeOutputTypePreprocessor)
 
+from matplotlib import image as mimage
+
 
 class Converter:
     KINDS = ['pdf', 'md', 'markdown']
@@ -57,7 +59,6 @@ class Converter:
         
         self.return_data = {}
         self.resources = self.get_resources()
-        self.first = True
 
     def get_to(self, to):
         if isinstance(to, str):
@@ -135,10 +136,14 @@ class Converter:
             from ._matplotlib_table import TableMaker
             converter = TableMaker(fontsize=22).run
 
+        replace_http = False
+        if 'pdf' in self.to and self.use == 'latex':
+            replace_http = True
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.document_name},
                      'converter': converter,
-                     'image_data_dict': {}}
+                     'image_data_dict': {},
+                     'replace_http': replace_http}
         return resources
         
     def get_code_to_run(self):
@@ -170,17 +175,16 @@ class Converter:
         MarkdownPreprocessor().preprocess(self.nb, self.resources)
 
     def to_md(self):
-        self.preprocess()
         me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
                                                         self.DISPLAY_DATA_PRIORITY}})
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
         # the base64 encoded binary files are saved in output_resources
 
         image_data_dict = {**self.resources['outputs'], **self.resources['image_data_dict']}
-        for filename in image_data_dict:
-            new = str(Path(self.image_dir_name) / filename)
-            new = urllib.parse.quote(new)
-            md_data = md_data.replace(filename, new)
+        for filename, image_data in image_data_dict.items():
+            new_filename = str(Path(self.image_dir_name) / filename)
+            new_filename = urllib.parse.quote(new_filename)
+            md_data = md_data.replace(filename, new_filename)
 
         if self.web_app:
             self.return_data['md_data'] = md_data
@@ -199,17 +203,36 @@ class Converter:
             fn = self.final_nb_home / (self.document_name + '.md')
             with open(fn, mode='w') as f:
                 f.write(md_data)
-        self.reset_resources()
 
     def to_pdf(self):
         if self.use == 'browser':
             return self.to_chrome_pdf()
 
-        # Must run preprocess
-        self.resources['temp_dir'] = Path(self.td.name)
-        self.preprocess()
+        temp_dir = Path(self.td.name)
+        for filename, image_data in self.resources['image_data_dict'].items():
+            fn_pieces = filename.split('_')
+            cell_idx = int(fn_pieces[1])
+            ext = fn_pieces[-1].split('.')[-1]
+            new_filename = str(temp_dir / filename)
+            if ext == 'gif':
+                buffer = io.BytesIO(image_data)
+                arr = mimage.imread(buffer, format='gif')
+                new_filename = filename.split('.')[0] + '.png'
+                new_filename = str(temp_dir / new_filename)
+                mimage.imsave(new_filename, arr)
+            else:
+                with open(new_filename, 'wb') as f:
+                    f.write(image_data)
+
+            cell = self.nb.cells[cell_idx]
+            cell['source'] = cell['source'].replace(filename, new_filename)
+            
+        from ._preprocessors import MarkdownHTTPPreprocessor
+        self.resources['temp_dir'] = temp_dir
+        MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
+
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
-                                                    self.DISPLAY_DATA_PRIORITY}})
+                                                     self.DISPLAY_DATA_PRIORITY}})
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         self.return_data['pdf_data'] = pdf_data
         if not self.web_app:
@@ -219,8 +242,6 @@ class Converter:
 
     def to_chrome_pdf(self):
         from ._browser_pdf import BrowserExporter
-        if self.first:
-            self.preprocess()
         be = BrowserExporter()
         pdf_data, self.resources = be.from_notebook_node(self.nb, self.resources)
         self.return_data['pdf_data'] = pdf_data
@@ -229,11 +250,6 @@ class Converter:
             fn = self.final_nb_home / (self.document_name + '.pdf')
             with open(fn, mode='wb') as f:
                 f.write(pdf_data)
-
-    def reset_resources(self):
-        self.first = False
-        del self.resources['outputs']
-        del self.resources['output_extension']
 
     def save_notebook_to_file(self):
         # TODO: save image dir when pdf
@@ -251,6 +267,7 @@ class Converter:
             nbformat.write(self.nb_copy, file)
 
     def convert(self):
+        self.preprocess()
         for kind in self.to:
             getattr(self, f'to_{kind}')()
         self.save_notebook_to_file()
