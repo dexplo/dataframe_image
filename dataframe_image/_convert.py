@@ -205,10 +205,14 @@ class Converter:
                 f.write(md_data)
 
     def to_pdf(self):
+        from ._preprocessors import MarkdownHTTPPreprocessor
+        temp_dir = Path(self.td.name)
+        self.resources['temp_dir'] = temp_dir
+        MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
+
         if self.use == 'browser':
             return self.to_chrome_pdf()
-
-        temp_dir = Path(self.td.name)
+    
         for filename, image_data in self.resources['image_data_dict'].items():
             fn_pieces = filename.split('_')
             cell_idx = int(fn_pieces[1])
@@ -226,10 +230,6 @@ class Converter:
 
             cell = self.nb.cells[cell_idx]
             cell['source'] = cell['source'].replace(filename, new_filename)
-            
-        from ._preprocessors import MarkdownHTTPPreprocessor
-        self.resources['temp_dir'] = temp_dir
-        MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
 
         pdf = PDFExporter(config={'NbConvertBase': {'display_data_priority': 
                                                      self.DISPLAY_DATA_PRIORITY}})
