@@ -16,6 +16,7 @@ theme:
 
 nav:
   - Home: index.md
+  - What's New: whats_new.md
   - More Dexplo Libraries:
       - Dexplo: https://www.dexplo.org
 
