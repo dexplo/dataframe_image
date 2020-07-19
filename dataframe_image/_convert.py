@@ -19,7 +19,7 @@ from matplotlib import image as mimage
 
 
 class Converter:
-    KINDS = ['pdf', 'md', 'markdown']
+    KINDS = ['pdf', 'md']
     DISPLAY_DATA_PRIORITY = [
         "image/png",
         "text/html",
@@ -65,7 +65,7 @@ class Converter:
             to = [to]
         elif not isinstance(to, list):
             raise TypeError('`to` must either be a string or a list. '
-                            'Possible values are "pdf" and "md"')
+                            'Possible values are "pdf" and "markdown/md"')
         to = set(to)
         if 'markdown' in to:
             to.remove('markdown')
@@ -74,21 +74,21 @@ class Converter:
             if kind not in self.KINDS:
                 raise TypeError(
                     "`to` must either be a string or a list. "
-                    'Possible values are "pdf" or "markdown"/"md"'
-                    f' and not {kind}.'
+                    'Possible values are "pdf" or "markdown"/"md" '
+                    f'and not {kind}.'
                 )
         if 'pdf' in to:
             to.remove('pdf')
-            if use == 'latex':
+            if self.use == 'latex':
                 to.add('pdf_latex')
-            elif use == 'browser':
+            elif self.use == 'browser':
                 to.add('pdf_browser')
             else:
                 raise ValueError('`use` must be either "latex" or "browser"')
         return to
 
     def get_latex_command(self, latex_command):
-        if self.use == 'latex' and 'pdf' in self.to:
+        if 'pdf_latex' in self.to:
             if latex_command is None:
                 texs = ['xelatex', 'pdflatex', 'texi2pdf']
                 final_tex = ''
@@ -142,7 +142,7 @@ class Converter:
             converter = TableMaker(fontsize=22).run
 
         replace_http = False
-        if 'pdf' in self.to and self.use == 'latex':
+        if 'pdf_latex' in self.to:
             replace_http = True
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.document_name},
@@ -280,7 +280,8 @@ class Converter:
         # as it requires no other preprocessing
         if 'pdf_browser' in self.to:
             self.to_pdf_browser()
-        else:
+        
+        if 'md' in self.to or 'pdf_latex' in self.to:
             # Step 3: If converting to markdown or latex_pdf, do no execute preprocessing
             # This will also change the output type for images with ChangeOutputTypePreprocessor
             self.no_execute_preprocess()
