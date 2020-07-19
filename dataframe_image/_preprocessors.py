@@ -124,7 +124,9 @@ class MarkdownPreprocessor(Preprocessor):
             
         return cell, resources
 
-
+# converts DataFrames to images when not executing notebook first
+# also converts gifs to png for outputs since jinja template is missing this
+# could write a custom template to handle this
 class NoExecuteDataFramePreprocessor(Preprocessor):
         
     def preprocess_cell(self, cell, resources, index):
@@ -153,6 +155,10 @@ class NoExecuteDataFramePreprocessor(Preprocessor):
         return cell, resources 
 
 
+# Images displayed with output_type equal to execute_result cause 
+# LaTeX formatting issues (undefull hbox). Changing this to display_data
+# fixes this, but only works when the execution count number is removed
+# This is a hack for a possible bug in nbconvert
 class ChangeOutputTypePreprocessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, cell_index):
@@ -166,6 +172,8 @@ class ChangeOutputTypePreprocessor(Preprocessor):
         return cell, resources
 
 
+# Images in markdown from the web must be downloaded locally to make available 
+# for latex pdf and markdown conversion. requests is used to get image data
 class MarkdownHTTPPreprocessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, cell_index):
