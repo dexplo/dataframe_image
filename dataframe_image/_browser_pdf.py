@@ -63,7 +63,6 @@ async def main(file_name, p):
             params = {'displayHeaderFooter': False, 'printBackground': True}
             data = {'id': 4, 'method': 'Page.printToPDF', 'params': params}
             pdf_data = await handler(ws, data, 'data')
-            print('pdf_data length', len(pdf_data))
             pdf_data = base64.b64decode(pdf_data)
             return pdf_data
     
