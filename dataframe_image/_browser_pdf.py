@@ -2,7 +2,7 @@ import asyncio
 import base64
 from pathlib import Path
 from subprocess import Popen
-from tempfile import TemporaryDirectory
+from tempfile import mkstemp
 import concurrent.futures
 import urllib.parse
 
@@ -47,6 +47,7 @@ async def main(file_name, p):
             frameId = await handler(ws, data, 'frameId')
             
             # second - enable page
+            # await asyncio.sleep(1)
             data = {'id': 2, 'method': 'Page.enable'}
             await handler(ws, data)
 
@@ -60,6 +61,7 @@ async def main(file_name, p):
             params = {'displayHeaderFooter': False, 'printBackground': True}
             data = {'id': 4, 'method': 'Page.printToPDF', 'params': params}
             pdf_data = await handler(ws, data, 'data')
+            print('pdf_data length', len(pdf_data))
             pdf_data = base64.b64decode(pdf_data)
             return pdf_data
     
@@ -79,21 +81,7 @@ def get_html_data(nb, resources, **kw):
     he = HTMLExporter()
     html_data, resources = he.from_notebook_node(nb, resources, **kw)
     html_data = html_data.replace('@media print', '@media xxprintxx')
-
-    # replace images with base64 strings
-    for key, value in resources['image_data_dict'].items():
-        ext = key.split('.')[-1]
-        value = base64.b64encode(value).decode()
-        data = f'data:image/{ext};base64, {value}'
-        html_data = html_data.replace(key, data)
-        
-    return html_data, resources
-
-def write_html_data(td_path, html_data):
-    tf = td_path / 'nb.html'
-    with open(tf, 'w') as f:
-        f.write(html_data)
-    return tf
+    return html_data
 
 def get_pdf_data(file_name, p):
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -107,15 +95,16 @@ class BrowserExporter(Exporter):
         return '.pdf'
 
     def from_notebook_node(self, nb, resources=None, **kw):
-        p = launch_chrome()
-        td = TemporaryDirectory()
-        td_path = Path(td.name)
-
-        html_data, resources = get_html_data(nb, resources, **kw)
         resources['output_extension'] = '.pdf'
-        tf = write_html_data(td_path, html_data)
-        file_name = str(tf.resolve())
-        file_name = 'file://' + urllib.parse.quote(file_name) 
-        pdf_data = get_pdf_data(file_name, p)
+        nb_home = resources['metadata']['path']
+
+        p = launch_chrome()
+        html_data = get_html_data(nb, resources, **kw)
+        _, tf_name = mkstemp(dir=nb_home, suffix='.html')
+        with open(tf_name, 'w') as f:
+            f.write(html_data)
+        tf_path = Path(tf_name)
+        full_file_name = 'file://' + urllib.parse.quote(tf_name) 
+        pdf_data = get_pdf_data(full_file_name, p)
         p.kill()
         return pdf_data, resources
