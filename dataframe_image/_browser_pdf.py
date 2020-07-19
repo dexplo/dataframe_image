@@ -109,5 +109,7 @@ class BrowserExporter(Exporter):
         tf_path = Path(tf_name)
         full_file_name = 'file://' + urllib.parse.quote(tf_name) 
         pdf_data = get_pdf_data(full_file_name, p)
+        import os
+        os.remove(tf_path)
         p.kill()
         return pdf_data, resources
