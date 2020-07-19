@@ -170,16 +170,17 @@ class Converter:
             NoExecuteDataFramePreprocessor().preprocess(self.nb, self.resources)
 
         ChangeOutputTypePreprocessor().preprocess(self.nb, self.resources)
-        from copy import deepcopy
-        self.nb_copy = deepcopy(self.nb)
+        if self.save_notebook:
+            self.nb_copy = self.nb.copy()
         MarkdownPreprocessor().preprocess(self.nb, self.resources)
+        self.resources.pop('converter')
 
     def to_md(self):
         me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
                                                         self.DISPLAY_DATA_PRIORITY}})
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
+        
         # the base64 encoded binary files are saved in output_resources
-
         image_data_dict = {**self.resources['outputs'], **self.resources['image_data_dict']}
         for filename, image_data in image_data_dict.items():
             new_filename = str(Path(self.image_dir_name) / filename)
@@ -205,6 +206,8 @@ class Converter:
                 f.write(md_data)
 
     def to_pdf(self):
+        if 'outputs' in self.resources:
+            self.resources.pop('outputs')
         from ._preprocessors import MarkdownHTTPPreprocessor
         temp_dir = Path(self.td.name)
         self.resources['temp_dir'] = temp_dir
