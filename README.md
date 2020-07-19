@@ -9,7 +9,7 @@ A package to convert Jupyter Notebooks to PDF and/or Markdown embedding pandas D
 
 When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as simple LaTeX tables. The left side of the image below shows this representation.
 
-![png](docs/images/dataframe_image_compare.png)
+![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/dataframe_image_compare.png)
 
 This package was first created to embed DataFrames into pdf and markdown documents as images so that they appear exactly as they do in Jupyter Notebooks, as seen from the right side of the image above. It has since added much more functionality.
 
@@ -17,7 +17,7 @@ This package was first created to embed DataFrames into pdf and markdown documen
 
 Upon installation, the option `DataFrame as Image (PDF or Markdown)` will appear in the menu `File -> Download as`. Clicking this option will open up a new browser tab with a short form to be completed.
 
-![png](docs/images/form.png)
+![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/form.png)
 
 ### Exporting individual DataFrames
 
@@ -30,7 +30,7 @@ dataframe_image has the ability to export both normal and styled DataFrames as i
 
 Here, an example of how exporting a DataFrame would look like in a notebook.
 
-![png](docs/images/dfi_export.png)
+![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/dfi_export.png)
 
 ## Installation
 
@@ -40,7 +40,7 @@ Here, an example of how exporting a DataFrame would look like in a notebook.
 
 By default, conversion to pdf happens via LaTeX, which you must have pre-installed on your machine. If you do not have the correct LaTeX installation, you'll need to select the Chrome Browser option to make the conversion.
 
-Conversion via Chrome browser is much quicker and will look nearly the same as choosing File (from the browser application menu and NOT the notebook) and selecting print as PDF. However, The two PDF files will look quite different, with the LaTeX version looking more like a book/article and the browser version looking nearly identical to how it appears on your screen.
+Conversion via Chrome browser is much quicker and will look very different than the LaTeX rendition. The chrome browser version will look nearly the same as it does in your browser, while the LaTeX version looking more like a book/article.
 
 Consult [nbconvert's documentation](https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex) to learn how to get latex installed correctly on your machine.
 
