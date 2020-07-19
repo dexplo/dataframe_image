@@ -167,13 +167,16 @@ class Converter:
 
     def execute_notebook(self):
         if self.execute:
-            code = self.get_code_to_run()
-            extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
+            if self.table_conversion == 'chrome':
+                code = self.get_code_to_run()
+                extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
+            else:
+                extra_arguments = []
             pp = ExecutePreprocessor(allow_errors=True, extra_arguments=extra_arguments)
             pp.preprocess(self.nb, self.resources)
 
     def no_execute_preprocess(self):
-        if not self.execute:
+        if not self.execute or self.table_conversion == 'matplotlib':
             NoExecuteDataFramePreprocessor().preprocess(self.nb, self.resources)
         ChangeOutputTypePreprocessor().preprocess(self.nb, self.resources)
 
