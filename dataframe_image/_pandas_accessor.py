@@ -3,8 +3,8 @@ from pandas.io.formats.style import Styler
 
 from ._screenshot import Screenshot
 
-MAX_COLS = 100
-MAX_ROWS = 30
+MAX_COLS = 30
+MAX_ROWS = 100
 
 
 @pd.api.extensions.register_dataframe_accessor("dfi")
@@ -15,13 +15,15 @@ class _Export:
 
     def export(self, filename, fontsize=14, max_rows=None, max_cols=None, 
                table_conversion='chrome', chrome_path=None):
-        return _export(self._df, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path)
+        return _export(self._df, filename, fontsize, max_rows, max_cols, 
+                       table_conversion, chrome_path)
 
 
 def export(obj, filename, fontsize=14, max_rows=None, max_cols=None, 
                table_conversion='chrome', chrome_path=None):
         return _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path)
         
+
 def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path):    
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
@@ -110,16 +112,17 @@ max_cols : int
 
 table_conversion : 'chrome' or 'matplotlib', default 'chrome'
     DataFrames will be converted to png via Chrome or matplotlib. Use chrome
-    unless you cannot get it to work. matplotlib should provide a decent
+    unless you cannot get it to work. matplotlib provides a decent
     alternative.
 
 chrome_path : str, default `None`
     Path to your machine's chrome executable. When `None`, it is 
     automatically found. Use this when chrome is not automatically found.
+
 """
 
 export_intro ="""
-Export a DataFrame of Styled DataFrame as a png to a file.
+Export a DataFrame or Styled DataFrame as a png to a file.
 
 Styled DataFrames cannot use max_rows or max_cols and 
 cannot be exported with `table_conversion` set to 'matplotlib'.
