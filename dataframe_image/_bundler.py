@@ -73,7 +73,7 @@ def get_js(converter):
     fn = converter.document_name
     data = converter.return_data
     
-    if converter.to == ['pdf']:
+    if converter.to == {'pdf_latex'} or converter.to == {'pdf_browser'}:
         app_type = 'pdf'
         s = base64.b64encode(data['pdf_data']).decode()
     else:
