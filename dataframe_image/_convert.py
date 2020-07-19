@@ -202,7 +202,7 @@ class Converter:
                 shutil.rmtree(image_dir)
             image_dir.mkdir()
 
-            for filename, value in image_data_dict:
+            for filename, value in image_data_dict.items():
                 with open(image_dir / filename, 'wb') as f:
                     f.write(value)
             
@@ -312,7 +312,7 @@ def convert(filename, to='pdf', use='latex', center_df=True, max_rows=30,
     The images will be screenshots of the DataFrames as they appear in a 
     chrome browser.
 
-    By default, the new file will be in the same directory where the 
+    By default, the new file will be created in the same directory where the 
     notebook resides and use the same name but with appropriate extension.
 
     When converting to markdown, a folder with the title 
