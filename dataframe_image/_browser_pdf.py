@@ -12,6 +12,7 @@ import aiohttp
 from ._screenshot import get_chrome_path
 from . import _my_asyncio as my_asyncio
 
+
 async def handler(ws, data, key=None):
     await ws.send_json(data)
     async for msg in ws:
@@ -20,6 +21,7 @@ async def handler(ws, data, key=None):
             result = msg_json['result'].get(key)
             break
     return result
+
 
 async def main(file_name, p):    
     async with aiohttp.ClientSession() as session:
@@ -77,11 +79,13 @@ def launch_chrome():
     p = Popen(args=args)
     return p
 
+
 def get_html_data(nb, resources, **kw):
     he = HTMLExporter()
     html_data, resources = he.from_notebook_node(nb, resources, **kw)
     html_data = html_data.replace('@media print', '@media xxprintxx')
     return html_data
+
 
 def get_pdf_data(file_name, p):
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
