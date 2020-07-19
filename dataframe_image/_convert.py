@@ -77,9 +77,14 @@ class Converter:
                     'Possible values are "pdf" or "markdown"/"md"'
                     f' and not {kind}.'
                 )
-        to = list(to)
-        if len(to) == 2:
-            to = ['md', 'pdf']
+        if 'pdf' in to:
+            to.remove('pdf')
+            if use == 'latex':
+                to.add('pdf_latex')
+            elif use == 'browser':
+                to.add('pdf_browser')
+            else:
+                raise ValueError('`use` must be either "latex" or "browser"')
         return to
 
     def get_latex_command(self, latex_command):
@@ -160,20 +165,17 @@ class Converter:
         )
         return code
 
-    def preprocess(self):
+    def execute_notebook(self):
         if self.execute:
             code = self.get_code_to_run()
             extra_arguments = [f"--InteractiveShellApp.code_to_run='{code}'"]
             pp = ExecutePreprocessor(allow_errors=True, extra_arguments=extra_arguments)
             pp.preprocess(self.nb, self.resources)
-        else:
-            NoExecuteDataFramePreprocessor().preprocess(self.nb, self.resources)
 
+    def no_execute_preprocess(self):
+        if not self.execute:
+            NoExecuteDataFramePreprocessor().preprocess(self.nb, self.resources)
         ChangeOutputTypePreprocessor().preprocess(self.nb, self.resources)
-        if self.save_notebook:
-            self.nb_copy = self.nb.copy()
-        MarkdownPreprocessor().preprocess(self.nb, self.resources)
-        self.resources.pop('converter')
 
     def to_md(self):
         me = MarkdownExporter(config={'NbConvertBase': {'display_data_priority': 
@@ -205,22 +207,23 @@ class Converter:
             with open(fn, mode='w') as f:
                 f.write(md_data)
 
-    def to_pdf(self):
+    def to_pdf_latex(self):
         if 'outputs' in self.resources:
             self.resources.pop('outputs')
+        
+        # must download html images for latex to use them
         from ._preprocessors import MarkdownHTTPPreprocessor
         temp_dir = Path(self.td.name)
         self.resources['temp_dir'] = temp_dir
         MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
 
-        if self.use == 'browser':
-            return self.to_chrome_pdf()
-    
         for filename, image_data in self.resources['image_data_dict'].items():
             fn_pieces = filename.split('_')
             cell_idx = int(fn_pieces[1])
             ext = fn_pieces[-1].split('.')[-1]
             new_filename = str(temp_dir / filename)
+
+            # extract first image from gif and use as png for latex pdf
             if ext == 'gif':
                 buffer = io.BytesIO(image_data)
                 arr = mimage.imread(buffer, format='gif')
@@ -243,7 +246,7 @@ class Converter:
             with open(fn, mode='wb') as f:
                 f.write(pdf_data)
 
-    def to_chrome_pdf(self):
+    def to_pdf_browser(self):
         from ._browser_pdf import BrowserExporter
         be = BrowserExporter()
         pdf_data, self.resources = be.from_notebook_node(self.nb, self.resources)
@@ -255,9 +258,10 @@ class Converter:
                 f.write(pdf_data)
 
     def save_notebook_to_file(self):
-        # TODO: save image dir when pdf
         if self.save_notebook:
-            for cell in self.nb_copy['cells']:
+            import copy
+            nb = copy.deepcopy(self.nb)
+            for cell in nb['cells']:
                 if cell['cell_type'] == 'code':
                     for output in cell['outputs']:
                         data = output.get('data', {})
@@ -267,13 +271,31 @@ class Converter:
 
             name = self.nb_name + '_dataframe_image.ipynb'
             file = self.final_nb_home / name
-            nbformat.write(self.nb_copy, file)
+            nbformat.write(nb, file)
 
     def convert(self):
-        self.preprocess()
-        for kind in self.to:
-            getattr(self, f'to_{kind}')()
-        self.save_notebook_to_file()
+        # Step 1: execute notebook if required
+        self.execute_notebook()
+        # Step 2: if exporting as pdf with browser, do this first
+        # as it requires no other preprocessing
+        if 'pdf_browser' in self.to:
+            self.to_pdf_browser()
+        else:
+            # Step 3: If converting to markdown or latex_pdf, do no execute preprocessing
+            # This will also change the output type for images with ChangeOutputTypePreprocessor
+            self.no_execute_preprocess()
+            # Step 4: Save notebook if necessary before processing markdown
+            self.save_notebook_to_file()
+            # Step 5: Preprocess markdown
+            MarkdownPreprocessor().preprocess(self.nb, self.resources)
+            # Step 6 Remove converter from resources - nbconvert cannot copy matplotlib transform object
+            self.resources.pop('converter')
+            # Step 7: Convert to markdown if required
+            if 'md' in self.to:
+                self.to_md()
+            # Step 8: Convert to pdf via latex if required
+            if 'pdf_latex' in self.to:
+                self.to_pdf_latex()
 
 
 def convert(filename, to='pdf', use='latex', center_df=True, max_rows=30, 
