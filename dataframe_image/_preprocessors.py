@@ -128,7 +128,6 @@ class MarkdownPreprocessor(Preprocessor):
 class NoExecuteDataFramePreprocessor(Preprocessor):
         
     def preprocess_cell(self, cell, resources, index):
-        nb_home = Path(resources['metadata']['path'])
         converter = resources['converter']
         if cell['cell_type'] == 'code':
             outputs = cell.get('outputs', [])
@@ -170,8 +169,6 @@ class ChangeOutputTypePreprocessor(Preprocessor):
 class MarkdownHTTPPreprocessor(Preprocessor):
 
     def preprocess_cell(self, cell, resources, cell_index):
-        nb_home = Path(resources['metadata']['path'])
-        image_data_dict = resources['image_data_dict']
         temp_dir = resources['temp_dir']
         if cell['cell_type'] == 'markdown':
             all_image_files = get_image_files(cell['source'], True)
