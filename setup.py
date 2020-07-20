@@ -9,11 +9,6 @@ with open('dataframe_image/__init__.py', 'r') as f:
 with open('README.md', 'r') as fh:
     long_description = fh.read()
 
-pat = r'!\[png\]\('
-repl = r'![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/'
-
-long_description = re.sub(pat, repl, long_description)
-
 setuptools.setup(
     name='dataframe_image',
     version=version,
