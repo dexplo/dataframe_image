@@ -28,6 +28,13 @@ dataframe_image has the ability to export both normal and styled DataFrames as i
 >>> dfi.export(df_styled, 'df_styled.png')
 ```
 
+You may also export directly from the DataFrame or styled DataFrame using the `dfi.export` and `export_png` methods, respectively.
+
+```python
+>>> df.dfi.export('df.png')
+>>> df_styled.export_png('df_styled.png)
+```
+
 Here, an example of how exporting a DataFrame would look like in a notebook.
 
 ![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/dfi_export.png)
