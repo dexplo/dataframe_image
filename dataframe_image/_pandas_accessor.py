@@ -77,13 +77,19 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
     elif hasattr(filename, 'write'):
         filename.write(img_str)
 
+setattr(Styler, 'export_png', export)
 
 accessor_intro = """
 Export a DataFrame as png to a file
 
 Parameters
-----------
-"""
+----------"""
+
+styler_intro = """
+Export a styled DataFrame as png to a file
+
+Parameters
+----------"""
 
 doc_params =f"""
 filename : str or file-like
@@ -135,3 +141,4 @@ obj : DataFrame or Styler object
 
 _Export.export.__doc__ = accessor_intro + doc_params
 export.__doc__ = export_intro + doc_params
+Styler.export_png.__doc__ = styler_intro + doc_params
