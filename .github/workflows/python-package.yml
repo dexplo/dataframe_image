@@ -37,7 +37,8 @@ jobs:
       run: |
         choco install miktek
         choco install pandoc
-      name: upload logs
+    - name: upload logs
+      if: ${{ matrix.os == 'windows-latest' }}
       uses: actions/upload-artifact@v2
       with:
         name: choco logs
