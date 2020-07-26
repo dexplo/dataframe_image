@@ -43,5 +43,4 @@ class TestConvertOther:
         filename = 'tests/notebooks/Short.ipynb'
         to = 'pdf'
         document_name = Path(filename).stem + ' output_dir NEW NAME'
-        convert(filename, to=to, output_dir='tests/test_output', document_name=document_name)
-        
+        convert(filename, to=to, execute=True, output_dir='tests/test_output', document_name=document_name)
