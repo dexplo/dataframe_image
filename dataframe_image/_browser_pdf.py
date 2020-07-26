@@ -10,7 +10,6 @@ from nbconvert.exporters import Exporter, HTMLExporter
 import aiohttp
 
 from ._screenshot import get_chrome_path
-from . import _my_asyncio as my_asyncio
 
 
 async def handler(ws, data, key=None):
@@ -87,8 +86,13 @@ def get_html_data(nb, resources, **kw):
 
 
 def get_pdf_data(file_name, p):
+    try:
+        from asyncio import run
+    except ImportError:
+        from ._my_asyncio import run
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future = executor.submit(my_asyncio.run, main(file_name, p))
+        future = executor.submit(run, main(file_name, p))
     return future.result()
 
 
