@@ -1,8 +1,7 @@
 from pathlib import Path
 import shutil
 
-def delete(fp):
-    p = Path(fp)
+def delete(p):
     for file in p.iterdir():
         if file.suffix in ('.pdf', '.md') or file.name.endswith('_dataframe_image.ipynb'):
             if file.name != 'README.md':
