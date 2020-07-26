@@ -1,7 +1,6 @@
 # taken directly from asyncio runners.py module in python 3.7+
 
 import asyncio
-from asyncio.tasks import _all_tasks
 
 
 def _get_loop(fut):
