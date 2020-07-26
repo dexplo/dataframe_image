@@ -1,32 +1,24 @@
+from pathlib import Path
+import pytest
 from dataframe_image import convert
-import nbformat
-
-class TestPDF:
-
-    filename = 'notebooks/Test 1 Notebook.ipynb'
-
-    def test_same_folder(self):
-        convert(self.filename, to='pdf')
-
-    def test_different_folder(self):
-        convert(self.filename, to='pdf', output_dir='notebooks/test_output', save_notebook=True, 
-                document_name='Test 1 Notebook NEW NAME')
-
-    def test_no_execute(self):
-        convert(self.filename, to='pdf', document_name='Test 1 Notebook NO EXECUTE')
 
 
-class TestMarkdown:
+filenames = ['tests/notebooks/Short Test Notebook EXECUTED.ipynb',
+             'tests/notebooks/short notebook with md tables EXECUTED.ipynb']
+tos = ['pdf', 'md']
 
-    filename = 'notebooks/Test 1 Notebook.ipynb'
+@pytest.mark.parametrize('filename', filenames)
+@pytest.mark.parametrize('to', tos)
+class TestConvert:    
 
-    def test_same_folder(self):
-        convert(self.filename, to='md')
+    def test_same_folder(self, filename, to):
+        convert(filename, to=to)
 
-    def test_different_folder(self):
-        convert(self.filename, to='md', output_dir='notebooks/test_output', 
-                save_notebook=True, document_name='New Test Name')
+    def test_different_folder(self, filename, to):
+        name = Path(filename).name
+        convert(filename, to=to, output_dir='tests/test_output', save_notebook=True, 
+                document_name=f'{name} NEW NAME')
 
-    def test_no_execute(self):
-        convert(self.filename, to='md', document_name='Test 1 Notebook NO EXECUTE')
-
+    def test_execute(self, filename, to):
+        name = Path(filename).name
+        convert(filename, to=to, document_name=f'{name} EXECUTE', execute=True)
