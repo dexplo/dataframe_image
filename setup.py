@@ -28,7 +28,7 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.6',
-    install_requires=['pandas>=0.24', 'nbconvert>=5', 'aiohttp', 
+    install_requires=['pandas>=0.24', 'nbconvert>=5', 'aiohttp', 'requests', 
                       'matplotlib>=3.1', 'beautifulsoup4'],
     include_package_data=True,
     entry_points = {'console_scripts': ['dataframe_image=dataframe_image._command_line:main']},
