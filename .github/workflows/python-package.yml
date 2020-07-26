@@ -35,7 +35,7 @@ jobs:
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        choco install miktex.install
+        choco install miktek.install --params '"/Set:complete /RepoPath:""c:\Shared Files\MiKTeX-Repo"""'
         choco install pandoc
     - name: Install dependencies
       run: |
