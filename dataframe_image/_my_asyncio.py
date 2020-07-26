@@ -1,6 +1,7 @@
 # taken directly from asyncio runners.py module in python 3.7+
 
 import asyncio
+from asyncio.tasks import _all_tasks
 
 
 def _get_loop(fut):
@@ -65,10 +66,20 @@ def run(main):
         loop.set_debug(False)
         return loop.run_until_complete(main)
     finally:
-        try:
-            _cancel_all_tasks(loop)
-            loop.run_until_complete(loop.shutdown_asyncgens())
-        finally:
-            asyncio.set_event_loop(None)
-            loop.close()
+        asyncio.set_event_loop(None)
+        loop.close()
             
+
+# def run(main):
+#     loop = asyncio.new_event_loop()
+#     try:
+#         asyncio.set_event_loop(loop)
+#         loop.set_debug(False)
+#         return loop.run_until_complete(main)
+#     finally:
+#         try:
+#             _cancel_all_tasks(loop)
+#             loop.run_until_complete(loop.shutdown_asyncgens())
+#         finally:
+#             asyncio.set_event_loop(None)
+#             loop.close()
