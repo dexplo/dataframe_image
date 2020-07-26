@@ -1,14 +1,11 @@
 from pathlib import Path
-from tempfile import TemporaryDirectory
 import base64
 import io
 import re
-import urllib.parse
-import importlib
 
 import mistune
 import requests
-from nbconvert.preprocessors import ExecutePreprocessor, Preprocessor
+from nbconvert.preprocessors import Preprocessor
 
 
 def get_image_files(md_source, only_http=False):
@@ -39,7 +36,7 @@ def get_image_files(md_source, only_http=False):
     return image_files
 
 
-def replace_md_tables(md_source, converter, cell_index):
+def replace_md_tables(image_data_dict, md_source, converter, cell_index):
     i = 0
     table = re.compile(r'^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*', re.M)
     nptable = re.compile(r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*', re.M)
@@ -53,7 +50,7 @@ def replace_md_tables(md_source, converter, cell_index):
         new_image_name = f'markdown_{cell_index}_table_{i}.png'
         image_data_dict[new_image_name] = image_data
         i += 1
-        return f'![]({new_image_name})'
+        return f'![]({new_image_name})\n'
     
     md_source = nptable.sub(md_table_to_image, md_source)
     md_source = table.sub(md_table_to_image, md_source)
@@ -120,7 +117,8 @@ class MarkdownPreprocessor(Preprocessor):
                     cell['source'] = cell['source'].replace(f'attachment:{image_name}', new_image_name)
 
             # find markdown tables
-            cell['source'] = replace_md_tables(cell['source'], resources['converter'], cell_index)
+            cell['source'] = replace_md_tables(image_data_dict, cell['source'], 
+                                               resources['converter'], cell_index)
             
         return cell, resources
 
