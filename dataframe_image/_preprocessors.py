@@ -50,7 +50,7 @@ def replace_md_tables(image_data_dict, md_source, converter, cell_index):
         new_image_name = f'markdown_{cell_index}_table_{i}.png'
         image_data_dict[new_image_name] = image_data
         i += 1
-        return f'![]({new_image_name})\n'
+        return f'![]({new_image_name})\n\n'
     
     md_source = nptable.sub(md_table_to_image, md_source)
     md_source = table.sub(md_table_to_image, md_source)
