@@ -35,8 +35,14 @@ jobs:
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        choco install miktek.install --params '"/Set:complete /RepoPath:""c:\Shared Files\MiKTeX-Repo"""'
+        choco install miktek
         choco install pandoc
+      name: upload logs
+      uses: actions/upload-artifact@v2
+      with:
+        name: choco logs
+        path: C:\ProgramData\chocolatey\logs\chocolatey.log
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
