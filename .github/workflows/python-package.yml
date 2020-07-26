@@ -35,7 +35,7 @@ jobs:
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        choco install miktek
+        choco install miktex
         choco install pandoc
     - name: upload logs
       if: ${{ matrix.os == 'windows-latest' }}
