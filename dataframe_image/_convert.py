@@ -141,14 +141,10 @@ class Converter:
             from ._matplotlib_table import TableMaker
             converter = TableMaker(fontsize=22).run
 
-        replace_http = False
-        if 'pdf_latex' in self.to:
-            replace_http = True
         resources = {'metadata': {'path': str(self.nb_home), 
                                   'name': self.document_name},
                      'converter': converter,
-                     'image_data_dict': {},
-                     'replace_http': replace_http}
+                     'image_data_dict': {}}
         return resources
         
     def get_code_to_run(self):
@@ -212,6 +208,7 @@ class Converter:
 
     def to_pdf_latex(self):
         if 'outputs' in self.resources:
+            # remove outputs from MarkdownExporter if used
             self.resources.pop('outputs')
         
         # must download html images for latex to use them
@@ -350,18 +347,18 @@ def convert(filename, to='pdf', use='latex', center_df=True, max_rows=30,
         Maximum number of columns to output from DataFrame. This is forwarded 
         to the `to_html` DataFrame method.
 
-    execute : bool, default `False`
+    execute : bool, default False
         Whether or not to execute the notebook first.
 
-    save_notebook : bool, default `False`
+    save_notebook : bool, default False
         Whether or not to save the notebook with pandas DataFrames as images as 
         a new notebook. The filename will be '{notebook_name}_dataframe_image.ipynb'
 
-    limit : int, default `None`
+    limit : int, default None
         Limit the number of cells in the notebook for conversion. This is 
         useful to test conversion of a large notebook on a smaller subset. 
 
-    document_name : str, default `None`
+    document_name : str, default None
         Name of newly created pdf/markdown document without the extension. If not
         provided, the current name of the notebook will be used.
     
@@ -371,8 +368,8 @@ def convert(filename, to='pdf', use='latex', center_df=True, max_rows=30,
         work, use matplotlib, which will always work and produce
         similar results.
 
-    chrome_path : str, default `None`
-        Path to your machine's chrome executable. When `None`, it is 
+    chrome_path : str, default None
+        Path to your machine's chrome executable. When None, it is 
         automatically found. Use this when chrome is not automatically found.
 
     latex_command: list, default None
@@ -386,7 +383,7 @@ def convert(filename, to='pdf', use='latex', center_df=True, max_rows=30,
         machine for this to work. Get more info on how to install latex -
         https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex
 
-    output_dir : str, default `None`
+    output_dir : str, default None
         Directory where new pdf and/or markdown files will be saved. By default, 
         this will be the same directory as the notebook. The directory 
         for images will also be created in here. If `save_notebook` is set to
