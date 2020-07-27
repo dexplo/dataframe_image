@@ -35,8 +35,11 @@ jobs:
         brew install pandoc
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
+      shell: bash
       run: |
-        choco install MikTeX --params '"/Set:basic"' --no-progress
+        wget https://miktex.org/download/win/miktexsetup-x64.zip
+        unzip miktexsetup-x64.zip
+        miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
         choco install pandoc --no-progress
 
     - name: upload logs
