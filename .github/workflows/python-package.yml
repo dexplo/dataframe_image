@@ -35,6 +35,7 @@ jobs:
       run: |
         ls
     - name: Install miktex
+      run: |
         unzip miktexsetup-x64.zip
         miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
         choco install pandoc --no-progress
