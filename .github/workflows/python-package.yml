@@ -36,7 +36,7 @@ jobs:
         ls
     - name: Install miktex
       run: |
-        miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
+        .\miktexsetup.exe --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
         choco install pandoc --no-progress
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
