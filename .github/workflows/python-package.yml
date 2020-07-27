@@ -35,7 +35,6 @@ jobs:
         brew install pandoc
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
-      shell: bash
       run: |
         wget https://miktex.org/download/win/miktexsetup-x64.zip
         unzip miktexsetup-x64.zip
