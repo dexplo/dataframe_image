@@ -25,15 +25,15 @@ jobs:
       run: |
         ls
     - name: run docker
-      run: docker run docker/github-actions pull miktex/miktex
-    - name: Install latex windows
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x64.zip
+      run: docker pull miktex/miktex
     - name: bash commands 2
       shell: bash
       run: |
         ls
+    - name: Install latex windows
+      if: ${{ matrix.os == 'windows-latest' }}
+      run: |
+        Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x64.zip
     - name: Install miktex
       run: |
         unzip miktexsetup-x64.zip
