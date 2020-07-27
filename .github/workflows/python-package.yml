@@ -42,7 +42,7 @@ jobs:
         dir
     - name: download
       shell: cmd
-      run: miktexsetup.exe --local-package-repository=C:\removeme --package-set=complete download
+      run: miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
     - name: echo path
       run: $Env:Path
     - name: upload miktex logs
