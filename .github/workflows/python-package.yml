@@ -35,10 +35,18 @@ jobs:
         unzip miktexsetup-x64.zip
         ls
     - name: Install miktex
+      shell: cmd
       run: |
-        .\miktexsetup.exe --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
+        miktexsetup --package-set=complete download
+        miktexsetup install
     - name: echo path
       run: $Env:Path
+    - name: upload miktex logs
+      uses: actions/upload-artifact@v2
+      with:
+        name: miktex logs
+        path: C:\temp\miktex\*.log
+
     - name: install pandoc
       run: choco install pandoc --no-progress
     - uses: actions/checkout@v2
