@@ -32,9 +32,9 @@ jobs:
         dir
     - name: download
       shell: cmd
-      run: miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
-    - name: install
-      run: miktexsetup.exe install
+      run: |
+        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
+        miktexsetup.exe install
     - name: install pandoc
       run: choco install pandoc --no-progress
     - uses: actions/checkout@v2
