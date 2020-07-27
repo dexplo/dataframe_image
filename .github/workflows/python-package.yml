@@ -24,7 +24,7 @@ jobs:
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        Invoke-WebRequest https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-4.0-x64.zip -OutFile miktexsetup-x64.zip
+        Invoke-WebRequest https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-4.0-x64.zip -OutFile miktexsetup.zip
     - name: bash commands 0
       shell: bash
       run: |
@@ -33,14 +33,15 @@ jobs:
     - name: unzip
       shell: bash
       run: |
-        unzip miktexsetup-x64.zip
+        unzip miktexsetup.zip
         ls
+        pwd
     - name: Install miktex
       shell: cmd
       run: |
         miktexsetup.exe --version
-        mkdir miktex-repository
-        miktexsetup.exe --local-package-repository=.\miktex-repository --package-set=basic download
+        mkdir -p miktex-repository
+        miktexsetup.exe --local-package-repository=.\miktex-repository --package-set=complete download
         miktexsetup.exe install
     - name: echo path
       run: $Env:Path
