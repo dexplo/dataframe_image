@@ -35,10 +35,10 @@ jobs:
       run: |
         unzip miktexsetup-x64.zip
         ls
-        mkdir C:\miktex-repository
     - name: Install miktex
       shell: cmd
       run: |
+        mkdir C:\miktex-repository
         miktexsetup --local-package-repository=C:\miktex-repository --package-set=complete download
         miktexsetup install
     - name: echo path
