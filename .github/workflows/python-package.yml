@@ -29,14 +29,11 @@ jobs:
       run: |
         pwd
         ls
-    - name: bash commands 1
-      shell: bash
-      run: |
-        ls
     - name: unzip
       shell: bash
       run: |
         unzip miktexsetup-x64.zip
+        ls
     - name: Install miktex
       run: |
         miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
