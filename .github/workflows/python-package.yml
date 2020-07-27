@@ -36,9 +36,8 @@ jobs:
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        choco install MikTeX --no-progress
+        choco install MikTeX --params '"/Set:complete"' --no-progress
         choco install pandoc --no-progress
-        xelatex -version
 
     - name: upload logs
       if: ${{ matrix.os == 'windows-latest' }}
