@@ -20,20 +20,24 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
 
     steps:
-    - name: bash commands 0
-      shell: bash
-      run: |
-        pwd
-        cd $HOME && pwd
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
         Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x64.zip
-    - name: bash commands
+    - name: bash commands 0
       shell: bash
       run: |
         pwd
-        cd $HOME && pwd
+        ls
+    - name: bash commands 1
+      shell: bash
+      run: |
+        ls
+    - name: bash commands 2
+      shell: bash
+      run: |
+        touch a.txt
+        ls
     - name: Install miktex
       run: |
         unzip miktexsetup-x64.zip
