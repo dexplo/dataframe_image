@@ -20,6 +20,11 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
 
     steps:
+    - name: bash commands 0
+      shell: bash
+      run: |
+        pwd
+        cd $HOME && pwd
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
@@ -27,7 +32,8 @@ jobs:
     - name: bash commands
       shell: bash
       run: |
-        ls
+        pwd
+        cd $HOME && pwd
     - name: Install miktex
       run: |
         unzip miktexsetup-x64.zip
