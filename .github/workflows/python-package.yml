@@ -23,13 +23,17 @@ jobs:
     - name: bash commands
       shell: bash
       run: |
-        pwd
         ls
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x64.zip -OutFile miktexsetup-x64.zip
-        unzip miktexsetup-x64.zip "$HOME"
+        Invoke-WebRequest https://miktex.org/download/win/miktexsetup-x64.zip
+    - name: bash commands 2
+      shell: bash
+      run: |
+        ls
+    - name: Install miktex
+        unzip miktexsetup-x64.zip
         miktexsetup --verbose --local-package-repository=C:\temp\miktex --package-set=complete download
         choco install pandoc --no-progress
     - uses: actions/checkout@v2
