@@ -31,11 +31,10 @@ jobs:
         pwd
         ls
     - name: unzip
-      shell: bash
+      shell: cmd
       run: |
-        unzip miktexsetup.zip
-        ls
-        pwd
+        7z e miktexsetup.zip
+        dir
     - name: ready miktex
       shell: cmd
       run: |
