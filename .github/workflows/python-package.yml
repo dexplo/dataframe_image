@@ -17,7 +17,8 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [windows-latest]
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6]
+        # python-version: [3.6, 3.7, 3.8]
 
     steps:
     - name: Install latex windows
@@ -34,7 +35,7 @@ jobs:
       run: |
         unzip miktexsetup-x64.zip
         ls
-        mkdir /miktex-repository
+        mkdir C:\miktex-repository
     - name: Install miktex
       shell: cmd
       run: |
