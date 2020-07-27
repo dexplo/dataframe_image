@@ -34,7 +34,7 @@ jobs:
       run: |
         unzip miktexsetup-x64.zip
         ls
-        sudo mkdir /miktex-repository
+        mkdir /miktex-repository
     - name: Install miktex
       shell: cmd
       run: |
