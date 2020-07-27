@@ -39,6 +39,7 @@ jobs:
       shell: cmd
       run: |
         miktexsetup.exe --version
+        mkdir miktex-repository
         miktexsetup.exe --local-package-repository=.\miktex-repository --package-set=basic download
         miktexsetup.exe install
     - name: echo path
