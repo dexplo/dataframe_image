@@ -25,32 +25,16 @@ jobs:
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
         Invoke-WebRequest https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-4.0-x64.zip -OutFile miktexsetup.zip
-    - name: bash commands 0
-      shell: bash
-      run: |
-        pwd
-        ls
     - name: unzip
       shell: cmd
       run: |
         7z e miktexsetup.zip
         dir
-    - name: ready miktex
-      shell: cmd
-      run: |
-        miktexsetup.exe --version
-        dir
     - name: download
       shell: cmd
       run: miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
-    - name: echo path
-      run: $Env:Path
-    - name: upload miktex logs
-      uses: actions/upload-artifact@v2
-      with:
-        name: miktex logs
-        path: C:\temp\miktex\*.log
-
+    - name: install
+      run: miktexsetup.exe install
     - name: install pandoc
       run: choco install pandoc --no-progress
     - uses: actions/checkout@v2
