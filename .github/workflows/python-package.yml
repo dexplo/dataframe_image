@@ -24,6 +24,8 @@ jobs:
       shell: bash
       run: |
         ls
+    - name: run docker
+      run: docker run docker/github-actions pull miktex/miktex
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
