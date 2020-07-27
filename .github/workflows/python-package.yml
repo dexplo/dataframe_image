@@ -38,8 +38,7 @@ jobs:
     - name: Install miktex
       shell: cmd
       run: |
-        mkdir C:\miktex-repository
-        miktexsetup --local-package-repository=C:\miktex-repository --package-set=complete download
+        miktexsetup --local-package-repository=C:\temp\miktex --package-set=complete download
         miktexsetup install
     - name: echo path
       run: $Env:Path
