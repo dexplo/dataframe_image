@@ -34,10 +34,11 @@ jobs:
       run: |
         unzip miktexsetup-x64.zip
         ls
+        sudo mkdir /miktex-repository
     - name: Install miktex
       shell: cmd
       run: |
-        miktexsetup --package-set=complete download
+        miktexsetup --local-package-repository=C:\miktex-repository --package-set=complete download
         miktexsetup install
     - name: echo path
       run: $Env:Path
