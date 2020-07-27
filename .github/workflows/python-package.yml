@@ -36,13 +36,14 @@ jobs:
         unzip miktexsetup.zip
         ls
         pwd
-    - name: Install miktex
+    - name: ready miktex
       shell: cmd
       run: |
         miktexsetup.exe --version
-        mkdir -p miktex-repository
-        miktexsetup.exe --local-package-repository=.\miktex-repository --package-set=complete download
-        miktexsetup.exe install
+        dir
+    - name: download
+      shell: cmd
+      run: miktexsetup.exe --local-package-repository=C:\removeme --package-set=complete download
     - name: echo path
       run: $Env:Path
     - name: upload miktex logs
