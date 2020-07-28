@@ -90,7 +90,6 @@ class Converter:
     def get_latex_command(self, latex_command):
         if 'pdf_latex' in self.to:
             if latex_command is None:
-                return ['xelatex', '{filename}', 'quiet']
                 texs = ['xelatex', 'pdflatex', 'texi2pdf']
                 final_tex = ''
                 for tex in texs:
