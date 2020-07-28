@@ -33,17 +33,11 @@ jobs:
     - name: download
       shell: cmd
       run: |
-        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=basic download
-    - name: miktex logs
-      uses: actions/upload-artifact@v2
-      with:
-        name: mlogs
-        path: C:\removeme\*.log
-
+        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
     - name: miktex install
       shell: cmd
       run: |
-        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=basic install
+        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete install
 
     - name: install pandoc
       run: choco install pandoc --no-progress
