@@ -34,10 +34,13 @@ jobs:
       shell: cmd
       run: |
         miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
+        path
     - name: miktex install
       shell: cmd
       run: |
         miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete install
+        path
+        latex --vesion
 
     - name: install pandoc
       run: choco install pandoc --no-progress
