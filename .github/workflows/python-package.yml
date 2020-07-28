@@ -33,7 +33,7 @@ jobs:
     - name: download
       shell: cmd
       run: |
-        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
+        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete --remote-package-repository=https://ctan.org/tex-archive/systems/win32/miktex/tm/packages download
         path
     - name: miktex install
       shell: cmd
