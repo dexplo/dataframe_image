@@ -44,3 +44,9 @@ class TestConvertOther:
         to = 'pdf'
         document_name = Path(filename).stem + ' output_dir NEW NAME'
         convert(filename, to=to, execute=True, output_dir='tests/test_output', document_name=document_name)
+
+    def test_matplotlib(self):
+        filename = 'tests/notebooks/Test 1.ipynb'
+        to = 'pdf'
+        document_name = Path(filename).stem + ' matplotlib NEW NAME'
+        convert(filename, to=to, execute=True, document_name=document_name, table_conversion='matplotlib')
