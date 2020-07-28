@@ -23,25 +23,10 @@ jobs:
     steps:
     - name: Install latex windows
       if: ${{ matrix.os == 'windows-latest' }}
-      run: |
-        Invoke-WebRequest https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x64/miktexsetup-4.0-x64.zip -OutFile miktexsetup.zip
-    - name: unzip
+      run: choco install miktex --params '"/Set:complete"'
+    - name: show path
       shell: cmd
-      run: |
-        7z e miktexsetup.zip
-        dir
-    - name: download
-      shell: cmd
-      run: |
-        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete --remote-package-repository=https://muug.ca download
-        path
-    - name: miktex install
-      shell: cmd
-      run: |
-        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete install
-        path
-        latex --vesion
-
+      run: path
     - name: install pandoc
       run: choco install pandoc --no-progress
     - uses: actions/checkout@v2
