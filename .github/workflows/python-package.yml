@@ -33,7 +33,7 @@ jobs:
     - name: download
       shell: cmd
       run: |
-        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=complete download
+        miktexsetup.exe --verbose --local-package-repository=C:\removeme --package-set=basic download
         miktexsetup.exe install
     - name: install pandoc
       run: choco install pandoc --no-progress
