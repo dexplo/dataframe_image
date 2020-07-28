@@ -48,7 +48,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pandas nbconvert aiohttp matplotlib beautifulsoup4 requests notebook jupyter pandoc
+        pip install pytest pandas nbconvert aiohttp matplotlib beautifulsoup4 requests notebook jupyter pandoc lxml
     - name: Test with pytest
       run: pytest
     - name: Upload pdf
