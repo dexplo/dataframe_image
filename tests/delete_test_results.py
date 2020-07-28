@@ -3,7 +3,7 @@ import shutil
 
 def delete(p):
     for file in p.iterdir():
-        if file.suffix in ('.pdf', '.md') or file.name.endswith('_dataframe_image.ipynb'):
+        if file.suffix in ('.pdf', '.md', '.png') or file.name.endswith('_dataframe_image.ipynb'):
             if file.name != 'README.md':
                 file.unlink()
 
