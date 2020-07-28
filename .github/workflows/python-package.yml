@@ -36,7 +36,7 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
         brew cask install mactex
-        exec bash
+        eval "$(/usr/libexec/path_helper)"
         xelatex --version
         brew install pandoc
 
