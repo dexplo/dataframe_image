@@ -18,12 +18,4 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@DunderData">
     <meta name="twitter:creator" content="@TedPetrou">
-    {% if page and page.meta and page.meta.title %}
-        <meta name="twitter:title" content="{{ page.meta.title }}">
-    {% elif page and page.title and not page.is_homepage %}
-        <meta name="twitter:title" content="{{ page.title }} - {{ config.site_name }}">
-    {% else %}
-        <meta name="twitter:title" content="{{ config.site_name }}">
-    {% endif %}
-    <meta name="twitter:description" content="{{ config.site_description }}">
 {% endblock %}
