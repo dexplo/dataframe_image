@@ -41,7 +41,10 @@ Here, an example of how exporting a DataFrame would look like in a notebook.
 
 ## Installation
 
-`pip install dataframe_image`
+Install with either:
+
+* `pip install dataframe_image`
+* `conda install -c conda-forge dataframe_image`
 
 ## PDF Conversion - LaTeX vs Chrome Browser
 
@@ -49,7 +52,7 @@ By default, conversion to pdf happens via LaTeX, which you must have pre-install
 
 Conversion via Chrome browser is much quicker and will look very different than the LaTeX rendition. The chrome browser version will look nearly the same as it does in your browser, while the LaTeX version looking more like a book/article.
 
-Consult [nbconvert's documentation](https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex) to learn how to get latex installed correctly on your machine.
+Consult [nbconvert's documentation](https://nbconvert.readthedocs.io/en/latest/install.html#installing-tex) to learn how to get LaTeX installed correctly on your machine.
 
 ## More features
 
