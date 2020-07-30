@@ -20,11 +20,11 @@
     <meta name="twitter:site" content="@DunderData">
     <meta name="twitter:creator" content="@TedPetrou">
     {% if page and page.meta and page.meta.title %}
-        <meta property="twitter:title" content="{{ page.meta.title }}">
+        <meta name="twitter:title" content="{{ page.meta.title }}">
     {% elif page and page.title and not page.is_homepage %}
-        <meta property="twitter:title" content="{{ page.title }} - {{ config.site_name }}">
+        <meta name="twitter:title" content="{{ page.title }} - {{ config.site_name }}">
     {% else %}
-        <meta property="twitter:title" content="{{ config.site_name }}">
+        <meta name="twitter:title" content="{{ config.site_name }}">
     {% endif %}
     <meta name="twitter:description" content="{{ config.site_description }}">
     <meta name="twitter:image" content="images/social_share.png">
