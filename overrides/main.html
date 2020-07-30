@@ -1,19 +1,13 @@
 {% extends "base.html" %}
 
 {% block extrahead %}
-    <meta property="og:url" content="{{ page.canonical_url }}">
-    {% if page and page.meta and page.meta.title %}
-        <meta property="og:title" content="{{ page.meta.title }}">
-    {% elif page and page.title and not page.is_homepage %}
-        <meta property="og:title" content="{{ page.title }} - {{ config.site_name }}">
-    {% else %}
-        <meta property="og:title" content="{{ config.site_name }}">
-    {% endif %}
     <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ page.canonical_url }}">
+    <meta property="og:title" content="{{ config.site_name }}">
     <meta property="og:description" content="{{ config.site_description }}">
     <meta property="og:image" content="https://dexplo.org/dataframe_image/images/social_share.png">
-    <meta property="og:image:alt" content="Comparison between default pdf output and the one produced by dataframe image">
     <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Comparison between default pdf output and the one produced by dataframe image">
 
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@DunderData">
