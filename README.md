@@ -41,7 +41,10 @@ Here, an example of how exporting a DataFrame would look like in a notebook.
 
 ## Installation
 
-`pip install dataframe_image`
+Install with either:
+
+* `pip install dataframe_image`
+* `conda install -c conda-forge dataframe_image`
 
 ## PDF Conversion - LaTeX vs Chrome Browser
 
