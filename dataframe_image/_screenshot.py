@@ -91,7 +91,7 @@ class Screenshot:
         temp_dir = TemporaryDirectory()
         temp_html = Path(temp_dir.name) / "temp.html"
         temp_img = Path(temp_dir.name) / "temp.png"
-        with open(temp_html, "w") as f:
+        with open(temp_html, "w", encoding="utf-8") as f:
             f.write(self.html)
 
         with open(temp_img, "wb") as f:        
