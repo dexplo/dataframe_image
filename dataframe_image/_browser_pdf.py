@@ -72,7 +72,8 @@ def launch_chrome():
         '--headless',
         '--disable-gpu', 
         '--run-all-compositor-stages-before-draw',
-        '--remote-debugging-port=9222'
+        '--remote-debugging-port=9222',
+        '--crash-dumps-dir=/tmp'
     ]
     p = Popen(args=args)
     return p
