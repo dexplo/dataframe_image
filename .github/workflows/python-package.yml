@@ -35,7 +35,7 @@ jobs:
     - name: Install latex mac
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
-        brew cask install mactex
+        brew install --cask mactex 
     - name: install pandoc
       if: ${{ matrix.os == 'macos-latest' }}
       run: brew install pandoc
