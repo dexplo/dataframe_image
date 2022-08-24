@@ -98,7 +98,9 @@ class Screenshot:
             args = [
                 "--enable-logging",
                 "--disable-gpu",
-                "--headless"
+                "--headless",
+                "--crash-dumps-dir=/tmp"
+
                 ]
 
             if self.ss_width and self.ss_height:
