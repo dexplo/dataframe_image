@@ -32,7 +32,7 @@ You may also export directly from the DataFrame or styled DataFrame using the `d
 
 ```python
 >>> df.dfi.export('df.png')
->>> df_styled.export_png('df_styled.png)
+>>> df_styled.export_png('df_styled.png')
 ```
 
 Here, an example of how exporting a DataFrame would look like in a notebook.
