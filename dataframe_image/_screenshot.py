@@ -99,8 +99,8 @@ class Screenshot:
                 "--enable-logging",
                 "--disable-gpu",
                 "--headless",
-                "--crash-dumps-dir=/tmp"
-
+                "--no-sandbox",
+                "--crash-dumps-dir=/tmp",
                 ]
 
             if self.ss_width and self.ss_height:
