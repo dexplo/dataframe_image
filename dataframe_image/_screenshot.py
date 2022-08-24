@@ -175,7 +175,7 @@ class Screenshot:
         ss = self
         def _repr_png_(self):
             if isinstance(self, Styler):
-                html = '<div>' + self.render() + '</div>'
+                html = '<head><meta charset="UTF-8"></head><div>' + self.render() + '</div>'
             else:
                 html = self.to_html(max_rows=ss.max_rows, max_cols=ss.max_cols, notebook=True)
             return ss.run(html)
