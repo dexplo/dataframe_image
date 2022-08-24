@@ -66,7 +66,7 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
         max_cols = None
 
     if is_styler:
-        html = '<div>' + obj.to_html() + '</div>'
+        html = '<head><meta charset="UTF-8"></head><div>' + obj.to_html() + '</div>'
     else:
         html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
     
