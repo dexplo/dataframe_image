@@ -38,22 +38,21 @@ def get_image_files(md_source, only_http=False):
 
 def replace_md_tables(image_data_dict, md_source, converter, cell_index):
     i = 0
-    table = re.compile(r'^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*', re.M)
-    nptable = re.compile(r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*', re.M)
+    html = mistune.markdown(md_source, escape=False)
+    html_pattern = re.compile(r"<table>(.|\n)*?<\/table>", re.MULTILINE|re.IGNORECASE)
+    # table = re.compile(r'^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*', re.M)
+    # nptable = re.compile(r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*', re.M)
     
     def md_table_to_image(match):
         nonlocal i
-        md = match.group()
-        html = mistune.markdown(md, escape=False)
-        html = '<div>' + html + '</div>'
+        html = match.group()
         image_data = base64.b64decode(converter(html))
         new_image_name = f'markdown_{cell_index}_table_{i}.png'
         image_data_dict[new_image_name] = image_data
         i += 1
         return f'![]({new_image_name})\n\n'
     
-    md_source = nptable.sub(md_table_to_image, md_source)
-    md_source = table.sub(md_table_to_image, md_source)
+    md_source = html_pattern.sub(md_table_to_image, html)
     return md_source
 
 

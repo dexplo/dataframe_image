@@ -85,7 +85,7 @@ class TableMaker:
 
         soup = BeautifulSoup(html, features="lxml")
         # get number of columns from first row
-        num_cols = sum(int(el.get('colspan', 1)) for el in soup.find('tr').find_all(['td', 'th']))
+        # num_cols = sum(int(el.get('colspan', 1)) for el in soup.find('tr').find_all(['td', 'th']))
         thead = soup.find('thead')
         tbody = soup.find('tbody')
         

@@ -7,3 +7,10 @@ build/
 .vscode/
 site/
 __init__.pyc
+
+# tests result
+/tests/**/*.pdf
+/tests/**/*.png
+/tests/**/*.md
+/tests/**/*.gif
+tests/notebooks/Short_dataframe_image.ipynb
