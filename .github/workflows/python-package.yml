@@ -36,8 +36,8 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
         brew install --cask mactex 
-        export PATH=$PATH:/Library/TeX/texbin
         eval "$(/usr/libexec/path_helper)"
+        echo "/Library/TeX/texbin" >> $GITHUB_ENV
     - name: install pandoc
       if: ${{ matrix.os == 'macos-latest' }}
       run: brew install pandoc
