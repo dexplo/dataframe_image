@@ -218,7 +218,6 @@ class TableMaker:
                     x,
                     y + yd / 2,
                     text,
-                    family="Helvetica",
                     size=self.fontsize,
                     ha=ha,
                     va="center",
