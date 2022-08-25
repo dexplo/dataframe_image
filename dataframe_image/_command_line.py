@@ -1,11 +1,13 @@
 import argparse
-import textwrap
 import sys
+import textwrap
+
 
 class CustomFormatter(argparse.RawTextHelpFormatter):
     pass
 
-HELP = '''\n\n
+
+HELP = """\n\n
           ========================================================
 
                               dataframe_image
@@ -102,30 +104,38 @@ dataframe_image path/to/my_notebook.ipynb --to=md --output-dir="some other/direc
 
 Created by Ted Petrou (https://www.dunderdata.com)
 
-'''
+"""
 
-parser = argparse.ArgumentParser(formatter_class=CustomFormatter, add_help=False, usage=argparse.SUPPRESS)
-parser.add_argument('filename', default=False)
-parser.add_argument('-h', '--help', action='store_true', dest='help')
-parser.add_argument('--to', type=str, choices=['md', 'pdf', 'markdown'], default='pdf')
-parser.add_argument('--use', type=str, choices=['latex', 'browser'], default='latex')
-parser.add_argument('--center-df', type=bool, default=True)
-parser.add_argument('--max-rows', type=int, default=30)
-parser.add_argument('--max-cols', type=int, default=10)
-parser.add_argument('--execute', type=bool, default=False)
-parser.add_argument('--save-notebook', type=bool, default=False)
-parser.add_argument('--limit', type=int)
-parser.add_argument('--document-name')
-parser.add_argument('--table-conversion', type=str, choices=['chrome', 'matplotlib'], default='chrome')
-parser.add_argument('--chrome-path')
-parser.add_argument('--latex-command', type=list, default=['xelatex', '{filename}', 'quiet'])
-parser.add_argument('--output-dir')
+parser = argparse.ArgumentParser(
+    formatter_class=CustomFormatter, add_help=False, usage=argparse.SUPPRESS
+)
+parser.add_argument("filename", default=False)
+parser.add_argument("-h", "--help", action="store_true", dest="help")
+parser.add_argument("--to", type=str, choices=["md", "pdf", "markdown"], default="pdf")
+parser.add_argument("--use", type=str, choices=["latex", "browser"], default="latex")
+parser.add_argument("--center-df", type=bool, default=True)
+parser.add_argument("--max-rows", type=int, default=30)
+parser.add_argument("--max-cols", type=int, default=10)
+parser.add_argument("--execute", type=bool, default=False)
+parser.add_argument("--save-notebook", type=bool, default=False)
+parser.add_argument("--limit", type=int)
+parser.add_argument("--document-name")
+parser.add_argument(
+    "--table-conversion", type=str, choices=["chrome", "matplotlib"], default="chrome"
+)
+parser.add_argument("--chrome-path")
+parser.add_argument(
+    "--latex-command", type=list, default=["xelatex", "{filename}", "quiet"]
+)
+parser.add_argument("--output-dir")
+
 
 def main():
-    if len(sys.argv) == 1 or '-h' in sys.argv or '--help' in sys.argv:
+    if len(sys.argv) == 1 or "-h" in sys.argv or "--help" in sys.argv:
         print(HELP)
     else:
         args = vars(parser.parse_args())
-        del args['help']
+        del args["help"]
         from ._convert import convert
+
         convert(**args)

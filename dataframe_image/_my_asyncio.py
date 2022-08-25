@@ -13,17 +13,20 @@ def _cancel_all_tasks(loop):
         task.cancel()
 
     loop.run_until_complete(
-        asyncio.tasks.gather(*to_cancel, loop=loop, return_exceptions=True))
+        asyncio.tasks.gather(*to_cancel, loop=loop, return_exceptions=True)
+    )
 
     for task in to_cancel:
         if task.cancelled():
             continue
         if task.exception() is not None:
-            loop.call_exception_handler({
-                'message': 'unhandled exception during asyncio.run() shutdown',
-                'exception': task.exception(),
-                'task': task,
-            })
+            loop.call_exception_handler(
+                {
+                    "message": "unhandled exception during asyncio.run() shutdown",
+                    "exception": task.exception(),
+                    "task": task,
+                }
+            )
 
 
 def run(main):
@@ -35,7 +38,7 @@ def run(main):
     finally:
         asyncio.set_event_loop(None)
         loop.close()
-            
+
 
 # def run(main):
 #     loop = asyncio.new_event_loop()
