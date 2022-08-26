@@ -32,6 +32,8 @@ jobs:
     - name: MacTeX Cache
       if: ${{ matrix.os == 'macos-latest' }}
       uses: actions/cache@v3.0.8
+      env:
+        cache-name: cache-brew
       with:
         # A list of files, directories, and wildcard patterns to cache and restore
         path: |
