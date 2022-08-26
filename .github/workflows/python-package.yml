@@ -15,9 +15,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        ubuntu-python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
-        macos-python-version: ["3.8", "3.10"]
+        os: [ubuntu-latest]
+        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        include:
+          - os: macos-latest
+            python-version: "3.10"
+            
 
     steps:
     - uses: actions/checkout@v2
@@ -34,18 +37,11 @@ jobs:
         key: ${{ runner.os }}-build-${{ env.cache-name }}-`brew info mactex | grep -E -o '\d+\.\d+'`
 #         # An ordered list of keys to use for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.
 #         restore-keys: # optional
-    
-    - name: MacOS Set up Python ${{ matrix.ubuntu-python-version }}
-      if: ${{ matrix.os == 'macos-latest' }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.ubuntu-python-version }}
         
-    - name: Ubuntu Set up Python ${{ matrix.macos-python-version }}
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
-        python-version: ${{ matrix.macos-python-version }}
+        python-version: ${{ matrix.python-version }}
         
     - name: Install latex windows (not working)
       if: ${{ matrix.os == 'windows-latest' }}
