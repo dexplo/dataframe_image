@@ -25,6 +25,10 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
+    - name: Get MacTeX Version
+      if: ${{ matrix.os == 'macos-latest' }}
+      run: echo "TEX_VER=$(brew info mactex | grep -E -o '\d+\.\d+')" >> $GITHUB_ENV
+    
     - name: MacTeX Cache
       if: ${{ matrix.os == 'macos-latest' }}
       uses: actions/cache@v3.0.8
@@ -34,7 +38,7 @@ jobs:
           /Library/Caches/Homebrew
           /Library/Caches/Homebrew/Casks
         # An explicit key for restoring and saving the cache
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-$(brew info mactex | grep -E -o '\d+\.\d+')
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.TEX_VER }}
 #         # An ordered list of keys to use for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.
 #         restore-keys: # optional
         
