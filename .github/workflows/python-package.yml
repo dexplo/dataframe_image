@@ -20,7 +20,7 @@ jobs:
           - os: macos-latest
             python-version: "3.10"
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Get MacTeX Version
       if: ${{ matrix.os == 'macos-latest' }}
@@ -42,7 +42,7 @@ jobs:
 #         restore-keys: # optional
         
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
         
@@ -94,11 +94,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+    - name: Set up Python 
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
     
     - name: build
       run: |
-        pip install -U build
+        pip install -U build setuptools
         python3 -m build --wheel
         
     - name: Publish package
