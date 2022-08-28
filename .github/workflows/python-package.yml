@@ -86,7 +86,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip wheel
         pip install pytest pandas nbconvert aiohttp matplotlib beautifulsoup4 requests notebook jupyter pandoc lxml
     - name: mac nbconvert patch fix # this is a tmp fix, related to https://github.com/jupyter/nbconvert/issues/1773
       if: ${{ matrix.os == 'macos-latest' }}
@@ -115,7 +115,7 @@ jobs:
     
     - name: build
       run: |
-        pip install -U build setuptools
+        pip install -U pip wheel build setuptools
         python3 -m build --wheel
         
     - name: Publish package
