@@ -22,12 +22,18 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - uses: actions/cache@v3
+    - name: Get pip cache dir
+      id: pip-cache
+      run: |
+        echo "::set-output name=dir::$(pip cache dir)"
+        
+    - name: pip cache
+      uses: actions/cache@v3
       with:
-        path: ${{ matrix.path }}
+        path: ${{ steps.pip-cache.outputs.dir }}
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
-         ${{ runner.os }}-pip-
+          ${{ runner.os }}-pip-
          
     - name: Get MacTeX Version
       if: ${{ matrix.os == 'macos-latest' }}
