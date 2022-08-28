@@ -5,7 +5,7 @@ import setuptools
 with open("dataframe_image/__init__.py", "r") as f:
     for line in f:
         if line.startswith("__version__"):
-            version = line.split("'")[1]
+            version = line.split('"')[1]
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
