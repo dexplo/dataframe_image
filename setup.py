@@ -2,17 +2,11 @@ import re
 
 import setuptools
 
-with open("dataframe_image/__init__.py", "r") as f:
-    for line in f:
-        if line.startswith("__version__"):
-            version = line.split('"')[1]
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="dataframe_image",
-    version=version,
     author="Ted Petrou",
     author_email="petrou.theodore@gmail.com",
     description="Embed pandas DataFrames as images in pdf and markdown files when "
@@ -49,4 +43,6 @@ setuptools.setup(
             ["jupyter-config/nbconfig/notebook.d/dataframe_image.json"],
         )
     ],
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
 )
