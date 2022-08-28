@@ -47,8 +47,8 @@ jobs:
       with:
         # A list of files, directories, and wildcard patterns to cache and restore
         path: |
-          /Library/Caches/Homebrew
-          /Library/Caches/Homebrew/Casks
+          ~/Library/Caches/Homebrew
+          ~/Library/Caches/Homebrew/Casks
         # An explicit key for restoring and saving the cache
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ env.TEX_VER }}
 #         # An ordered list of keys to use for restoring stale cache if no cache hit occurred for key. Note `cache-hit` returns false in this case.
