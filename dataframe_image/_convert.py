@@ -233,7 +233,7 @@ class Converter:
                     f.write(value)
 
             fn = self.final_nb_home / (self.document_name + ".md")
-            with open(fn, mode="w") as f:
+            with open(fn, mode="w", encoding="utf-8") as f:
                 f.write(md_data)
 
     def to_pdf_latex(self):

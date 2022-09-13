@@ -111,7 +111,7 @@ class BrowserExporter(Exporter):
         p = launch_chrome()
         html_data = get_html_data(nb, resources, **kw)
         _, tf_name = mkstemp(dir=nb_home, suffix=".html")
-        with open(tf_name, "w") as f:
+        with open(tf_name, "w", encoding="utf-8") as f:
             f.write(html_data)
         tf_path = Path(tf_name)
         full_file_name = "file://" + urllib.parse.quote(tf_name)
