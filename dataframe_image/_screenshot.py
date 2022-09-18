@@ -83,6 +83,7 @@ class Screenshot:
         fontsize=18,
         encode_base64=True,
         limit_crop=True,
+        device_scale_factor=1
     ):
         self.center_df = center_df
         self.max_rows = max_rows
@@ -93,6 +94,7 @@ class Screenshot:
         self.css = self.get_css(fontsize)
         self.encode_base64 = encode_base64
         self.limit_crop = limit_crop
+        self.device_scale_factor = device_scale_factor
 
     def get_css(self, fontsize):
         mod_dir = Path(__file__).resolve().parent
@@ -117,6 +119,7 @@ class Screenshot:
                 "--headless",
                 "--no-sandbox",
                 "--crash-dumps-dir=/tmp",
+                f"--force-device-scale-factor={self.device_scale_factor}",
             ]
 
             if self.ss_width and self.ss_height:
