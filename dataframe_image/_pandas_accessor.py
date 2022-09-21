@@ -21,8 +21,7 @@ class _Export:
         max_cols=None,
         table_conversion="chrome",
         chrome_path=None,
-        device_scale_factor=1,
-        savefig_dpi=None
+        dpi=None
     ):
         return _export(
             self._df,
@@ -32,8 +31,7 @@ class _Export:
             max_cols,
             table_conversion,
             chrome_path,
-            device_scale_factor,
-            savefig_dpi
+            dpi
         )
 
 
@@ -45,15 +43,14 @@ def export(
     max_cols=None,
     table_conversion="chrome",
     chrome_path=None,
-    device_scale_factor=1,
-    savefig_dpi=None
+    dpi=None
 ):
     return _export(
-        obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, device_scale_factor, savefig_dpi
-    )
+        obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
+   )
 
 
-def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, device_scale_factor, savefig_dpi):
+def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
 
@@ -65,13 +62,13 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
             fontsize=fontsize,
             encode_base64=False,
             limit_crop=False,
-            device_scale_factor=device_scale_factor
+            device_scale_factor=(1 if dpi == None else dpi/100.0)
         ).run
     else:
         from ._matplotlib_table import TableMaker
 
         converter = TableMaker(
-            fontsize=fontsize, encode_base64=False, for_document=False, savefig_dpi=savefig_dpi
+            fontsize=fontsize, encode_base64=False, for_document=False, savefig_dpi=dpi
         ).run
 
     if df.shape[0] > MAX_ROWS and max_rows is None:
@@ -173,20 +170,15 @@ chrome_path : str, default `None`
     Path to your machine's chrome executable. When `None`, it is 
     automatically found. Use this when chrome is not automatically found.
 
-device_scale_factor: int, default `1`
-    Factor used to convert from the default logical coordinate space 
-    into the physical space. Use this to increase the quality of the image
-    when `table_conversion`=`chrome`. For "retina" quality, try 2 or higher.
-    AKA Device-pixel-ratio (https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio)
+dpi : int, default `None`
+    Dots per inch - Use this to change the resolution ("quality") of the image.
     
-savefig_dpi : int, default `None`
-    Resolution in dots-per-inch when `table_conversion`=`matplotlib`. 
-    Use this to change the quality of the image.
-    Note: This is used only with the 'savefig' method and can be different 
-    from the actual figure's DPI (which also alters the size of the image
-    when changed) 
-    When `None`, the figure's DPI value is used. 
-    
+    If `table_conversion`=`matplotlib`, this value is directly passed to 
+    the "savefig" method. When `None`, the figure's DPI is used.
+     
+    If `table_conversion`=`chrome`, the dpi value is converted to a 
+    "device scale factor" but should provide the same effect. When `None`,
+    the "device scale factor" is 1.
 """
 
 export_intro = """
