@@ -28,6 +28,7 @@ class TestImage:
         )
 
     def test_mpl_higher_dpi(self):
+        test_dpi = 400
         df.tail(10).dfi.export(
-            "tests/test_output/covid19_mpl_dpi_600.png", table_conversion="matplotlib", dpi=600
+            f"tests/test_output/covid19_mpl_dpi_{test_dpi}.png", table_conversion="matplotlib", dpi=test_dpi
         )
