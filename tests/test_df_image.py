@@ -15,7 +15,7 @@ class TestImage:
 
     @pytest.mark.parametrize('dpi', test_dpi_values)
     def test_chrome_changed_dpi(self, dpi):
-        df.tail(10).dfi.export(f"tests/test_output/covid19_dpi_{dpi}.png", dpi)
+        df.tail(10).dfi.export(f"tests/test_output/covid19_dpi_{dpi}.png", dpi=dpi)
 
     def test_styled(self):
         df.tail(10).style.background_gradient().export_png(
@@ -30,5 +30,5 @@ class TestImage:
     @pytest.mark.parametrize('dpi', test_dpi_values)
     def test_mpl_changed_dpi(self, dpi):
         df.tail(10).dfi.export(
-            f"tests/test_output/covid19_mpl_dpi_{dpi}.png", table_conversion="matplotlib", dpi=dpi
-        )
+            f"tests/test_output/covid19_mpl_dpi_{dpi}.png",
+            table_conversion="matplotlib", dpi=dpi)
