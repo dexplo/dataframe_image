@@ -22,6 +22,12 @@ class TestImage:
             "tests/test_output/covid19_styled.png"
         )
 
+    @pytest.mark.parametrize('dpi', test_dpi_values)
+    def test_styled_changed_dpi(self, dpi):
+        df.tail(10).style.background_gradient().export_png(
+            f"tests/test_output/covid19_styled_dpi_{dpi}.png", dpi=dpi
+        )
+
     def test_mpl(self):
         df.tail(10).dfi.export(
             "tests/test_output/covid19_mpl.png", table_conversion="matplotlib"
