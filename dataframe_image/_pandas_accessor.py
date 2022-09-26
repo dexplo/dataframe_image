@@ -21,6 +21,7 @@ class _Export:
         max_cols=None,
         table_conversion="chrome",
         chrome_path=None,
+        dpi=None
     ):
         return _export(
             self._df,
@@ -30,6 +31,7 @@ class _Export:
             max_cols,
             table_conversion,
             chrome_path,
+            dpi
         )
 
 
@@ -41,13 +43,14 @@ def export(
     max_cols=None,
     table_conversion="chrome",
     chrome_path=None,
+    dpi=None
 ):
     return _export(
-        obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path
-    )
+        obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
+   )
 
 
-def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path):
+def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
 
@@ -59,12 +62,13 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
             fontsize=fontsize,
             encode_base64=False,
             limit_crop=False,
+            device_scale_factor=(1 if dpi == None else dpi/100.0)
         ).run
     else:
         from ._matplotlib_table import TableMaker
 
         converter = TableMaker(
-            fontsize=fontsize, encode_base64=False, for_document=False
+            fontsize=fontsize, encode_base64=False, for_document=False, savefig_dpi=dpi
         ).run
 
     if df.shape[0] > MAX_ROWS and max_rows is None:
@@ -166,6 +170,15 @@ chrome_path : str, default `None`
     Path to your machine's chrome executable. When `None`, it is 
     automatically found. Use this when chrome is not automatically found.
 
+dpi : int, default `None`
+    Dots per inch - Use this to change the resolution ("quality") of the image.
+    
+    If `table_conversion`=`matplotlib`, this value is directly passed to 
+    the "savefig" method. When `None`, the figure's DPI is used.
+     
+    If `table_conversion`=`chrome`, the dpi value is converted to a 
+    "device scale factor" but should provide the same effect. When `None`,
+    the "device scale factor" is 1.
 """
 
 export_intro = """
