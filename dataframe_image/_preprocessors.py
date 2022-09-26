@@ -36,25 +36,51 @@ def get_image_files(md_source, only_http=False):
     return image_files
 
 
-def replace_md_tables(image_data_dict, md_source, converter, cell_index):
+def replace_md_tables(image_data_dict, md_source, converter, cell_index, to_html=False):
+    """find markdown tables and replace with picture generated from html"""
     i = 0
-    html = mistune.markdown(md_source, escape=False)
-    html_pattern = re.compile(r"<table>(.|\n)*?<\/table>", re.MULTILINE | re.IGNORECASE)
-    # table = re.compile(r'^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*', re.M)
-    # nptable = re.compile(r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*', re.M)
 
+    # table2 = re.compile(r'\|(?:([^\n\|]*)\|)+?\n\|(?:(:?-+:?)\|)+?\n(\|(?:([^\n|]*)\|)+\s*\n)+', re.M)
+
+    # |item | test|
+    # |-----|:---:|
+    # |test2 | lol|
+    table = re.compile(
+        r"^ *\|(.+)\n *\|( *[-:]+[-| :]*)\n((?: *\|.*(?:\n|$))*)\n*", re.M
+    )
+    # item | test
+    # -----|:---:
+    # test2 | lol
+    nptable = re.compile(
+        r"^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*", re.M
+    )
     def md_table_to_image(match):
         nonlocal i
-        html = match.group()
+        md = match.group()
+        html = mistune.markdown(
+            md,
+            escape=False,
+            plugins=[
+                "strikethrough",
+                "table",
+                "url",
+                "task_lists",
+                "def_list",
+            ],
+        )
+        html = "<div>" + html + "</div>"
         image_data = base64.b64decode(converter(html))
         new_image_name = f"markdown_{cell_index}_table_{i}.png"
         image_data_dict[new_image_name] = image_data
         i += 1
-        return f"![]({new_image_name})\n\n"
-
-    md_source = html_pattern.sub(md_table_to_image, html)
+        if not to_html:
+            return f"![]({new_image_name})\n\n"
+        else:
+            return f"` `  \n![]({new_image_name})\n\n"
+    # md_source = table2.sub(md_table_to_image, md_source)
+    md_source = nptable.sub(md_table_to_image, md_source)
+    md_source = table.sub(md_table_to_image, md_source)
     return md_source
-
 
 def get_image_tags(md_source, only_http=False):
     pat_img_tag = r"""(<img.*?[sS][rR][Cc]\s*=\s*['"](.*?)['"].*?/>)"""
@@ -72,59 +98,80 @@ def get_image_tags(md_source, only_http=False):
     return kept_files
 
 
-class MarkdownPreprocessor(Preprocessor):
-    def preprocess_cell(self, cell, resources, cell_index):
+class LocalImagePreprocessor(Preprocessor):
+    def markdown_preprocess_cell(self, cell, resources, cell_index):
         nb_home = Path(resources["metadata"]["path"])
         image_data_dict = resources["image_data_dict"]
-        if cell["cell_type"] == "markdown":
-            # find normal markdown images
-            all_image_files = get_image_files(cell["source"])
-            for i, image_file in enumerate(all_image_files):
-                ext = Path(image_file).suffix
-                if ext.startswith(".jpg"):
-                    ext = ".jpeg"
-                new_image_name = f"markdown_{cell_index}_normal_image_{i}{ext}"
-                image_data = open(nb_home / image_file, "rb").read()
-                cell["source"] = cell["source"].replace(image_file, new_image_name)
-                image_data_dict[new_image_name] = image_data
+        # find normal markdown images
+        all_image_files = get_image_files(cell["source"])
+        for i, image_file in enumerate(all_image_files):
+            ext = Path(image_file).suffix
+            if ext.startswith(".jpg"):
+                ext = ".jpeg"
+            new_image_name = f"markdown_{cell_index}_normal_image_{i}{ext}"
+            image_data = open(nb_home / image_file, "rb").read()
+            cell["source"] = cell["source"].replace(image_file, new_image_name)
+            image_data_dict[new_image_name] = image_data
 
-            # find HTML <img> tags
-            all_image_tag_files = get_image_tags(cell["source"])
-            for i, (entire_tag, src) in enumerate(all_image_tag_files):
-                ext = Path(src).suffix
-                if ext.startswith(".jpg"):
-                    ext = ".jpeg"
-                new_image_name = f"markdown_{cell_index}_local_image_tag_{i}{ext}"
-                image_data = open(nb_home / src, "rb").read()
-                image_data_dict[new_image_name] = image_data
-                cell["source"] = cell["source"].replace(
-                    entire_tag, f"![]({new_image_name})"
-                )
-
-            # find images attached to markdown through dragging and dropping
-            attachments = cell.get("attachments", {})
-            for i, (image_name, data) in enumerate(attachments.items()):
-                # I think there is only one image per attachment
-                # Though there can be multiple attachments per cell
-                # So, this should only loop once
-                for j, (mime_type, base64_data) in enumerate(data.items()):
-                    ext = mime_type.split("/")[-1]
-                    if ext == "jpg":
-                        ext = "jpeg"
-                    new_image_name = f"markdown_{cell_index}_attachment_{i}_{j}.{ext}"
-                    image_data = base64.b64decode(base64_data)
-                    image_data_dict[new_image_name] = image_data
-                    cell["source"] = cell["source"].replace(
-                        f"attachment:{image_name}", new_image_name
-                    )
-
-            # find markdown tables
-            cell["source"] = replace_md_tables(
-                image_data_dict, cell["source"], resources["converter"], cell_index
+        # find HTML <img> tags
+        all_image_tag_files = get_image_tags(cell["source"])
+        for i, (entire_tag, src) in enumerate(all_image_tag_files):
+            ext = Path(src).suffix
+            if ext.startswith(".jpg"):
+                ext = ".jpeg"
+            new_image_name = f"markdown_{cell_index}_local_image_tag_{i}{ext}"
+            image_data = open(nb_home / src, "rb").read()
+            image_data_dict[new_image_name] = image_data
+            cell["source"] = cell["source"].replace(
+                entire_tag, f"![]({new_image_name})"
             )
 
+        # find images attached to markdown through dragging and dropping
+        attachments = cell.get("attachments", {})
+        for i, (image_name, data) in enumerate(attachments.items()):
+            # I think there is only one image per attachment
+            # Though there can be multiple attachments per cell
+            # So, this should only loop once
+            for j, (mime_type, base64_data) in enumerate(data.items()):
+                ext = mime_type.split("/")[-1]
+                if ext == "jpg":
+                    ext = "jpeg"
+                new_image_name = f"markdown_{cell_index}_attachment_{i}_{j}.{ext}"
+                image_data = base64.b64decode(base64_data)
+                image_data_dict[new_image_name] = image_data
+                cell["source"] = cell["source"].replace(
+                    f"attachment:{image_name}", new_image_name
+                )
+        return cell, resources
+    def preprocess_cell(self, cell, resources, cell_index):
+        if cell["cell_type"] == "markdown":
+            return self.markdown_preprocess_cell(cell, resources, cell_index)
         return cell, resources
 
+class MarkdownPreprocessor(LocalImagePreprocessor):
+    def markdown_preprocess_cell(self, cell, resources, cell_index):
+        cell, resources = super().markdown_preprocess_cell(cell, resources, cell_index)
+        # find markdown tables
+        cell["source"] = replace_md_tables(
+            resources["image_data_dict"],
+            cell["source"],
+            resources["converter"],
+            cell_index,
+        )
+        return cell, resources
+
+class PdfLatexPreprocessor(LocalImagePreprocessor):
+    def markdown_preprocess_cell(self, cell, resources, cell_index):
+        cell, resources = super().markdown_preprocess_cell(cell, resources, cell_index)
+        # find markdown tables
+        cell["source"] = replace_md_tables(
+            resources["image_data_dict"],
+            cell["source"],
+            resources["converter"],
+            cell_index,
+            to_html=True,
+        )
+        return cell, resources   
 
 # converts DataFrames to images when not executing notebook first
 # also converts gifs to png for outputs since jinja template is missing this
@@ -174,9 +221,10 @@ class ChangeOutputTypePreprocessor(Preprocessor):
         return cell, resources
 
 
-# Images in markdown from the web must be downloaded locally to make available
-# for latex pdf and markdown conversion. requests is used to get image data
 class MarkdownHTTPPreprocessor(Preprocessor):
+    """Images in markdown from the web must be downloaded locally to make available
+    for latex pdf and markdown conversion. requests is used to get image data"""
+
     def preprocess_cell(self, cell, resources, cell_index):
         temp_dir = resources["temp_dir"]
         if cell["cell_type"] == "markdown":

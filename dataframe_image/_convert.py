@@ -13,6 +13,7 @@ from nbconvert.preprocessors import ExecutePreprocessor
 
 from ._preprocessors import (ChangeOutputTypePreprocessor,
                              MarkdownPreprocessor,
+                             PdfLatexPreprocessor,
                              NoExecuteDataFramePreprocessor)
 
 
@@ -324,7 +325,10 @@ class Converter:
             # Step 4: Save notebook if necessary before processing markdown
             self.save_notebook_to_file()
             # Step 5: Preprocess markdown
-            MarkdownPreprocessor().preprocess(self.nb, self.resources)
+            if "md" in self.to:
+                MarkdownPreprocessor().preprocess(self.nb, self.resources)
+            else:
+                PdfLatexPreprocessor().preprocess(self.nb, self.resources)
             # Step 6 Remove converter from resources - nbconvert cannot copy matplotlib transform object
             self.resources.pop("converter")
             # Step 7: Convert to markdown if required
