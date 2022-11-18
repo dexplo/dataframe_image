@@ -88,8 +88,6 @@ class Screenshot:
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
-        self.ss_width = 1400
-        self.ss_height = 900
         self.chrome_path = get_chrome_path(chrome_path)
         self.css = self.get_css(fontsize)
         self.encode_base64 = encode_base64
@@ -105,7 +103,7 @@ class Screenshot:
         css = css.format(fontsize=fontsize, justify=justify)
         return css
 
-    def take_screenshot(self):
+    def take_screenshot(self, ss_width=1400, ss_height=900):
         temp_dir = TemporaryDirectory()
         temp_html = Path(temp_dir.name) / "temp.html"
         temp_img = Path(temp_dir.name) / "temp.png"
@@ -122,8 +120,8 @@ class Screenshot:
                 f"--force-device-scale-factor={self.device_scale_factor}",
             ]
 
-            if self.ss_width and self.ss_height:
-                args.append(f"--window-size={self.ss_width},{self.ss_height}")
+            if ss_width and ss_height:
+                args.append(f"--window-size={ss_width},{ss_height}")
 
             args += [
                 "--hide-scrollbars",
@@ -138,25 +136,25 @@ class Screenshot:
 
         buffer = io.BytesIO(img_bytes)
         img = mimage.imread(buffer)
-        return self.possibly_enlarge(img)
+        return self.possibly_enlarge(img, ss_width, ss_height)
 
-    def possibly_enlarge(self, img):
+    def possibly_enlarge(self, img, ss_width, ss_height):
         enlarge = False
         img2d = img.mean(axis=2) == 1
 
         all_white_vert = img2d.all(axis=0)
         # must be all white for 30 pixels in a row to trigger stop
         if all_white_vert[-30:].sum() != 30:
-            self.ss_width = int(self.ss_width * 1.5)
+            ss_width = int(ss_width * 1.5)
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
         if all_white_horiz[-30:].sum() != 30:
-            self.ss_height = int(self.ss_height * 1.5)
+            ss_height = int(ss_height * 1.5)
             enlarge = True
 
         if enlarge:
-            return self.take_screenshot()
+            return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
 
         return self.crop(img, all_white_vert, all_white_horiz)
 
