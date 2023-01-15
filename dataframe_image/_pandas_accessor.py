@@ -116,10 +116,14 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
 
     img_str = converter(html)
 
-    if isinstance(filename, str):
-        open(filename, "wb").write(img_str)
-    elif hasattr(filename, "write"):
-        filename.write(img_str)
+    try:
+        with open(filename, "wb") as f:
+            f.write(img_str)
+    except TypeError as ex:
+        if hasattr(filename, "write"):
+            filename.write(img_str)
+        else:
+            raise ex
 
 
 setattr(Styler, "export_png", export)
