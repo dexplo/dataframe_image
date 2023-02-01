@@ -110,26 +110,26 @@ class Screenshot:
         with open(temp_html, "w", encoding="utf-8") as f:
             f.write(self.html)
 
-        with open(temp_img, "wb") as f:
-            args = [
-                "--enable-logging",
-                "--disable-gpu",
-                "--headless",
-                "--no-sandbox",
-                "--crash-dumps-dir=/tmp",
-                f"--force-device-scale-factor={self.device_scale_factor}",
-            ]
 
-            if ss_width and ss_height:
-                args.append(f"--window-size={ss_width},{ss_height}")
+        args = [
+            "--enable-logging",
+            "--disable-gpu",
+            "--headless",
+            "--no-sandbox",
+            "--crash-dumps-dir=/tmp",
+            f"--force-device-scale-factor={self.device_scale_factor}",
+        ]
 
-            args += [
-                "--hide-scrollbars",
-                f"--screenshot={str(temp_img)}",
-                str(temp_html),
-            ]
+        if ss_width and ss_height:
+            args.append(f"--window-size={ss_width},{ss_height}")
 
-            subprocess.run(executable=self.chrome_path, args=args)
+        args += [
+            "--hide-scrollbars",
+            f"--screenshot={str(temp_img)}",
+            str(temp_html),
+        ]
+
+        subprocess.run(executable=self.chrome_path, args=args)
 
         with open(temp_img, "rb") as f:
             img_bytes = f.read()

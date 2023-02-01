@@ -78,7 +78,7 @@ dataframe_image can also be used outside of the notebook as a normal Python libr
                 save_notebook=False,
                 limit=None,
                 document_name=None,
-                table_conversion='chrome'
+                table_conversion='chrome',
                 chrome_path=None,
                 latex_command=None,
                 output_dir=None,
