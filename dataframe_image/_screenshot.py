@@ -182,6 +182,8 @@ class Screenshot:
         return img_str
 
     def run(self, html):
+        self.ss_width = 1400
+        self.ss_height = 900
         self.html = self.css + html
         img = self.take_screenshot()
         img_str = self.finalize_image(img)
