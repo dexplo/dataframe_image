@@ -1,5 +1,7 @@
 __pycache__/
 .DS_store
+.eggs/
+.idea/
 .ipynb_checkpoints/
 dataframe_image.egg-info/
 dist/
@@ -13,4 +15,5 @@ __init__.pyc
 /tests/**/*.png
 /tests/**/*.md
 /tests/**/*.gif
+/tests/**/*.html
 tests/notebooks/Short_dataframe_image.ipynb
