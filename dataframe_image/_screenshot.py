@@ -114,7 +114,7 @@ class Screenshot:
         args = [
             "--enable-logging",
             "--disable-gpu",
-            "--headless",
+            "--headless=new",
             "--no-sandbox",
             "--crash-dumps-dir=/tmp",
             f"--force-device-scale-factor={self.device_scale_factor}",
@@ -149,8 +149,8 @@ class Screenshot:
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
-        if all_white_horiz[-30:].sum() != 30:
-            ss_height = int(ss_height * 1.5)
+        if all_white_vert[-14:].sum() != 14:    
+            self.ss_width = int(self.ss_width * 1.5)
             enlarge = True
 
         if enlarge:
