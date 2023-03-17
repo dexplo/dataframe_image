@@ -150,7 +150,7 @@ class Screenshot:
 
         all_white_horiz = img2d.all(axis=1)
         if all_white_vert[-14:].sum() != 14:    
-            self.ss_width = int(self.ss_width * 1.5)
+            ss_width = int(ss_width * 1.5)
             enlarge = True
 
         if enlarge:
