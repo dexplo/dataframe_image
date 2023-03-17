@@ -114,7 +114,7 @@ class Screenshot:
         args = [
             "--enable-logging",
             "--disable-gpu",
-            "--headless=new",
+            "--headless",
             "--no-sandbox",
             "--crash-dumps-dir=/tmp",
             f"--force-device-scale-factor={self.device_scale_factor}",
@@ -129,7 +129,7 @@ class Screenshot:
             str(temp_html),
         ]
 
-        subprocess.run(executable=self.chrome_path, args=args)
+        subprocess.run(executable=self.chrome_path, args=args, check=True)
 
         with open(temp_img, "rb") as f:
             img_bytes = f.read()
@@ -149,12 +149,12 @@ class Screenshot:
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
-        if all_white_vert[-14:].sum() != 14:    
-            ss_width = int(ss_width * 1.5)
+        if all_white_horiz[-14:].sum() != 14:    
+            ss_height = int(ss_height * 1.5)
             enlarge = True
 
-        if enlarge:
-            return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
+        # if enlarge:
+        #     return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
 
         return self.crop(img, all_white_vert, all_white_horiz)
 
