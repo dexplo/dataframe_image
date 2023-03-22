@@ -27,7 +27,7 @@ async def main(file_name, p):
     async with aiohttp.ClientSession() as session:
         connected = False
         await asyncio.sleep(1)
-        for _ in range(10):
+        for _ in range(20):
             try:
                 resp = await session.get("http://localhost:9222/json")
                 data = await resp.json()
