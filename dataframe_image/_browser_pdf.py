@@ -1,6 +1,7 @@
 import asyncio
 import base64
 import concurrent.futures
+import logging
 import urllib.parse
 from pathlib import Path
 from subprocess import Popen
@@ -32,7 +33,8 @@ async def main(file_name, p):
                 data = await resp.json()
                 page_url = data[0]["webSocketDebuggerUrl"]
                 connected = True
-            except:
+            except Exception as ex:
+                logging.warning(ex)
                 await asyncio.sleep(1)
             if connected:
                 break
