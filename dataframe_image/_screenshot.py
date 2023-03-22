@@ -63,6 +63,7 @@ def get_chrome_path(chrome_path=None):
 
         locs = [
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
         ]
         for loc in locs:
