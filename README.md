@@ -103,6 +103,13 @@ You must have Google Chrome (or Brave) installed in order for dataframe_image to
 
 A Known Issue: When using dataframe_image with Google Colab, you can not use default Chrome convert method. You can set `table_conversion` parameter to `'selenium'` and it will call `Firefox` driver to convert the DataFrames to images.
 
+*note*: you have to install dependencies before use it:
+
+```
+!apt install firefox firefox-geckodriver
+!pip install dataframe_image selenium
+```
+
 ### Choose your converter
 
 If you do not have Chrome installed or cannot get it to work properly, you can alternatively use matplotlib/selenium to convert the DataFrames to images. Select this option by setting the `table_conversion` parameter to `'selenium'` or `'matplotlib'`.
