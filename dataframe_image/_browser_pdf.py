@@ -33,6 +33,8 @@ async def main(file_name, p):
                 data = await resp.json()
                 page_url = data[0]["webSocketDebuggerUrl"]
                 connected = True
+            except IndexError as ex:
+                logging.warning("data is: " + data)
             except Exception as ex:
                 logging.warning(ex)
                 await asyncio.sleep(1)
