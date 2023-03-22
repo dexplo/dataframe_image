@@ -36,6 +36,7 @@ class SeleniumScreenshot(Screenshot):
 
             profile = selenium.webdriver.FirefoxProfile()
             profile.set_preference("layout.css.devPixelsPerPx", str(self.device_scale_factor))
+            options.profile = profile
         except ImportError:
             raise ImportError(
                 "Selenium is not installed. Install it with 'pip install selenium' and make sure you have a firefox webdriver installed."
@@ -47,7 +48,7 @@ class SeleniumScreenshot(Screenshot):
         with open(temp_html, "w", encoding="utf-8") as f:
             f.write(self.html)
 
-        with selenium.webdriver.Firefox(firefox_profile=profile, options=options) as driver:
+        with selenium.webdriver.Firefox(options=options) as driver:
             driver.get(f"file://{str(temp_html)}")  # selenium will do the rest
 
             required_width = driver.execute_script("return document.body.parentNode.scrollWidth")

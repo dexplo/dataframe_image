@@ -170,7 +170,8 @@ class Screenshot:
         if self.limit_crop:
             max_crop = int(img.shape[1] * 0.15)
             left = min(left, max_crop)
-            right = max(right, -max_crop)
+            if right is not None:
+                right = max(right, -max_crop)
 
         diff_horiz = np.diff(all_white_horiz)
         top = diff_horiz.argmax()
