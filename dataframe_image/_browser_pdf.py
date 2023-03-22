@@ -33,10 +33,9 @@ async def main(file_name, p):
                 data = await resp.json()
                 page_url = data[0]["webSocketDebuggerUrl"]
                 connected = True
-            except IndexError as ex:
-                logging.warning(f"data is: {data}")
-                await asyncio.sleep(1)
             except Exception as ex:
+                if p.returncode is not None:
+                    raise Exception("Chrome process has died with code: %s" % p.returncode)
                 logging.warning(ex)
                 await asyncio.sleep(1)
             if connected:

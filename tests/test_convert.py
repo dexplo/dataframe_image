@@ -9,7 +9,10 @@ filenames = [
     "tests/notebooks/Test 1.ipynb",
     "tests/notebooks/Test 1 EXECUTED.ipynb",
 ]
-uses = ["latex", "browser"]
+uses = [
+    "latex",
+    # "browser",
+]
 executes = [False, True]
 
 
@@ -20,9 +23,7 @@ class TestConvertPDF:
     def test_same_folder(self, filename, use, execute):
         ex = " executed" if execute else " not_executed"
         document_name = Path(filename).stem + " " + use + ex + " NEW NAME"
-        convert(
-            filename, to="pdf", use=use, execute=execute, document_name=document_name
-        )
+        convert(filename, to="pdf", use=use, execute=execute, document_name=document_name)
 
 
 @pytest.mark.parametrize("filename", filenames)

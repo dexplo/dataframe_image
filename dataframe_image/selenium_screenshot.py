@@ -36,6 +36,7 @@ class SeleniumScreenshot(Screenshot):
 
             profile = selenium.webdriver.FirefoxProfile()
             profile.set_preference("layout.css.devPixelsPerPx", str(self.device_scale_factor))
+            profile.set_preference("webdriver.log.file", "/tmp/firefox_console")
             options.profile = profile
         except ImportError:
             raise ImportError(
