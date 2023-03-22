@@ -78,7 +78,9 @@ def launch_chrome():
     args = [
         chrome_path,
         "--headless",
+        "--enable-logging",
         "--disable-gpu",
+        "--no-sandbox",
         "--run-all-compositor-stages-before-draw",
         "--remote-debugging-port=9222",
         "--crash-dumps-dir=/tmp",
