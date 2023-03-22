@@ -156,8 +156,8 @@ class Screenshot:
             ss_height = int(ss_height * 1.5)
             enlarge = True
 
-        if enlarge:
-            return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
+        # if enlarge:
+        #     return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
 
         return self.crop(img, all_white_vert, all_white_horiz)
 
