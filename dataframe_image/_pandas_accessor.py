@@ -21,17 +21,10 @@ class _Export:
         max_cols=None,
         table_conversion="chrome",
         chrome_path=None,
-        dpi=None
+        dpi=None,
     ):
         return _export(
-            self._df,
-            filename,
-            fontsize,
-            max_rows,
-            max_cols,
-            table_conversion,
-            chrome_path,
-            dpi
+            self._df, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
         )
 
 
@@ -43,11 +36,9 @@ def export(
     max_cols=None,
     table_conversion="chrome",
     chrome_path=None,
-    dpi=None
+    dpi=None,
 ):
-    return _export(
-        obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
-   )
+    return _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi)
 
 
 def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi):
@@ -62,8 +53,20 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
             fontsize=fontsize,
             encode_base64=False,
             limit_crop=False,
-            device_scale_factor=(1 if dpi == None else dpi/100.0)
+            device_scale_factor=(1 if dpi == None else dpi / 100.0),
         ).run
+    elif table_conversion == "selenium":
+        from .selenium_screenshot import SeleniumScreenshot
+
+        converter = SeleniumScreenshot(
+            max_rows=max_rows,
+            max_cols=max_cols,
+            fontsize=fontsize,
+            encode_base64=False,
+            limit_crop=False,
+            device_scale_factor=(1 if dpi == None else dpi / 100.0),
+        ).run
+        
     else:
         from ._matplotlib_table import TableMaker
 

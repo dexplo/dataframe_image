@@ -11,10 +11,12 @@ from matplotlib import image as mimage
 from nbconvert import MarkdownExporter, PDFExporter
 from nbconvert.preprocessors import ExecutePreprocessor
 
-from ._preprocessors import (ChangeOutputTypePreprocessor,
-                             MarkdownPreprocessor,
-                             PdfLatexPreprocessor,
-                             NoExecuteDataFramePreprocessor)
+from ._preprocessors import (
+    ChangeOutputTypePreprocessor,
+    MarkdownPreprocessor,
+    PdfLatexPreprocessor,
+    NoExecuteDataFramePreprocessor,
+)
 
 
 class Converter:
@@ -160,6 +162,14 @@ class Converter:
                 max_cols=self.max_cols,
                 chrome_path=self.chrome_path,
             ).run
+        elif self.table_conversion == "selenium":
+            from .selenium_screenshot import SeleniumScreenshot
+
+            converter = SeleniumScreenshot(
+                center_df=self.center_df,
+                max_rows=self.max_rows,
+                max_cols=self.max_cols,
+            ).run
         else:
             from ._matplotlib_table import TableMaker
 
@@ -203,9 +213,7 @@ class Converter:
 
     def to_md(self):
         me = MarkdownExporter(
-            config={
-                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}
-            }
+            config={"NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}}
         )
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
 
@@ -270,9 +278,7 @@ class Converter:
             cell["source"] = cell["source"].replace(filename, new_filename)
 
         pdf = PDFExporter(
-            config={
-                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}
-            }
+            config={"NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}}
         )
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         self.return_data["pdf_data"] = pdf_data

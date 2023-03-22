@@ -99,9 +99,13 @@ dataframe_image --to=pdf "my notebook with dataframes.ipynb"
 
 You must have Google Chrome (or Brave) installed in order for dataframe_image to work. The path to Chrome should automatically be found. If Chrome is not in a standard location, set it with the `chrome_path` parameter.
 
-### Using matplotlib instead of Chrome
+### In Google Colab
 
-If you do not have Chrome installed or cannot get it to work properly, you can alternatively use matplotlib to convert the DataFrames to images. Select this option by setting the `table_conversion` parameter to `'matplotlib'`.
+A Known Issue: When using dataframe_image with Google Colab, you can not use default Chrome convert method. You can set `table_conversion` parameter to `'selenium'` and it will call `Firefox` driver to convert the DataFrames to images.
+
+### Choose your converter
+
+If you do not have Chrome installed or cannot get it to work properly, you can alternatively use matplotlib/selenium to convert the DataFrames to images. Select this option by setting the `table_conversion` parameter to `'selenium'` or `'matplotlib'`.
 
 ## Publish to Medium
 

@@ -111,7 +111,6 @@ class Screenshot:
         with open(temp_html, "w", encoding="utf-8") as f:
             f.write(self.html)
 
-
         args = [
             "--enable-logging",
             "--disable-gpu",
@@ -130,7 +129,7 @@ class Screenshot:
             str(temp_html),
         ]
 
-        subprocess.run(executable=self.chrome_path, args=args, check=True)
+        self.generate_image_from_html(args)
 
         with open(temp_img, "rb") as f:
             img_bytes = f.read()
@@ -138,6 +137,9 @@ class Screenshot:
         buffer = io.BytesIO(img_bytes)
         img = mimage.imread(buffer)
         return self.possibly_enlarge(img, ss_width, ss_height)
+    
+    def generate_image_from_html(self, args):
+        subprocess.run(executable=self.chrome_path, args=args, check=True)
 
     def possibly_enlarge(self, img, ss_width, ss_height):
         enlarge = False
@@ -145,17 +147,17 @@ class Screenshot:
 
         all_white_vert = img2d.all(axis=0)
         # must be all white for 30 pixels in a row to trigger stop
-        if all_white_vert[-30:].sum() != 30:
+        if all_white_vert[-5:].sum() != 5:
             ss_width = int(ss_width * 1.5)
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
-        if all_white_horiz[-14:].sum() != 14:    
+        if all_white_horiz[-5:].sum() != 5:    
             ss_height = int(ss_height * 1.5)
             enlarge = True
 
-        # if enlarge:
-        #     return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
+        if enlarge:
+            return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
 
         return self.crop(img, all_white_vert, all_white_horiz)
 
@@ -163,6 +165,8 @@ class Screenshot:
         diff_vert = np.diff(all_white_vert)
         left = diff_vert.argmax()
         right = -diff_vert[::-1].argmax()
+        if right == 0:
+            right = None
         if self.limit_crop:
             max_crop = int(img.shape[1] * 0.15)
             left = min(left, max_crop)
@@ -171,6 +175,8 @@ class Screenshot:
         diff_horiz = np.diff(all_white_horiz)
         top = diff_horiz.argmax()
         bottom = -diff_horiz[::-1].argmax()
+        if bottom == 0:
+            bottom = None
         new_img = img[top:bottom, left:right]
         return new_img
 
