@@ -76,7 +76,7 @@ def launch_chrome():
     chrome_path = get_chrome_path()
     args = [
         chrome_path,
-        "--headless",
+        "--headless=new",
         "--enable-logging",
         "--disable-gpu",
         "--no-sandbox",

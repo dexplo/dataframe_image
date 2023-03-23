@@ -114,7 +114,7 @@ class Screenshot:
         args = [
             "--enable-logging",
             "--disable-gpu",
-            "--headless",
+            "--headless=new",
             "--no-sandbox",
             "--crash-dumps-dir=/tmp",
             f"--force-device-scale-factor={self.device_scale_factor}",

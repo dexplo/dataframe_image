@@ -5,6 +5,7 @@ from pathlib import Path
 
 from matplotlib import image as mimage
 from ._screenshot import Screenshot
+from selenium.webdriver.firefox.service import Service
 
 
 class SeleniumScreenshot(Screenshot):
@@ -36,8 +37,10 @@ class SeleniumScreenshot(Screenshot):
 
             profile = selenium.webdriver.FirefoxProfile()
             profile.set_preference("layout.css.devPixelsPerPx", str(self.device_scale_factor))
-            profile.set_preference("webdriver.log.file", "/tmp/firefox_console")
+
             options.profile = profile
+            
+            service = Service(log_path="/tmp/firefox_console")
         except ImportError:
             raise ImportError(
                 "Selenium is not installed. Install it with 'pip install selenium' and make sure you have a firefox webdriver installed."
@@ -49,7 +52,7 @@ class SeleniumScreenshot(Screenshot):
         with open(temp_html, "w", encoding="utf-8") as f:
             f.write(self.html)
 
-        with selenium.webdriver.Firefox(options=options) as driver:
+        with selenium.webdriver.Firefox(options=options, service=service) as driver:
             driver.get(f"file://{str(temp_html)}")  # selenium will do the rest
 
             required_width = driver.execute_script("return document.body.parentNode.scrollWidth")
