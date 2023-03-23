@@ -68,7 +68,9 @@ jobs:
         choco install pandoc --no-progress
     - name: Install latex linux
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt-get install texlive-xetex texlive-fonts-recommended texlive-base pandoc
+      run: |
+        sudo apt-get install -y xvfb libgtk2.0-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 curl
+        sudo apt-get install -y texlive-xetex texlive-fonts-recommended texlive-base pandoc 
     - name: Install latex mac
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
