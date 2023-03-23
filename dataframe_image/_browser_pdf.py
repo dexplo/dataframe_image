@@ -79,7 +79,7 @@ def launch_chrome():
         "--headless=new",
         "--enable-logging",
         "--disable-gpu",
-        "--no-sandbox",
+        # "--no-sandbox",
         "--run-all-compositor-stages-before-draw",
         "--remote-debugging-port=9222",
         "--crash-dumps-dir=/tmp",

@@ -115,7 +115,7 @@ class Screenshot:
             "--enable-logging",
             "--disable-gpu",
             "--headless=new",
-            "--no-sandbox",
+            # "--no-sandbox",
             "--crash-dumps-dir=/tmp",
             f"--force-device-scale-factor={self.device_scale_factor}",
         ]
