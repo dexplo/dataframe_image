@@ -66,7 +66,7 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
             limit_crop=False,
             device_scale_factor=(1 if dpi == None else dpi / 100.0),
         ).run
-        
+
     else:
         from ._matplotlib_table import TableMaker
 
@@ -89,8 +89,7 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
                 "and therefore do not work with the `max_rows` and `max_cols` parameters"
             )
         raise ValueError(error_msg)
-    if max_rows == -1:
-        max_rows = None
+    
 
     if df.shape[1] > MAX_COLS and max_cols is None:
         error_msg = (

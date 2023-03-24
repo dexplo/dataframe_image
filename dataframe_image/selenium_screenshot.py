@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 
 from pathlib import Path
 
-from matplotlib import image as mimage
+from PIL import Image
 from ._screenshot import Screenshot
 from selenium.webdriver.firefox.service import Service
 
@@ -22,7 +22,7 @@ class SeleniumScreenshot(Screenshot):
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
-        self.css = self.get_css(fontsize)
+        self.fontsize = fontsize
         self.encode_base64 = encode_base64
         self.limit_crop = limit_crop
         self.device_scale_factor = device_scale_factor
@@ -50,7 +50,7 @@ class SeleniumScreenshot(Screenshot):
         temp_html = Path(temp_dir.name) / "temp.html"
         temp_img = Path(temp_dir.name) / "temp.png"
         with open(temp_html, "w", encoding="utf-8") as f:
-            f.write(self.html)
+            f.write(self.get_css() + self.html)
 
         with selenium.webdriver.Firefox(options=options, service=service) as driver:
             driver.get(f"file://{str(temp_html)}")  # selenium will do the rest
@@ -62,21 +62,5 @@ class SeleniumScreenshot(Screenshot):
 
         # subprocess.run(executable=self.chrome_path, args=args)
 
-        with open(temp_img, "rb") as f:
-            img_bytes = f.read()
-
-        buffer = io.BytesIO(img_bytes)
-        img = mimage.imread(buffer)
-
-        # sometimes the image bottom has a black line at device_scale_factor > 6, so we crop it
-        img2d = img.mean(axis=2) == 0
-        all_black_vert = img2d.all(axis=0)
-        all_black_horiz = img2d.all(axis=1)
-        img = self.crop(img, all_black_vert, all_black_horiz)
-
-        # calculate the crop
-        img2d = img.mean(axis=2) == 1
-        all_white_vert = img2d.all(axis=0)
-        all_white_horiz = img2d.all(axis=1)
-
-        return self.crop(img, all_white_vert, all_white_horiz)
+        img = Image.open(temp_img)
+        return self.crop(img)
