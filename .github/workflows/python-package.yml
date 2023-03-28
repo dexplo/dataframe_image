@@ -83,7 +83,7 @@ jobs:
 
     - name: upload logs
       if: ${{ matrix.os == 'windows-latest' }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: choco logs
         path: C:\ProgramData\chocolatey\logs\chocolatey.log
@@ -102,7 +102,7 @@ jobs:
         sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest
     - name: Upload pdf
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Test 1 PDF
         path: tests/notebooks/*.pdf
