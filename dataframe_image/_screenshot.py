@@ -1,6 +1,7 @@
 import base64
 import io
 import logging
+import os
 import platform
 import shutil
 import subprocess
@@ -124,6 +125,9 @@ class Screenshot:
             "--crash-dumps-dir=/tmp",
             f"--force-device-scale-factor={self.device_scale_factor}",
         ]
+        # root user needs no-sandbox
+        if os.geteuid() == 0:
+            args.append("--no-sandbox")
 
         if ss_width and ss_height:
             args.append(f"--window-size={ss_width},{ss_height}")
@@ -173,16 +177,16 @@ class Screenshot:
 
     def crop(self, im):
         # remove black
-        imrgb = im.convert("RGB") 
+        imrgb = im.convert("RGB")
         imageBox = imrgb.getbbox()
-        im=im.crop(imageBox)
+        im = im.crop(imageBox)
 
         # remove alpha channel
-        imrgb = im.convert("RGB") 
+        imrgb = im.convert("RGB")
         # invert image (so that white is 0)
         invert_im = ImageOps.invert(imrgb)
         imageBox = invert_im.getbbox()
-        cropped=im.crop(imageBox)
+        cropped = im.crop(imageBox)
         return cropped
 
     def finalize_image(self, img):

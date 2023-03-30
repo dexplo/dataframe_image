@@ -2,6 +2,7 @@ import asyncio
 import base64
 import concurrent.futures
 import logging
+import os
 import urllib.parse
 from pathlib import Path
 from subprocess import Popen
@@ -84,6 +85,8 @@ def launch_chrome():
         "--remote-debugging-port=9222",
         "--crash-dumps-dir=/tmp",
     ]
+    if os.geteuid() == 0:
+        args.append("--no-sandbox")
     p = Popen(args=args)
     return p
 
