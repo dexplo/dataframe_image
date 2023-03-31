@@ -107,7 +107,10 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
                 "and `max_cols` parameters"
             )
         raise ValueError(error_msg)
-
+        
+    if max_rows == -1:
+        max_rows = None
+        
     if max_cols == -1:
         max_cols = None
 
