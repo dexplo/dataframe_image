@@ -41,7 +41,7 @@ class SeleniumScreenshot(Screenshot):
 
             options.profile = profile
             
-            service = Service(log_path=str(Path(temp_dir).name / "geckodriver.log"))
+            service = Service(log_path=str(Path(temp_dir.name) / "geckodriver.log"))
         except ImportError:
             raise ImportError(
                 "Selenium is not installed. Install it with 'pip install selenium' and make sure you have a firefox webdriver installed."
