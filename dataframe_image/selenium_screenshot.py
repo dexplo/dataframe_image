@@ -28,6 +28,7 @@ class SeleniumScreenshot(Screenshot):
         self.device_scale_factor = device_scale_factor
 
     def take_screenshot(self):
+        temp_dir = TemporaryDirectory()
         try:
             import selenium.webdriver
             import selenium.common
@@ -40,13 +41,13 @@ class SeleniumScreenshot(Screenshot):
 
             options.profile = profile
             
-            service = Service(log_path="/tmp/firefox_console")
+            service = Service(log_path=str(temp_dir / "geckodriver.log"))
         except ImportError:
             raise ImportError(
                 "Selenium is not installed. Install it with 'pip install selenium' and make sure you have a firefox webdriver installed."
             )
 
-        temp_dir = TemporaryDirectory()
+        
         temp_html = Path(temp_dir.name) / "temp.html"
         temp_img = Path(temp_dir.name) / "temp.png"
         with open(temp_html, "w", encoding="utf-8") as f:
