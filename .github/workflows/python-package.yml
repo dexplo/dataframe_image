@@ -70,7 +70,7 @@ jobs:
     - name: Install latex windows (not working)
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
-        choco install miktex --params '"/Set:complete"'
+        choco install texlive
         choco install pandoc --no-progress
         refreshenv
     - name: Install latex linux
@@ -108,6 +108,7 @@ jobs:
         mkdir -p ~/Library/Jupyter
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
     - name: Test with pytest
+      shell: bash
       run: |
         # sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest
