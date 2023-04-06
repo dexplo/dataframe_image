@@ -72,6 +72,7 @@ jobs:
       run: |
         choco install miktex --params '"/Set:complete"'
         choco install pandoc --no-progress
+        refreshenv
     - name: Install latex linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
