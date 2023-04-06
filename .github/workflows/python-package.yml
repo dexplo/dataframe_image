@@ -73,12 +73,11 @@ jobs:
         cache: true
         packages: >-
           scheme-basic
-          cleveref
-          hyperref
           collection-xetex
           collection-fontsrecommended
           collection-mathscience
           collection-pictures
+          collection-latexextra
 
     # - name: Update TeX Live 
     #   run: tlmgr update --self --all --reinstall-forcibly-removed
