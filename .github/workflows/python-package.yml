@@ -69,7 +69,20 @@ jobs:
 
     - name: Setup TeX Live
       uses: teatimeguest/setup-texlive-action@v2
-          
+      with:
+        cache: true
+        packages: >-
+          scheme-basic
+          cleveref
+          hyperref
+          collection-xetex
+          collection-fontsrecommended
+          collection-mathscience
+          collection-pictures
+
+    # - name: Update TeX Live 
+    #   run: tlmgr update --self --all --reinstall-forcibly-removed
+            
     - name: windows denpendencies
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
