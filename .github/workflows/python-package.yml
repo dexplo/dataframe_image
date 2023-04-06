@@ -108,7 +108,7 @@ jobs:
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
     - name: Test with pytest
       run: |
-        sed 's/:/\n/g' <<< "$PATH"    # show path
+        # sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest
     - name: Upload pdf
       uses: actions/upload-artifact@v3
