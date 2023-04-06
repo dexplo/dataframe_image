@@ -3,6 +3,7 @@ import base64
 import concurrent.futures
 import logging
 import os
+import platform
 import urllib.parse
 from pathlib import Path
 from subprocess import Popen
@@ -85,7 +86,7 @@ def launch_chrome():
         "--remote-debugging-port=9222",
         "--crash-dumps-dir=/tmp",
     ]
-    if os.geteuid() == 0:
+    if platform.system().lower() != "windows" and os.geteuid() == 0:
         args.append("--no-sandbox")
     p = Popen(args=args)
     return p
