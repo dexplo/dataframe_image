@@ -7,7 +7,7 @@ import platform
 import urllib.parse
 from pathlib import Path
 from subprocess import Popen
-from tempfile import mkstemp
+from tempfile import TemporaryDirectory, mkstemp
 
 import aiohttp
 from nbconvert.exporters import Exporter, HTMLExporter
@@ -76,15 +76,16 @@ async def main(file_name, p):
 
 def launch_chrome():
     chrome_path = get_chrome_path()
+    temp_dir = TemporaryDirectory()
     args = [
         chrome_path,
-        "--headless=new",
+        "--headless",
         "--enable-logging",
         "--disable-gpu",
         # "--no-sandbox",
         "--run-all-compositor-stages-before-draw",
         "--remote-debugging-port=9222",
-        "--crash-dumps-dir=/tmp",
+        f"--crash-dumps-dir={temp_dir.name}",
     ]
     if platform.system().lower() != "windows" and os.geteuid() == 0:
         args.append("--no-sandbox")

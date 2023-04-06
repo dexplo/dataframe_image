@@ -120,9 +120,9 @@ class Screenshot:
         args = [
             "--enable-logging",
             "--disable-gpu",
-            "--headless=new",
+            "--headless",
             # "--no-sandbox",
-            "--crash-dumps-dir=/tmp",
+            f"--crash-dumps-dir={temp_dir.name}",
             f"--force-device-scale-factor={self.device_scale_factor}",
         ]
         # root user needs no-sandbox
@@ -144,7 +144,8 @@ class Screenshot:
         return self.possibly_enlarge(im)
 
     def generate_image_from_html(self, args):
-        subprocess.run(executable=self.chrome_path, args=args, check=True)
+        print(self.chrome_path)
+        subprocess.run(executable=self.chrome_path, args=args, capture_output=True, check=True)
 
     def possibly_enlarge(self, im):
         enlarge = False
