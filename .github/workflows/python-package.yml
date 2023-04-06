@@ -66,30 +66,28 @@ jobs:
       if: ${{ startsWith(matrix.os, 'macos') }}
       id: set-up-homebrew
       uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Setup TeX Live
+      uses: teatimeguest/setup-texlive-action@v2
           
-    - name: Install latex windows (not working)
+    - name: windows denpendencies
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
-        choco install texlive
         choco install pandoc --no-progress
         refreshenv
-    - name: Install latex linux
+    - name: ubuntu dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get install -y xvfb libgtk2.0-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 curl
-        sudo apt-get install -y texlive-xetex texlive-fonts-recommended texlive-base pandoc 
-    - name: Install latex mac
+        sudo apt-get install -y pandoc 
+    - name: mac dependencies
       if: ${{ startsWith(matrix.os, 'macos') }}
       run: |
         brew update
-        brew install --cask mactex 
-        eval "$(/usr/libexec/path_helper)"
-        echo "PATH=/Library/TeX/texbin:$PATH" >> $GITHUB_ENV
+        brew install pandoc
         ln -s -f $(which python3) /usr/local/bin/python
         ln -s -f $(which pip3) /usr/local/bin/pip
-    - name: install pandoc
-      if: ${{ startsWith(matrix.os, 'macos') }}
-      run: brew install pandoc
+
 
     - name: upload logs
       if: ${{ startsWith(matrix.os, 'windows') }}
@@ -108,7 +106,6 @@ jobs:
         mkdir -p ~/Library/Jupyter
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
     - name: Test with pytest
-      shell: bash
       run: |
         # sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest
