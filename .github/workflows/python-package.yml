@@ -80,6 +80,7 @@ jobs:
     - name: Install latex mac
       if: ${{ startsWith(matrix.os, 'macos') }}
       run: |
+        brew update
         brew install --cask mactex 
         eval "$(/usr/libexec/path_helper)"
         echo "PATH=/Library/TeX/texbin:$PATH" >> $GITHUB_ENV
