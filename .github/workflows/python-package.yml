@@ -84,6 +84,7 @@ jobs:
         brew install --cask mactex 
         eval "$(/usr/libexec/path_helper)"
         echo "PATH=/Library/TeX/texbin:$PATH" >> $GITHUB_ENV
+        ln -s -f $(which python3) /usr/local/bin/python
     - name: install pandoc
       if: ${{ startsWith(matrix.os, 'macos') }}
       run: brew install pandoc
