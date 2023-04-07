@@ -7,15 +7,15 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import nbformat
-from PIL import Image
 from nbconvert import MarkdownExporter, PDFExporter
 from nbconvert.preprocessors import ExecutePreprocessor
+from PIL import Image
 
 from ._preprocessors import (
     ChangeOutputTypePreprocessor,
     MarkdownPreprocessor,
-    PdfLatexPreprocessor,
     NoExecuteDataFramePreprocessor,
+    PdfLatexPreprocessor,
 )
 
 
@@ -75,7 +75,7 @@ class Converter:
 
         self.return_data = {}
         self.resources = self.get_resources()
-    
+
     def __del__(self):
         self.td.cleanup()
 
@@ -216,7 +216,9 @@ class Converter:
 
     def to_md(self):
         me = MarkdownExporter(
-            config={"NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}}
+            config={
+                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}
+            }
         )
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
 
@@ -281,7 +283,9 @@ class Converter:
             cell["source"] = cell["source"].replace(filename, new_filename)
 
         pdf = PDFExporter(
-            config={"NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}}
+            config={
+                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}
+            }
         )
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         self.return_data["pdf_data"] = pdf_data

@@ -37,7 +37,9 @@ async def main(file_name, p):
                 connected = True
             except Exception as ex:
                 if p.returncode is not None:
-                    raise Exception("Chrome process has died with code: %s" % p.returncode)
+                    raise Exception(
+                        "Chrome process has died with code: %s" % p.returncode
+                    )
                 logging.warning(ex)
                 await asyncio.sleep(1)
             if connected:
@@ -49,7 +51,6 @@ async def main(file_name, p):
         async with session.ws_connect(
             page_url, receive_timeout=3, max_msg_size=0
         ) as ws:
-
             # first - navigate to html page
             params = {"url": file_name}
             data = {"id": 1, "method": "Page.navigate", "params": params}
