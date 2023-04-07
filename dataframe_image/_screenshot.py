@@ -111,36 +111,36 @@ class Screenshot:
 
     def take_screenshot(self, ss_width=1400, ss_height=900):
         html_css = self.get_css() + self.html
-        temp_dir = TemporaryDirectory()
-        temp_html = Path(temp_dir.name) / "temp.html"
-        temp_img = Path(temp_dir.name) / "temp.png"
-        with open(temp_html, "w", encoding="utf-8") as f:
-            f.write(html_css)
+        with TemporaryDirectory() as temp_dir:
+            temp_html = Path(temp_dir) / "temp.html"
+            temp_img = Path(temp_dir) / "temp.png"
+            with open(temp_html, "w", encoding="utf-8") as f:
+                f.write(html_css)
 
-        args = [
-            "--enable-logging",
-            "--disable-gpu",
-            "--headless",
-            # "--no-sandbox",
-            f"--crash-dumps-dir={temp_dir.name}",
-            f"--force-device-scale-factor={self.device_scale_factor}",
-        ]
-        # root user needs no-sandbox
-        if platform.system().lower() != "windows" and os.geteuid() == 0:
-            args.append("--no-sandbox")
+            args = [
+                "--enable-logging",
+                "--disable-gpu",
+                "--headless",
+                # "--no-sandbox",
+                f"--crash-dumps-dir={temp_dir}",
+                f"--force-device-scale-factor={self.device_scale_factor}",
+            ]
+            # root user needs no-sandbox
+            if platform.system().lower() != "windows" and os.geteuid() == 0:
+                args.append("--no-sandbox")
 
-        if ss_width and ss_height:
-            args.append(f"--window-size={ss_width},{ss_height}")
+            if ss_width and ss_height:
+                args.append(f"--window-size={ss_width},{ss_height}")
 
-        args += [
-            "--hide-scrollbars",
-            f"--screenshot={str(temp_img)}",
-            str(temp_html),
-        ]
+            args += [
+                "--hide-scrollbars",
+                f"--screenshot={str(temp_img)}",
+                str(temp_html),
+            ]
 
-        self.generate_image_from_html(args)
+            self.generate_image_from_html(args)
 
-        im = Image.open(temp_img)
+            im = Image.open(temp_img)
         return self.possibly_enlarge(im)
 
     def generate_image_from_html(self, args):

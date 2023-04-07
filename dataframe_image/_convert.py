@@ -75,6 +75,9 @@ class Converter:
 
         self.return_data = {}
         self.resources = self.get_resources()
+    
+    def __del__(self):
+        self.td.cleanup()
 
     def get_to(self, to):
         if isinstance(to, str):

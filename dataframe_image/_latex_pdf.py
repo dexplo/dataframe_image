@@ -1,6 +1,4 @@
 import shutil
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from nbconvert.exporters import Exporter, HTMLExporter, PDFExporter
 
@@ -8,8 +6,6 @@ from ._preprocessors import (ChangeOutputTypePreprocessor,
                              MarkdownPreprocessor,
                              NoExecuteDataFramePreprocessor)
 
-td = TemporaryDirectory()
-td_path = Path(td.name)
 
 
 def get_latex_command():
