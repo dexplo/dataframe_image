@@ -140,7 +140,7 @@ class Screenshot:
             self.generate_image_from_html(args)
 
             im = Image.open(temp_img)
-        return self.possibly_enlarge(im)
+            return self.possibly_enlarge(im)
 
     def generate_image_from_html(self, args):
         print(self.chrome_path)

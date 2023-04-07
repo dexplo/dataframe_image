@@ -69,4 +69,4 @@ class SeleniumScreenshot(Screenshot):
             # subprocess.run(executable=self.chrome_path, args=args)
 
             img = Image.open(temp_img)
-        return self.crop(img)
+            return self.crop(img)
