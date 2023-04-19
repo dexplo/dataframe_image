@@ -143,7 +143,7 @@ class Screenshot:
             return self.possibly_enlarge(im)
 
     def generate_image_from_html(self, args):
-        print(self.chrome_path)
+        # print(self.chrome_path)
         subprocess.run(
             executable=self.chrome_path, args=args, capture_output=True, check=True
         )
