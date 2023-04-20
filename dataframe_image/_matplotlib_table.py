@@ -76,10 +76,11 @@ class TableMaker:
 
         def get_property(class_name, property_name):
             for rule in sheet:
-                if class_name in rule.selectorText:
-                    for property in rule.style:
-                        if property.name == property_name:
-                            return property.value
+                selectors = rule.selectorText.replace(" ", "").split(",")
+                if class_name in selectors:
+                    for style_property in rule.style:
+                        if style_property.name == property_name:
+                            return style_property.value
         def parse_row(row):
             values = []
             rowspan_dict = {}
