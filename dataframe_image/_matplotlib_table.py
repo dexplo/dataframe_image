@@ -42,6 +42,7 @@ class TableMaker:
         num_cols = sum(val[-1] for val in rows[0])
         new_rows = []
         rowspan = {}
+        # deal with muti-row or multi col cells
         for i, row in enumerate(rows):
             new_row = []
             col_loc = 0
