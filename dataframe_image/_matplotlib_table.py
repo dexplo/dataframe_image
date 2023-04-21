@@ -26,8 +26,8 @@ class TableMaker:
         self.encode_base64 = encode_base64
         self.limit_crop = limit_crop
         self.for_document = for_document
-        self.figwidth = 0.1
-        self.figheight = 0.1
+        self.figwidth = 1
+        self.figheight = 1
         self.wrap_length = 30
         if self.for_document:
             self.figwidth = 20
@@ -79,7 +79,6 @@ class TableMaker:
                     return val
 
     def parse_into_rows(self, html):
-
         def get_property(class_name, property_name):
             for rule in sheet:
                 selectors = rule.selectorText.replace(" ", "").split(",")
@@ -87,6 +86,7 @@ class TableMaker:
                     for style_property in rule.style:
                         if style_property.name == property_name:
                             return style_property.value
+
         def parse_row(row):
             values = []
             rowspan_dict = {}
@@ -99,13 +99,27 @@ class TableMaker:
                 text_align = self.get_text_align(el) or row_align
                 text = el.get_text()
                 if "id" in el.attrs:
-                    values.append([text, bold, text_align, get_property("#" + el.attrs["id"], "background-color"), get_property("#" + el.attrs["id"], "color"), rowspan, colspan])
+                    values.append(
+                        [
+                            text,
+                            bold,
+                            text_align,
+                            get_property("#" + el.attrs["id"], "background-color"),
+                            get_property("#" + el.attrs["id"], "color"),
+                            rowspan,
+                            colspan,
+                        ]
+                    )
                 else:
                     values.append([text, bold, text_align, "#ffffff", "#000000", rowspan, colspan])
             return values
 
         soup = BeautifulSoup(html, features="lxml")
-        sheet = cssutils.parseString(soup.find('style').text)
+        style = soup.find("style")
+        if style:
+            sheet = cssutils.parseString(style.text)
+        else:
+            sheet = []
         # get number of columns from first row
         # num_cols = sum(int(el.get('colspan', 1)) for el in soup.find('tr').find_all(['td', 'th']))
         thead = soup.find("thead")
@@ -212,6 +226,8 @@ class TableMaker:
 
     def print_table(self):
         row_colors = ["#f5f5f5", "#ffffff"]
+        # padding 0.5 em
+        padding = self.fontsize / (self.figwidth * self.dpi) * 0.5
         total_width = sum(self.col_widths)
         figheight = self.fig.get_figheight()
         row_locs = [height / figheight for height in self.row_heights]
@@ -225,33 +241,7 @@ class TableMaker:
         for i, (yd, row) in enumerate(zip(row_locs, self.rows)):
             x = x0
             y -= yd
-            for j, (xd, val) in enumerate(zip(self.col_widths, row)):
-                text = val[0]
-                weight = "bold" if val[1] else None
-                ha = val[2] or header_text_align[j] or "right"
-                fg = val[4] if val[4] else "#000000"
-                bg = val[3] if val[3] else "#ffffff"
-
-                if ha == "right":
-                    x += xd
-                elif ha == "center":
-                    x += xd / 2
-                self.fig.text(
-                    x,
-                    y + yd / 2,
-                    text,
-                    size=self.fontsize,
-                    ha=ha,
-                    va="center",
-                    weight=weight,
-                    color=fg,
-                    backgroundcolor=bg
-                )
-                if ha == "left":
-                    x += xd
-                elif ha == "center":
-                    x += xd / 2
-
+            # table zebra stripes
             diff = i - self.num_header_rows
             if diff >= 0 and diff % 2 == 0:
                 p = mpatches.Rectangle(
@@ -259,10 +249,47 @@ class TableMaker:
                     width=total_width,
                     height=yd,
                     fill=True,
-                    color="#f5f5f5",
+                    color=row_colors[0],
                     transform=self.fig.transFigure,
                 )
                 self.fig.add_artist(p)
+            for j, (xd, val) in enumerate(zip(self.col_widths, row)):
+                text = val[0]
+                weight = "bold" if val[1] else None
+                ha = val[2] or header_text_align[j] or "right"
+                fg = val[4] if val[4] else "#000000"
+                bg = val[3] if val[3] else None
+
+                if bg:
+                    rect_bg = mpatches.Rectangle(
+                        (x, y),
+                        width=xd,
+                        height=yd,
+                        fill=True,
+                        color=bg,
+                        transform=self.fig.transFigure,
+                    )
+                    self.fig.add_artist(rect_bg)
+
+                if ha == "right":
+                    x_pos = x + xd - padding
+                elif ha == "center":
+                    x_pos = x + xd / 2
+                elif ha == "left":
+                    x_pos = x + padding
+
+                self.fig.text(
+                    x_pos,
+                    y + yd / 2,
+                    text,
+                    size=self.fontsize,
+                    ha=ha,
+                    va="center",
+                    weight=weight,
+                    color=fg,
+                    # backgroundcolor=bg
+                )
+                x += xd
 
             if i == self.num_header_rows - 1:
                 line = mlines.Line2D([x0, x0 + total_width], [y, y], color="black")
