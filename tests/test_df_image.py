@@ -12,6 +12,7 @@ test_dpi_values = [50, 100, 200, 400]
 converters = ["chrome", "selenium", "matplotlib"]
 
 
+
 class TestImage:
     @pytest.mark.parametrize("dpi", test_dpi_values)
     @pytest.mark.parametrize("converter", converters)

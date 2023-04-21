@@ -32,6 +32,7 @@ setuptools.setup(
         "packaging",
         "mistune",
         "lxml",
+        "beautifulsoup4",
         "cssutils",
     ],
     include_package_data=True,
