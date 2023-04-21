@@ -2,6 +2,7 @@ import base64
 import io
 import textwrap
 
+import cssutils
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -52,7 +53,7 @@ class TableMaker:
                     cur_col_loc = 0
                     for _ in range(val[-1]):
                         cur_col_loc += 1
-                        new_row.append(val[:3])
+                        new_row.append(val[:5])
                     if val[-2] == 1:
                         del rowspan[col_loc]
                     col_loc += cur_col_loc
@@ -62,7 +63,7 @@ class TableMaker:
                         rowspan[col_loc] = val
                     col_loc += val[-1]  # usually 1
                     for _ in range(val[-1]):
-                        new_row.append(val[:3])
+                        new_row.append(val[:5])
                     j += 1
             new_rows.append(new_row)
         return new_rows, num_header_rows
@@ -77,6 +78,14 @@ class TableMaker:
                     return val
 
     def parse_into_rows(self, html):
+
+        def get_property(class_name, property_name):
+            for rule in sheet:
+                selectors = rule.selectorText.replace(" ", "").split(",")
+                if class_name in selectors:
+                    for style_property in rule.style:
+                        if style_property.name == property_name:
+                            return style_property.value
         def parse_row(row):
             values = []
             rowspan_dict = {}
@@ -88,10 +97,14 @@ class TableMaker:
                 rowspan = int(el.attrs.get("rowspan", 1))
                 text_align = self.get_text_align(el) or row_align
                 text = el.get_text()
-                values.append([text, bold, text_align, rowspan, colspan])
+                if "id" in el.attrs:
+                    values.append([text, bold, text_align, get_property("#" + el.attrs["id"], "background-color"), get_property("#" + el.attrs["id"], "color"), rowspan, colspan])
+                else:
+                    values.append([text, bold, text_align, "#ffffff", "#000000", rowspan, colspan])
             return values
 
         soup = BeautifulSoup(html, features="lxml")
+        sheet = cssutils.parseString(soup.find('style').text)
         # get number of columns from first row
         # num_cols = sum(int(el.get('colspan', 1)) for el in soup.find('tr').find_all(['td', 'th']))
         thead = soup.find("thead")
@@ -215,6 +228,8 @@ class TableMaker:
                 text = val[0]
                 weight = "bold" if val[1] else None
                 ha = val[2] or header_text_align[j] or "right"
+                fg = val[4] if val[4] else "#000000"
+                bg = val[3] if val[3] else "#ffffff"
 
                 if ha == "right":
                     x += xd
@@ -228,6 +243,8 @@ class TableMaker:
                     ha=ha,
                     va="center",
                     weight=weight,
+                    color=fg,
+                    backgroundcolor=bg
                 )
                 if ha == "left":
                     x += xd

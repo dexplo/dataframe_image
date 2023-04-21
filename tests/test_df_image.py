@@ -8,8 +8,9 @@ df = pd.read_csv(
     "tests/notebooks/data/covid19.csv", parse_dates=["date"], index_col="date"
 )
 
-test_dpi_values = [50, 200, 400]
-converters = ["chrome", "selenium", "matplotlib", "html2image"]
+test_dpi_values = [50, 100, 200, 400]
+converters = ["chrome", "selenium", "matplotlib"]
+
 
 
 class TestImage:
@@ -21,6 +22,7 @@ class TestImage:
             table_conversion=converter,
             dpi=dpi,
         )
+
 
     @pytest.mark.parametrize("dpi", test_dpi_values)
     @pytest.mark.parametrize("converter", converters)

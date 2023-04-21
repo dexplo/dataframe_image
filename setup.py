@@ -31,6 +31,7 @@ setuptools.setup(
         "pillow",
         "packaging",
         "mistune",
+        "lxml",
         "beautifulsoup4",
         "cssutils",
         "html2image",
