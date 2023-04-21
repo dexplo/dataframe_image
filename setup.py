@@ -33,6 +33,7 @@ setuptools.setup(
         "mistune",
         "beautifulsoup4",
         "cssutils",
+        "html2image",
     ],
     include_package_data=True,
     entry_points={
