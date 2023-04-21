@@ -1,5 +1,7 @@
 import base64
 import io
+import logging
+import os
 import platform
 import shutil
 import subprocess
@@ -7,9 +9,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
-from matplotlib import image as mimage
+from PIL import Image, ImageOps
 
 from .pd_html import styler2html
+
+_logger = logging.getLogger(__name__)
 
 
 def get_system():
@@ -63,6 +67,7 @@ def get_chrome_path(chrome_path=None):
 
         locs = [
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
+            r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
         ]
         for loc in locs:
@@ -83,106 +88,119 @@ class Screenshot:
         fontsize=18,
         encode_base64=True,
         limit_crop=True,
-        device_scale_factor=1
+        device_scale_factor=1,
     ):
         self.center_df = center_df
         self.max_rows = max_rows
         self.max_cols = max_cols
         self.chrome_path = get_chrome_path(chrome_path)
-        self.css = self.get_css(fontsize)
+        self.fontsize = fontsize
         self.encode_base64 = encode_base64
         self.limit_crop = limit_crop
         self.device_scale_factor = device_scale_factor
 
-    def get_css(self, fontsize):
+    def get_css(self):
         mod_dir = Path(__file__).resolve().parent
         css_file = mod_dir / "static" / "style.css"
         with open(css_file) as f:
             css = "<style>" + f.read() + "</style>"
         justify = "center" if self.center_df else "left"
-        css = css.format(fontsize=fontsize, justify=justify)
+        css = css.format(fontsize=self.fontsize, justify=justify)
         return css
 
     def take_screenshot(self, ss_width=1400, ss_height=900):
-        temp_dir = TemporaryDirectory()
-        temp_html = Path(temp_dir.name) / "temp.html"
-        temp_img = Path(temp_dir.name) / "temp.png"
-        with open(temp_html, "w", encoding="utf-8") as f:
-            f.write(self.html)
+        html_css = self.get_css() + self.html
+        with TemporaryDirectory() as temp_dir:
+            temp_html = Path(temp_dir) / "temp.html"
+            temp_img = Path(temp_dir) / "temp.png"
+            with open(temp_html, "w", encoding="utf-8") as f:
+                f.write(html_css)
 
+            args = [
+                "--enable-logging",
+                "--disable-gpu",
+                "--headless",
+                # "--no-sandbox",
+                f"--crash-dumps-dir={temp_dir}",
+                f"--force-device-scale-factor={self.device_scale_factor}",
+            ]
+            # root user needs no-sandbox
+            if platform.system().lower() != "windows" and os.geteuid() == 0:
+                args.append("--no-sandbox")
 
-        args = [
-            "--enable-logging",
-            "--disable-gpu",
-            "--headless",
-            "--no-sandbox",
-            "--crash-dumps-dir=/tmp",
-            f"--force-device-scale-factor={self.device_scale_factor}",
-        ]
+            if ss_width and ss_height:
+                args.append(f"--window-size={ss_width},{ss_height}")
 
-        if ss_width and ss_height:
-            args.append(f"--window-size={ss_width},{ss_height}")
+            args += [
+                "--hide-scrollbars",
+                f"--screenshot={str(temp_img)}",
+                str(temp_html),
+            ]
 
-        args += [
-            "--hide-scrollbars",
-            f"--screenshot={str(temp_img)}",
-            str(temp_html),
-        ]
+            self.generate_image_from_html(args)
 
-        subprocess.run(executable=self.chrome_path, args=args)
+            im = Image.open(temp_img)
+            return self.possibly_enlarge(im)
 
-        with open(temp_img, "rb") as f:
-            img_bytes = f.read()
+    def generate_image_from_html(self, args):
+        # print(self.chrome_path)
+        subprocess.run(
+            executable=self.chrome_path, args=args, capture_output=True, check=True
+        )
 
-        buffer = io.BytesIO(img_bytes)
-        img = mimage.imread(buffer)
-        return self.possibly_enlarge(img, ss_width, ss_height)
-
-    def possibly_enlarge(self, img, ss_width, ss_height):
+    def possibly_enlarge(self, im):
         enlarge = False
-        img2d = img.mean(axis=2) == 1
+        img = np.array(im)
+        img2d = img.mean(axis=2) == 255
 
         all_white_vert = img2d.all(axis=0)
         # must be all white for 30 pixels in a row to trigger stop
         if all_white_vert[-30:].sum() != 30:
-            ss_width = int(ss_width * 1.5)
+            # ss_width = int(ss_width * 1.5)
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
         if all_white_horiz[-30:].sum() != 30:
-            ss_height = int(ss_height * 1.5)
+            # ss_height = int(ss_height * 1.5)
             enlarge = True
 
         if enlarge:
-            return self.take_screenshot(ss_width=ss_width, ss_height=ss_height)
+            self.device_scale_factor *= 1.3
+            self.fontsize *= 1 / 1.2
+            if self.device_scale_factor < 7:
+                return self.take_screenshot()
+            else:
+                _logger.warning(
+                    """Unable to enlarge image with chrome
+                    please try 'df.dfi.export('df.png', table_conversion="selenium", max_rows=-1)'"""
+                )
 
-        return self.crop(img, all_white_vert, all_white_horiz)
+        return self.crop(im)
 
-    def crop(self, img, all_white_vert, all_white_horiz):
-        diff_vert = np.diff(all_white_vert)
-        left = diff_vert.argmax()
-        right = -diff_vert[::-1].argmax()
-        if self.limit_crop:
-            max_crop = int(img.shape[1] * 0.15)
-            left = min(left, max_crop)
-            right = max(right, -max_crop)
+    def crop(self, im):
+        # remove black
+        imrgb = im.convert("RGB")
+        imageBox = imrgb.getbbox()
+        im = im.crop(imageBox)
 
-        diff_horiz = np.diff(all_white_horiz)
-        top = diff_horiz.argmax()
-        bottom = -diff_horiz[::-1].argmax()
-        new_img = img[top:bottom, left:right]
-        return new_img
+        # remove alpha channel
+        imrgb = im.convert("RGB")
+        # invert image (so that white is 0)
+        invert_im = ImageOps.invert(imrgb)
+        imageBox = invert_im.getbbox()
+        cropped = im.crop(imageBox)
+        return cropped
 
     def finalize_image(self, img):
         buffer = io.BytesIO()
-        mimage.imsave(buffer, img)
+        img.save(buffer, format="png")
         img_str = buffer.getvalue()
         if self.encode_base64:
             img_str = base64.b64encode(img_str).decode()
         return img_str
 
     def run(self, html):
-        self.html = self.css + html
+        self.html = html
         img = self.take_screenshot()
         img_str = self.finalize_image(img)
         return img_str

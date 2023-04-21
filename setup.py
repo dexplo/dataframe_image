@@ -28,8 +28,7 @@ setuptools.setup(
         "nbconvert>=5",
         "aiohttp",
         "requests",
-        "matplotlib>=3.1",
-        "beautifulsoup4",
+        "pillow",
         "packaging",
         "mistune",
         "lxml",
@@ -46,5 +45,5 @@ setuptools.setup(
         )
     ],
     use_scm_version=True,
-    setup_requires=['setuptools_scm'],
+    setup_requires=["setuptools_scm"],
 )

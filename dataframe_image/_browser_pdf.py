@@ -1,10 +1,13 @@
 import asyncio
 import base64
 import concurrent.futures
+import logging
+import os
+import platform
 import urllib.parse
 from pathlib import Path
 from subprocess import Popen
-from tempfile import mkstemp
+from tempfile import TemporaryDirectory, mkstemp
 
 import aiohttp
 from nbconvert.exporters import Exporter, HTMLExporter
@@ -26,13 +29,18 @@ async def main(file_name, p):
     async with aiohttp.ClientSession() as session:
         connected = False
         await asyncio.sleep(1)
-        for _ in range(10):
+        for _ in range(20):
             try:
                 resp = await session.get("http://localhost:9222/json")
                 data = await resp.json()
                 page_url = data[0]["webSocketDebuggerUrl"]
                 connected = True
-            except:
+            except Exception as ex:
+                if p.returncode is not None:
+                    raise Exception(
+                        "Chrome process has died with code: %s" % p.returncode
+                    )
+                logging.warning(ex)
                 await asyncio.sleep(1)
             if connected:
                 break
@@ -43,7 +51,6 @@ async def main(file_name, p):
         async with session.ws_connect(
             page_url, receive_timeout=3, max_msg_size=0
         ) as ws:
-
             # first - navigate to html page
             params = {"url": file_name}
             data = {"id": 1, "method": "Page.navigate", "params": params}
@@ -70,14 +77,19 @@ async def main(file_name, p):
 
 def launch_chrome():
     chrome_path = get_chrome_path()
+    temp_dir = TemporaryDirectory()
     args = [
         chrome_path,
         "--headless",
+        "--enable-logging",
         "--disable-gpu",
+        # "--no-sandbox",
         "--run-all-compositor-stages-before-draw",
         "--remote-debugging-port=9222",
-        "--crash-dumps-dir=/tmp",
+        f"--crash-dumps-dir={temp_dir.name}",
     ]
+    if platform.system().lower() != "windows" and os.geteuid() == 0:
+        args.append("--no-sandbox")
     p = Popen(args=args)
     return p
 

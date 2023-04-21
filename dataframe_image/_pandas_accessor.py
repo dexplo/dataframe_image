@@ -21,7 +21,7 @@ class _Export:
         max_cols=None,
         table_conversion="chrome",
         chrome_path=None,
-        dpi=None
+        dpi=None,
     ):
         return _export(
             self._df,
@@ -31,7 +31,7 @@ class _Export:
             max_cols,
             table_conversion,
             chrome_path,
-            dpi
+            dpi,
         )
 
 
@@ -43,14 +43,16 @@ def export(
     max_cols=None,
     table_conversion="chrome",
     chrome_path=None,
-    dpi=None
+    dpi=None,
 ):
     return _export(
         obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
-   )
+    )
 
 
-def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi):
+def _export(
+    obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
+):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
 
@@ -62,8 +64,20 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
             fontsize=fontsize,
             encode_base64=False,
             limit_crop=False,
-            device_scale_factor=(1 if dpi == None else dpi/100.0)
+            device_scale_factor=(1 if dpi == None else dpi / 100.0),
         ).run
+    elif table_conversion == "selenium":
+        from .selenium_screenshot import SeleniumScreenshot
+
+        converter = SeleniumScreenshot(
+            max_rows=max_rows,
+            max_cols=max_cols,
+            fontsize=fontsize,
+            encode_base64=False,
+            limit_crop=False,
+            device_scale_factor=(1 if dpi == None else dpi / 100.0),
+        ).run
+
     else:
         from ._matplotlib_table import TableMaker
 
@@ -86,8 +100,6 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
                 "and therefore do not work with the `max_rows` and `max_cols` parameters"
             )
         raise ValueError(error_msg)
-    if max_rows == -1:
-        max_rows = None
 
     if df.shape[1] > MAX_COLS and max_cols is None:
         error_msg = (
@@ -105,6 +117,9 @@ def _export(obj, filename, fontsize, max_rows, max_cols, table_conversion, chrom
                 "and `max_cols` parameters"
             )
         raise ValueError(error_msg)
+
+    if max_rows == -1:
+        max_rows = None
 
     if max_cols == -1:
         max_cols = None

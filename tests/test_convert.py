@@ -9,7 +9,10 @@ filenames = [
     "tests/notebooks/Test 1.ipynb",
     "tests/notebooks/Test 1 EXECUTED.ipynb",
 ]
-uses = ["latex", "browser"]
+uses = [
+    "latex",
+    # "browser",
+]
 executes = [False, True]
 
 

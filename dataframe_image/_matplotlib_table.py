@@ -15,7 +15,12 @@ from matplotlib.transforms import Bbox
 
 class TableMaker:
     def __init__(
-        self, fontsize=14, encode_base64=True, limit_crop=True, for_document=True, savefig_dpi=None
+        self,
+        fontsize=14,
+        encode_base64=True,
+        limit_crop=True,
+        for_document=True,
+        savefig_dpi=None,
     ):
         self.original_fontsize = fontsize
         self.encode_base64 = encode_base64

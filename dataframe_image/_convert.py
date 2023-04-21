@@ -7,14 +7,16 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import nbformat
-from matplotlib import image as mimage
 from nbconvert import MarkdownExporter, PDFExporter
 from nbconvert.preprocessors import ExecutePreprocessor
+from PIL import Image
 
-from ._preprocessors import (ChangeOutputTypePreprocessor,
-                             MarkdownPreprocessor,
-                             PdfLatexPreprocessor,
-                             NoExecuteDataFramePreprocessor)
+from ._preprocessors import (
+    ChangeOutputTypePreprocessor,
+    MarkdownPreprocessor,
+    NoExecuteDataFramePreprocessor,
+    PdfLatexPreprocessor,
+)
 
 
 class Converter:
@@ -73,6 +75,9 @@ class Converter:
 
         self.return_data = {}
         self.resources = self.get_resources()
+
+    def __del__(self):
+        self.td.cleanup()
 
     def get_to(self, to):
         if isinstance(to, str):
@@ -159,6 +164,14 @@ class Converter:
                 max_rows=self.max_rows,
                 max_cols=self.max_cols,
                 chrome_path=self.chrome_path,
+            ).run
+        elif self.table_conversion == "selenium":
+            from .selenium_screenshot import SeleniumScreenshot
+
+            converter = SeleniumScreenshot(
+                center_df=self.center_df,
+                max_rows=self.max_rows,
+                max_cols=self.max_cols,
             ).run
         else:
             from ._matplotlib_table import TableMaker
@@ -258,10 +271,10 @@ class Converter:
             # extract first image from gif and use as png for latex pdf
             if ext == "gif":
                 buffer = io.BytesIO(image_data)
-                arr = mimage.imread(buffer, format="gif")
+                im = Image.open(buffer, formats=["gif"])
                 new_filename = filename.split(".")[0] + ".png"
                 new_filename = str(temp_dir / new_filename)
-                mimage.imsave(new_filename, arr)
+                im.save(new_filename)
             else:
                 with open(new_filename, "wb") as f:
                     f.write(image_data)

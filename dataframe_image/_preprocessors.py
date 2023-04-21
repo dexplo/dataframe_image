@@ -54,6 +54,7 @@ def replace_md_tables(image_data_dict, md_source, converter, cell_index, to_html
     nptable = re.compile(
         r"^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*", re.M
     )
+
     def md_table_to_image(match):
         nonlocal i
         md = match.group()
@@ -77,10 +78,12 @@ def replace_md_tables(image_data_dict, md_source, converter, cell_index, to_html
             return f"![]({new_image_name})\n\n"
         else:
             return f"` `  \n![]({new_image_name})\n\n"
+
     # md_source = table2.sub(md_table_to_image, md_source)
     md_source = nptable.sub(md_table_to_image, md_source)
     md_source = table.sub(md_table_to_image, md_source)
     return md_source
+
 
 def get_image_tags(md_source, only_http=False):
     pat_img_tag = r"""(<img.*?[sS][rR][Cc]\s*=\s*['"](.*?)['"].*?/>)"""
@@ -143,10 +146,12 @@ class LocalImagePreprocessor(Preprocessor):
                     f"attachment:{image_name}", new_image_name
                 )
         return cell, resources
+
     def preprocess_cell(self, cell, resources, cell_index):
         if cell["cell_type"] == "markdown":
             return self.markdown_preprocess_cell(cell, resources, cell_index)
         return cell, resources
+
 
 class MarkdownPreprocessor(LocalImagePreprocessor):
     def markdown_preprocess_cell(self, cell, resources, cell_index):
@@ -160,6 +165,7 @@ class MarkdownPreprocessor(LocalImagePreprocessor):
         )
         return cell, resources
 
+
 class PdfLatexPreprocessor(LocalImagePreprocessor):
     def markdown_preprocess_cell(self, cell, resources, cell_index):
         cell, resources = super().markdown_preprocess_cell(cell, resources, cell_index)
@@ -171,7 +177,8 @@ class PdfLatexPreprocessor(LocalImagePreprocessor):
             cell_index,
             to_html=True,
         )
-        return cell, resources   
+        return cell, resources
+
 
 # converts DataFrames to images when not executing notebook first
 # also converts gifs to png for outputs since jinja template is missing this

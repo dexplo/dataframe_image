@@ -1,15 +1,12 @@
 import shutil
-from pathlib import Path
-from tempfile import TemporaryDirectory
 
 from nbconvert.exporters import Exporter, HTMLExporter, PDFExporter
 
-from ._preprocessors import (ChangeOutputTypePreprocessor,
-                             MarkdownPreprocessor,
-                             NoExecuteDataFramePreprocessor)
-
-td = TemporaryDirectory()
-td_path = Path(td.name)
+from ._preprocessors import (
+    ChangeOutputTypePreprocessor,
+    MarkdownPreprocessor,
+    NoExecuteDataFramePreprocessor,
+)
 
 
 def get_latex_command():
@@ -34,7 +31,6 @@ def get_latex_command():
 
 
 class DataFramePDFExporter(PDFExporter):
-
     export_from_notebook = "PDF - DataFrame as Image (via latex)"
     latex_command = get_latex_command()
     # must give specific order of preprocessors

@@ -16,8 +16,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.7", "3.8", "3.9", "3.10"]
+        include:
+        - os: ubuntu-latest
+          pippath: ~/.cache/pip
+        - os: macos-latest
+          pippath: ~/Library/Caches/pip
+        - os: windows-latest
+          pippath: ~\AppData\Local\pip\Cache
 #         include:
 #           - os: macos-latest
 #             python-version: "3.10"
@@ -25,11 +32,11 @@ jobs:
     - uses: actions/checkout@v3
          
 #     - name: Get MacTeX Version
-#       if: ${{ matrix.os == 'macos-latest' }}
+#       if: ${{ startsWith(matrix.os, 'macos') }}
 #       run: echo "TEX_VER=$(brew info mactex | grep -E -o '\d+\.\d+')" >> $GITHUB_ENV
     
 #     - name: MacTeX Cache
-#       if: ${{ matrix.os == 'macos-latest' }}
+#       if: ${{ startsWith(matrix.os, 'macos') }}
 #       uses: actions/cache@v3.0.8
 #       env:
 #         cache-name: cache-brew
@@ -48,40 +55,55 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         
-    - name: Get pip cache dir
-      id: pip-cache
-      run: |
-        echo "::set-output name=dir::$(pip cache dir)"
-        
-    - name: pip cache
-      uses: actions/cache@v3
+    - uses: actions/cache@v3
       with:
-        path: ${{ steps.pip-cache.outputs.dir }}
-        key: ${{ runner.os }}-py${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}
+        path: ${{ matrix.pippath }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
         restore-keys: |
-          ${{ runner.os }}-pip-        
-          
-    - name: Install latex windows (not working)
-      if: ${{ matrix.os == 'windows-latest' }}
+         ${{ runner.os }}-pip-
+
+    - name: Set up Homebrew
+      if: ${{ startsWith(matrix.os, 'macos') }}
+      id: set-up-homebrew
+      uses: Homebrew/actions/setup-homebrew@master
+
+    - name: Setup TeX Live
+      uses: teatimeguest/setup-texlive-action@v2
+      with:
+        cache: true
+        packages: >-
+          scheme-basic
+          collection-xetex
+          collection-fontsrecommended
+          collection-mathscience
+          collection-pictures
+          collection-latexextra
+
+    # - name: Update TeX Live 
+    #   run: tlmgr update --self --all --reinstall-forcibly-removed
+            
+    - name: windows denpendencies
+      if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
-        choco install miktex --params '"/Set:complete"'
         choco install pandoc --no-progress
-    - name: Install latex linux
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt-get install texlive-xetex texlive-fonts-recommended texlive-base pandoc
-    - name: Install latex mac
-      if: ${{ matrix.os == 'macos-latest' }}
+        refreshenv
+    - name: ubuntu dependencies
+      if: startsWith(matrix.os, 'ubuntu')
       run: |
-        brew install --cask mactex 
-        eval "$(/usr/libexec/path_helper)"
-        echo "PATH=/Library/TeX/texbin:$PATH" >> $GITHUB_ENV
-    - name: install pandoc
-      if: ${{ matrix.os == 'macos-latest' }}
-      run: brew install pandoc
+        sudo apt-get install -y xvfb libgtk2.0-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 curl
+        sudo apt-get install -y pandoc 
+    - name: mac dependencies
+      if: ${{ startsWith(matrix.os, 'macos') }}
+      run: |
+        brew update
+        brew install pandoc
+        ln -s -f $(which python3) /usr/local/bin/python
+        ln -s -f $(which pip3) /usr/local/bin/pip
+
 
     - name: upload logs
-      if: ${{ matrix.os == 'windows-latest' }}
-      uses: actions/upload-artifact@v2
+      if: ${{ startsWith(matrix.os, 'windows') }}
+      uses: actions/upload-artifact@v3
       with:
         name: choco logs
         path: C:\ProgramData\chocolatey\logs\chocolatey.log
@@ -89,18 +111,18 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install pytest pandas nbconvert aiohttp matplotlib beautifulsoup4 requests notebook jupyter pandoc lxml
+        pip install pytest pandas nbconvert aiohttp matplotlib requests notebook jupyter pandoc lxml selenium
     - name: mac nbconvert patch fix # this is a tmp fix, related to https://github.com/jupyter/nbconvert/issues/1773
-      if: ${{ matrix.os == 'macos-latest' }}
+      if: ${{ startsWith(matrix.os, 'macos') }}
       run: |
         mkdir -p ~/Library/Jupyter
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
     - name: Test with pytest
       run: |
-        sed 's/:/\n/g' <<< "$PATH"    # show path
+        # sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest
     - name: Upload pdf
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Test 1 PDF
         path: tests/notebooks/*.pdf
