@@ -156,7 +156,9 @@ class Converter:
             return Path(self.nb_home)
 
     def get_resources(self):
-        if self.table_conversion == "chrome":
+        if self.table_conversion == "html2image":
+            pass
+        elif self.table_conversion == "chrome":
             from ._screenshot import Screenshot
 
             converter = Screenshot(

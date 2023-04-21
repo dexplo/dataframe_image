@@ -31,6 +31,8 @@ setuptools.setup(
         "pillow",
         "packaging",
         "mistune",
+        "beautifulsoup4",
+        "cssutils",
     ],
     include_package_data=True,
     entry_points={

@@ -9,7 +9,7 @@ df = pd.read_csv(
 )
 
 test_dpi_values = [50, 200, 400]
-converters = ["chrome", "selenium", "matplotlib"]
+converters = ["chrome", "selenium", "matplotlib", "html2image"]
 
 
 class TestImage:

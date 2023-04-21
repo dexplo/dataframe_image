@@ -55,8 +55,18 @@ def _export(
 ):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
-
-    if table_conversion == "chrome":
+    if table_conversion == "html2image":
+        from ._html2image import Html2ImageConverter
+        converter = Html2ImageConverter(
+            max_rows=max_rows,
+            max_cols=max_cols,
+            chrome_path=chrome_path,
+            fontsize=fontsize,
+            encode_base64=False,
+            limit_crop=False,
+            device_scale_factor=(1 if dpi == None else dpi / 100.0),
+        ).run
+    elif table_conversion == "chrome":
         converter = Screenshot(
             max_rows=max_rows,
             max_cols=max_cols,
