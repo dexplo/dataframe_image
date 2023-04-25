@@ -176,7 +176,7 @@ class Screenshot:
                     or try 'df.dfi.export('df.png', table_conversion="selenium")'"""
                 )
 
-        return self.crop(im)
+        return self.crop(img)
 
     def crop(self, im):
         # remove black
