@@ -15,6 +15,8 @@ from .pd_html import styler2html
 
 _logger = logging.getLogger(__name__)
 
+MAX_IMAGE_SIZE = 65535  # 16 MB
+
 
 def get_system():
     system = platform.system().lower()
@@ -140,15 +142,13 @@ class Screenshot:
             self.generate_image_from_html(args)
 
             im = Image.open(temp_img)
-            return self.possibly_enlarge(im)
+            return self.possibly_enlarge(im, ss_width, ss_height)
 
     def generate_image_from_html(self, args):
         # print(self.chrome_path)
-        subprocess.run(
-            executable=self.chrome_path, args=args, capture_output=True, check=True
-        )
+        subprocess.run(executable=self.chrome_path, args=args, capture_output=True, check=True)
 
-    def possibly_enlarge(self, im):
+    def possibly_enlarge(self, im, ss_width, ss_height):
         enlarge = False
         img = np.array(im)
         img2d = img.mean(axis=2) == 255
@@ -156,22 +156,22 @@ class Screenshot:
         all_white_vert = img2d.all(axis=0)
         # must be all white for 30 pixels in a row to trigger stop
         if all_white_vert[-30:].sum() != 30:
-            # ss_width = int(ss_width * 1.5)
+            ss_width = int(ss_width * 1.5)
             enlarge = True
 
         all_white_horiz = img2d.all(axis=1)
         if all_white_horiz[-30:].sum() != 30:
-            # ss_height = int(ss_height * 1.5)
+            ss_height = int(ss_height * 1.5)
             enlarge = True
 
         if enlarge:
-            self.device_scale_factor *= 1.3
-            self.fontsize *= 1 / 1.2
-            if self.device_scale_factor < 7:
-                return self.take_screenshot()
+            if ss_height < MAX_IMAGE_SIZE and ss_width < MAX_IMAGE_SIZE:
+                return self.take_screenshot(ss_width, ss_height)
             else:
+                chrome_version = subprocess.check_output([self.chrome_path, "--version"]).decode()
                 _logger.warning(
-                    """Unable to enlarge image with chrome
+                    f"""Unable to enlarge image with chrome {chrome_version},
+                    You could try to install an individual Chrome dev version and set chrome_path to it
                     please try 'df.dfi.export('df.png', table_conversion="selenium", max_rows=-1)'"""
                 )
 
@@ -214,9 +214,7 @@ class Screenshot:
             if isinstance(self, Styler):
                 html = styler2html(self)
             else:
-                html = self.to_html(
-                    max_rows=ss.max_rows, max_cols=ss.max_cols, notebook=True
-                )
+                html = self.to_html(max_rows=ss.max_rows, max_cols=ss.max_cols, notebook=True)
             return ss.run(html)
 
         return _repr_png_
