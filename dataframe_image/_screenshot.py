@@ -140,18 +140,18 @@ class Screenshot:
             ]
 
             self.generate_image_from_html(args)
-
-            im = Image.open(temp_img)
-            im_ndarray = np.array(im)
-            im.close()
-        return self.possibly_enlarge(im_ndarray, ss_width, ss_height)
+            with open(temp_img, "rb") as f:
+                bio = io.BytesIO(f.read())
+            im = Image.open(bio)
+        return self.possibly_enlarge(im, ss_width, ss_height)
 
     def generate_image_from_html(self, args):
         # print(self.chrome_path)
         subprocess.run(executable=self.chrome_path, args=args, capture_output=True, check=True)
 
-    def possibly_enlarge(self, im_ndarray, ss_width, ss_height):
+    def possibly_enlarge(self, img, ss_width, ss_height):
         enlarge = False
+        im_ndarray = np.array(img)
         img2d = im_ndarray.mean(axis=2) == 255
 
         all_white_vert = img2d.all(axis=0)
