@@ -15,7 +15,7 @@ from .pd_html import styler2html
 
 _logger = logging.getLogger(__name__)
 
-MAX_IMAGE_SIZE = 65535  # 16 MB
+MAX_IMAGE_SIZE = 65535 
 
 
 def get_system():
@@ -142,16 +142,17 @@ class Screenshot:
             self.generate_image_from_html(args)
 
             im = Image.open(temp_img)
-            return self.possibly_enlarge(im, ss_width, ss_height)
+            im_ndarray = np.array(im)
+            im.close()
+        return self.possibly_enlarge(im_ndarray, ss_width, ss_height)
 
     def generate_image_from_html(self, args):
         # print(self.chrome_path)
         subprocess.run(executable=self.chrome_path, args=args, capture_output=True, check=True)
 
-    def possibly_enlarge(self, im, ss_width, ss_height):
+    def possibly_enlarge(self, im_ndarray, ss_width, ss_height):
         enlarge = False
-        img = np.array(im)
-        img2d = img.mean(axis=2) == 255
+        img2d = im_ndarray.mean(axis=2) == 255
 
         all_white_vert = img2d.all(axis=0)
         # must be all white for 30 pixels in a row to trigger stop
@@ -170,9 +171,9 @@ class Screenshot:
             else:
                 chrome_version = subprocess.check_output([self.chrome_path, "--version"]).decode()
                 _logger.warning(
-                    f"""Unable to enlarge image with chrome {chrome_version},
+                    f"""Unable to enlarge image with {chrome_version}
                     You could try to install an individual Chrome dev version and set chrome_path to it
-                    please try 'df.dfi.export('df.png', table_conversion="selenium", max_rows=-1)'"""
+                    or try 'df.dfi.export('df.png', table_conversion="selenium")'"""
                 )
 
         return self.crop(im)
