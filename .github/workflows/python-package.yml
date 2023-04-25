@@ -58,9 +58,9 @@ jobs:
     - uses: actions/cache@v3
       with:
         path: ${{ matrix.pippath }}
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
         restore-keys: |
-         ${{ runner.os }}-pip-
+         ${{ runner.os }}-pip-${{ matrix.python-version }}
 
     - name: Set up Homebrew
       if: ${{ startsWith(matrix.os, 'macos') }}
@@ -99,14 +99,6 @@ jobs:
         brew install pandoc
         ln -s -f $(which python3) /usr/local/bin/python
         ln -s -f $(which pip3) /usr/local/bin/pip
-
-
-    - name: upload logs
-      if: ${{ startsWith(matrix.os, 'windows') }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: choco logs
-        path: C:\ProgramData\chocolatey\logs\chocolatey.log
 
     - name: Install dependencies
       run: |
