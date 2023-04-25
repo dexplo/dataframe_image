@@ -169,9 +169,8 @@ class Screenshot:
             if ss_height < MAX_IMAGE_SIZE and ss_width < MAX_IMAGE_SIZE:
                 return self.take_screenshot(ss_width, ss_height)
             else:
-                chrome_version = subprocess.check_output([self.chrome_path, "--version"]).decode()
                 _logger.warning(
-                    f"""Unable to enlarge image with {chrome_version}
+                    f"""Unable to enlarge image with Chrome, it is a known bug with version 111 and 112
                     You could try to install an individual Chrome dev version and set chrome_path to it
                     or try 'df.dfi.export('df.png', table_conversion="selenium")'"""
                 )
