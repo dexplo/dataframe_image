@@ -31,20 +31,27 @@ class Html2ImageConverter:
         justify = "center" if self.center_df else "left"
         css = css.format(fontsize=self.fontsize, justify=justify)
         return css
-    
+
     def run(self, html):
         from html2image import Html2Image
+
         css = self.get_css()
         # use folder under home directory to avoid permission issues
-        wd = Path.home() / ".cache" / "html2image" 
+        wd = Path.home() / ".cache" / "html2image"
         wd.mkdir(parents=True, exist_ok=True)
-        hti = Html2Image(browser_executable=self.chrome_path, output_path=wd, temp_path=str(wd))
-        hti.browser.flags = [f'--force-device-scale-factor={self.device_scale_factor}', '--disable-gpu', '--hide-scrollbars']
+        hti = Html2Image(
+            browser_executable=self.chrome_path, output_path=wd, temp_path=str(wd)
+        )
+        hti.browser.flags = [
+            f"--force-device-scale-factor={self.device_scale_factor}",
+            "--disable-gpu",
+            "--hide-scrollbars",
+        ]
         outpaths = hti.screenshot(html_str=html, css_str=css, size=(9000, 900))
         image_bytes = self.finalize_image(outpaths[0])
         return image_bytes
-    
-    def finalize_image(self, image_path)->bytes:
+
+    def finalize_image(self, image_path) -> bytes:
         with open(image_path, "rb") as f:
             img_bytes = f.read()
         if self.encode_base64:

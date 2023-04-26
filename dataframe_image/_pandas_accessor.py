@@ -57,6 +57,7 @@ def _export(
     df = obj.data if is_styler else obj
     if table_conversion == "html2image":
         from ._html2image import Html2ImageConverter
+
         converter = Html2ImageConverter(
             max_rows=max_rows,
             max_cols=max_cols,

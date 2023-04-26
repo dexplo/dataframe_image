@@ -111,7 +111,9 @@ class TableMaker:
                         ]
                     )
                 else:
-                    values.append([text, bold, text_align, "#ffffff", "#000000", rowspan, colspan])
+                    values.append(
+                        [text, bold, text_align, "#ffffff", "#000000", rowspan, colspan]
+                    )
             return values
 
         soup = BeautifulSoup(html, features="lxml")

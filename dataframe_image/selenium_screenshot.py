@@ -1,4 +1,5 @@
 import io
+import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -6,9 +7,9 @@ from PIL import Image
 from selenium.webdriver.firefox.service import Service
 
 from ._screenshot import Screenshot
-import logging
 
 _logger = logging.getLogger(__name__)
+
 
 class SeleniumScreenshot(Screenshot):
     def __init__(
@@ -36,7 +37,7 @@ class SeleniumScreenshot(Screenshot):
         try:
             self.temp_dir_obj.cleanup()
         except Exception as ex:
-            _logger.debug("Could not delete temp dir: %s", ex) 
+            _logger.debug("Could not delete temp dir: %s", ex)
             pass
 
     def take_screenshot(self):

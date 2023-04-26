@@ -15,7 +15,7 @@ from .pd_html import styler2html
 
 _logger = logging.getLogger(__name__)
 
-MAX_IMAGE_SIZE = 65535 
+MAX_IMAGE_SIZE = 65535
 
 
 def get_system():
@@ -147,7 +147,9 @@ class Screenshot:
 
     def generate_image_from_html(self, args):
         # print(self.chrome_path)
-        subprocess.run(executable=self.chrome_path, args=args, capture_output=True, check=True)
+        subprocess.run(
+            executable=self.chrome_path, args=args, capture_output=True, check=True
+        )
 
     def possibly_enlarge(self, img, ss_width, ss_height):
         enlarge = False
@@ -214,7 +216,9 @@ class Screenshot:
             if isinstance(self, Styler):
                 html = styler2html(self)
             else:
-                html = self.to_html(max_rows=ss.max_rows, max_cols=ss.max_cols, notebook=True)
+                html = self.to_html(
+                    max_rows=ss.max_rows, max_cols=ss.max_cols, notebook=True
+                )
             return ss.run(html)
 
         return _repr_png_
