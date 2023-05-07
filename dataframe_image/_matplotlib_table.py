@@ -147,20 +147,23 @@ class TableMaker:
                 rows.append(parse_row(row))
         return rows, num_header_rows
 
-    def get_text_width(self, text):
+    def get_text_width(self, text, weight=None):
         fig = self.text_fig
-        t = fig.text(0, 0, text, size=self.fontsize)
+        t = fig.text(0, 0, text, size=self.fontsize, weight=weight)
         bbox = t.get_window_extent(renderer=self.renderer)
         return bbox.width
 
     def get_all_text_widths(self, rows):
         all_text_widths = []
-        for row in rows:
+        for i, row in enumerate(rows):
             row_widths = []
             for vals in row:
                 cell_max_width = 0
                 for text in vals[0].split("\n"):
-                    cell_max_width = max(cell_max_width, self.get_text_width(text))
+                    weight = "bold" if i == 0 else None
+                    cell_max_width = max(
+                        cell_max_width, self.get_text_width(text, weight)
+                    )
                 row_widths.append(cell_max_width)
             all_text_widths.append(row_widths)
         pad = 10  # number of pixels to pad columns with
