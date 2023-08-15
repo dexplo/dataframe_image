@@ -88,7 +88,7 @@ def launch_chrome():
         "--remote-debugging-port=9222",
         f"--crash-dumps-dir={temp_dir.name}",
     ]
-    if os.environ["NO_SANDBOX"] or platform.system().lower() != "windows" and os.geteuid() == 0:
+    if os.environ.get("NO_SANDBOX", False) or platform.system().lower() != "windows" and os.geteuid() == 0:
         args.append("--no-sandbox")
     p = Popen(args=args)
     return p

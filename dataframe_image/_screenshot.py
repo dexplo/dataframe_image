@@ -127,7 +127,7 @@ class Screenshot:
                 f"--force-device-scale-factor={self.device_scale_factor}",
             ]
             # root user needs no-sandbox
-            if os.environ["NO_SANDBOX"] or platform.system().lower() != "windows" and os.geteuid() == 0:
+            if os.environ.get("NO_SANDBOX", False) or platform.system().lower() != "windows" and os.geteuid() == 0:
                 args.append("--no-sandbox")
 
             if ss_width and ss_height:
