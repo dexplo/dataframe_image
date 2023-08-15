@@ -61,13 +61,13 @@ def replace_md_tables(image_data_dict, md_source, converter, cell_index, to_html
         html = mistune.markdown(
             md,
             escape=False,
-            plugins=[
+            plugins=(
                 "strikethrough",
                 "table",
                 "url",
                 "task_lists",
                 "def_list",
-            ],
+            ),
         )
         html = "<div>" + html + "</div>"
         image_data = base64.b64decode(converter(html))
