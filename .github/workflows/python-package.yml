@@ -86,6 +86,7 @@ jobs:
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
         choco install pandoc --no-progress
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
     - name: ubuntu dependencies
       if: startsWith(matrix.os, 'ubuntu')
