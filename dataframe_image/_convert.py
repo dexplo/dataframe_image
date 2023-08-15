@@ -48,7 +48,9 @@ class Converter:
         chrome_path,
         latex_command,
         output_dir,
+        no_input,
         web_app,
+        nbconvert_config=None,
     ):
         self.filename = Path(filename)
         self.use = use
@@ -75,6 +77,22 @@ class Converter:
 
         self.return_data = {}
         self.resources = self.get_resources()
+
+        if nbconvert_config is None:
+            self.nbconvert_config = {}
+        else:
+            self.nbconvert_config = nbconvert_config
+
+        if no_input:
+            self.nbconvert_config.update(
+                {
+                    "TemplateExporter": {
+                        "exclude_output_prompt": True,
+                        "exclude_input": True,
+                        "exclude_input_prompt": True,
+                    }
+                }
+            )
 
     def __del__(self):
         self.td.cleanup()
@@ -219,7 +237,8 @@ class Converter:
     def to_md(self):
         me = MarkdownExporter(
             config={
-                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}
+                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY},
+                **self.nbconvert_config,
             }
         )
         md_data, self.resources = me.from_notebook_node(self.nb, self.resources)
@@ -286,7 +305,8 @@ class Converter:
 
         pdf = PDFExporter(
             config={
-                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY}
+                "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY},
+                **self.nbconvert_config,
             }
         )
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
@@ -299,7 +319,7 @@ class Converter:
     def to_pdf_browser(self):
         from ._browser_pdf import BrowserExporter
 
-        be = BrowserExporter()
+        be = BrowserExporter(config=self.nbconvert_config)
         pdf_data, self.resources = be.from_notebook_node(self.nb, self.resources)
         self.return_data["pdf_data"] = pdf_data
 
@@ -369,6 +389,7 @@ def convert(
     chrome_path=None,
     latex_command=None,
     output_dir=None,
+    no_input=False,
 ):
     """
     Convert a Jupyter Notebook to pdf or markdown using images for pandas
@@ -471,6 +492,7 @@ def convert(
         chrome_path,
         latex_command,
         output_dir,
+        no_input,
         web_app=False,
     )
     c.convert()

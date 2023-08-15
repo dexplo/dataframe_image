@@ -92,7 +92,7 @@ By default, the new file(s) will be saved in the same directory where the notebo
 The command line tool `dataframe_image` will be available upon installation with the same options as the `convert` function from above.
 
 ```bash
-dataframe_image --to=pdf "my notebook with dataframes.ipynb"
+dataframe_image --to=pdf "my notebook with dataframes.ipynb" --no-input
 ```
 
 ## Finding Google Chrome

@@ -13,28 +13,33 @@ uses = [
     "latex",
     # "browser",
 ]
-executes = [False, True]
+executes = [True, False]
+
+no_input = [True, False]
+
+def tname_to_filename(test_name:str):
+    return test_name.replace(" ", "_").replace("/", "_")
 
 
 @pytest.mark.parametrize("filename", filenames)
 @pytest.mark.parametrize("use", uses)
-@pytest.mark.parametrize("execute", executes)
+@pytest.mark.parametrize("execute", executes, ids=["executed", ""])
+@pytest.mark.parametrize("no_input", no_input, ids=["no_input", ""])
 class TestConvertPDF:
-    def test_same_folder(self, filename, use, execute):
-        ex = " executed" if execute else " not_executed"
-        document_name = Path(filename).stem + " " + use + ex + " NEW NAME"
+    def test_same_folder(self, request, filename, use, execute, no_input):
+        document_name = tname_to_filename(request.node.name)
         convert(
-            filename, to="pdf", use=use, execute=execute, document_name=document_name
+            filename, to="pdf", use=use, execute=execute, document_name=document_name, no_input=no_input
         )
 
 
 @pytest.mark.parametrize("filename", filenames)
-@pytest.mark.parametrize("execute", executes)
+@pytest.mark.parametrize("execute", executes, ids=["executed", ""])
+@pytest.mark.parametrize("no_input", no_input, ids=["no_input", ""])
 class TestConvertMD:
-    def test_same_folder(self, filename, execute):
-        ex = " executed" if execute else " not_executed"
-        document_name = Path(filename).stem + ex + " NEW NAME"
-        convert(filename, to="md", execute=execute, document_name=document_name)
+    def test_same_folder(self, request, filename, execute, no_input):
+        document_name = tname_to_filename(request.node.name)
+        convert(filename, to="md", execute=execute, document_name=document_name, no_input=no_input)
 
 
 class TestConvertOther:
