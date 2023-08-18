@@ -26,7 +26,7 @@ def tname_to_filename(test_name:str):
 @pytest.mark.parametrize("execute", executes, ids=["executed", ""])
 @pytest.mark.parametrize("no_input", no_input, ids=["no_input", ""])
 class TestConvertPDF:
-    def test_same_folder(self, request, filename, use, execute, no_input):
+    def test_to_pdf(self, request, filename, use, execute, no_input):
         document_name = tname_to_filename(request.node.name)
         convert(
             filename, to="pdf", use=use, execute=execute, document_name=document_name, no_input=no_input
@@ -37,7 +37,7 @@ class TestConvertPDF:
 @pytest.mark.parametrize("execute", executes, ids=["executed", ""])
 @pytest.mark.parametrize("no_input", no_input, ids=["no_input", ""])
 class TestConvertMD:
-    def test_same_folder(self, request, filename, execute, no_input):
+    def test_to_md(self, request, filename, execute, no_input):
         document_name = tname_to_filename(request.node.name)
         convert(filename, to="md", execute=execute, document_name=document_name, no_input=no_input)
 

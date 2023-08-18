@@ -122,8 +122,9 @@ def get_pdf_data(file_name, p):
 
 def get_pdf_data_chromecontroller(file_name):
     additional_options = get_launch_args()
+    # ChromeContext will shlex.split binary, so add quote to it
     with ChromeController.ChromeContext(
-        binary=get_chrome_path(), additional_options=additional_options
+        binary=f'"{get_chrome_path()}"', additional_options=additional_options
     ) as cr:
         # Do a blocking navigate to a URL, and get the page content as served by the remote
         # server, with no modification by local javascript (if applicable)
