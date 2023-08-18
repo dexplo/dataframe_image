@@ -11,7 +11,7 @@ filenames = [
 ]
 uses = [
     "latex",
-    # "browser",
+    "browser",
 ]
 executes = [True, False]
 
