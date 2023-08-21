@@ -109,7 +109,8 @@ def get_html_data(nb, resources, **kw):
     return html_data
 
 # deprecated
-def get_pdf_data(file_name, p):
+def get_pdf_data(file_name):
+    p = launch_chrome()
     try:
         from asyncio import run
     except ImportError:
@@ -117,7 +118,9 @@ def get_pdf_data(file_name, p):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         future = executor.submit(run, main(file_name, p))
-    return future.result()
+    data =  future.result()
+    p.kill()
+    return data
 
 
 def get_pdf_data_chromecontroller(file_name):
@@ -153,15 +156,12 @@ class BrowserExporter(TemplateExporter):
         nb_home = resources["metadata"]["path"]
 
         html_data = get_html_data(nb, resources, **kw)
-        _, tf_name = mkstemp(dir=nb_home, suffix=".html")
-        with open(tf_name, "w", encoding="utf-8") as f:
+        fd, tf_name = mkstemp(dir=nb_home, suffix=".html")
+        with open(fd, "w", encoding="utf-8") as f:
             f.write(html_data)
         tf_path = Path(tf_name)
-        full_file_name = "file://" + urllib.parse.quote(tf_name)
-        # p = launch_chrome()
-        pdf_data = get_pdf_data_chromecontroller(full_file_name)
-        import os
-
+        file_uri = tf_path.as_uri()
+        # pdf_data = get_pdf_data_chromecontroller(file_uri)
+        pdf_data = get_pdf_data(file_uri)
         os.remove(tf_path)
-        # p.kill()
         return pdf_data, resources
