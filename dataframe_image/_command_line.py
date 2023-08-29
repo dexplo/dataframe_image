@@ -128,7 +128,7 @@ parser.add_argument(
     "--latex-command", type=list, default=["xelatex", "{filename}", "quiet"]
 )
 parser.add_argument("--output-dir")
-parser.add_argument("--no-input", type=bool, default=False)
+parser.add_argument("--no-input", action='store_true')
 
 
 def main():
