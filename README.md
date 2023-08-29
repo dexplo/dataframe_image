@@ -108,6 +108,9 @@ A Known Issue: When using dataframe_image with Google Colab, you can not use def
 ```
 !apt install firefox firefox-geckodriver
 !pip install dataframe_image selenium
+
+...
+df.dfi.export('df.png', table_conversion='selenium')
 ```
 
 ### Choose your converter
