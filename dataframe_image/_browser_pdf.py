@@ -67,11 +67,16 @@ async def main(file_name, p):
             await handler(ws, data, "content")
 
             # fourth - get pdf
-            await asyncio.sleep(1)
-            params = {"displayHeaderFooter": False, "printBackground": True}
-            data = {"id": 4, "method": "Page.printToPDF", "params": params}
-            pdf_data = await handler(ws, data, "data")
-            pdf_data = base64.b64decode(pdf_data)
+            for i in range(10):
+                await asyncio.sleep(1)
+                params = {"displayHeaderFooter": False, "printBackground": True}
+                data = {"id": 4, "method": "Page.printToPDF", "params": params}
+                pdf_data = await handler(ws, data, "data")
+                pdf_data = base64.b64decode(pdf_data)
+                if len(pdf_data) > 1000:
+                    break
+            else:
+                raise Exception("Could not get pdf data")
             return pdf_data
 
 
@@ -102,11 +107,6 @@ def launch_chrome():
     return p
 
 
-def get_html_data(nb, resources, **kw):
-    he = HTMLExporter()
-    html_data, resources = he.from_notebook_node(nb, resources, **kw)
-    html_data = html_data.replace("@media print", "@media xxprintxx")
-    return html_data
 
 # deprecated
 def get_pdf_data(file_name):
@@ -118,7 +118,7 @@ def get_pdf_data(file_name):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         future = executor.submit(run, main(file_name, p))
-    data =  future.result()
+        data =  future.result()
     p.kill()
     return data
 
@@ -147,15 +147,19 @@ def get_pdf_data_chromecontroller(file_name):
         return pdf_data
 
 
-class BrowserExporter(TemplateExporter):
+class BrowserExporter(HTMLExporter):
     def _file_extension_default(self):
         return ".pdf"
+    
+    def _template_extension_default(self):
+        return ".html.j2"
 
     def from_notebook_node(self, nb, resources=None, **kw):
         resources["output_extension"] = ".pdf"
         nb_home = resources["metadata"]["path"]
 
-        html_data = get_html_data(nb, resources, **kw)
+        html_data, resources = super().from_notebook_node(nb, resources, **kw)
+        html_data = html_data.replace("@media print", "@media xxprintxx")
         fd, tf_name = mkstemp(dir=nb_home, suffix=".html")
         with open(fd, "w", encoding="utf-8") as f:
             f.write(html_data)
