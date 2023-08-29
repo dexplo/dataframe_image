@@ -82,13 +82,14 @@ async def main(file_name, p):
 
 def get_launch_args():
     # temp_dir = TemporaryDirectory()
+    temp_dir_name = os.path.abspath(".")
     args = [
         "--headless",
         "--enable-logging",
         "--disable-gpu",
         "--run-all-compositor-stages-before-draw",
         "--remote-allow-origins=*",
-        # f"--crash-dumps-dir={temp_dir.name}",
+        f"--crash-dumps-dir={temp_dir_name}",
         "about:blank",
     ]
     if (
