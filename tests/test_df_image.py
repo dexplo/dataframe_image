@@ -1,8 +1,9 @@
+import random
+import string
+
 import numpy as np
 import pandas as pd
 import pytest
-import random
-import string
 
 import dataframe_image
 
