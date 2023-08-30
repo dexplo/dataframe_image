@@ -83,7 +83,7 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v3
       with:
-        path: latex_failure.zip
+        path: notebook.tex
 
     # - name: Update TeX Live 
     #   run: tlmgr update --self --all --reinstall-forcibly-removed

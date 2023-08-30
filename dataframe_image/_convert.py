@@ -326,8 +326,9 @@ class Converter:
         try:
             pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         except Exception as ex:
-            tdir = tempfile.gettempdir()
-            shutil.make_archive("latex_failure", "zip", tdir)
+            latex, _ = super(PDFExporter, pdf).from_notebook_node(self.nb, self.resources)
+            with open("notebook.tex", "w", encoding="utf-8") as f:
+                f.write(latex)
             raise ex
         self.return_data["pdf_data"] = pdf_data
         if not self.web_app:
