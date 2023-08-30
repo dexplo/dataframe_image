@@ -3,6 +3,8 @@ import io
 import os
 import re
 import shutil
+import tempfile
+import time
 import urllib.parse
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -320,8 +322,13 @@ class Converter:
         if os.environ.get("DEBUG"):
             pdf.log.setLevel(10)
             pdf.latex_command = ["xelatex", "{filename}"]
-            
-        pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
+
+        try:
+            pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
+        except Exception as ex:
+            tdir = tempfile.gettempdir()
+            shutil.make_archive("latex_failure", "zip", tdir)
+            raise ex
         self.return_data["pdf_data"] = pdf_data
         if not self.web_app:
             fn = self.final_nb_home / (self.document_name + ".pdf")

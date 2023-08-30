@@ -78,6 +78,12 @@ jobs:
           collection-mathscience
           collection-pictures
           collection-latexextra
+    # upload tmp.zip if fails
+    - name: upload tmp.zip
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        path: latex_failure.zip
 
     # - name: Update TeX Live 
     #   run: tlmgr update --self --all --reinstall-forcibly-removed
