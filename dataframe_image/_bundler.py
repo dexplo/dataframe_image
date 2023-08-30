@@ -1,8 +1,5 @@
 import base64
-import json
 from pathlib import Path
-
-from tornado import gen
 
 
 def _jupyter_bundlerextension_paths():

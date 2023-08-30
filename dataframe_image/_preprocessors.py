@@ -1,5 +1,4 @@
 import base64
-import io
 import re
 from pathlib import Path
 

@@ -17,7 +17,8 @@ executes = [True, False]
 
 no_input = [True, False]
 
-def tname_to_filename(test_name:str):
+
+def tname_to_filename(test_name: str):
     return test_name.replace(" ", "_").replace("/", "_")
 
 
@@ -29,7 +30,13 @@ class TestConvertPDF:
     def test_to_pdf(self, request, filename, use, execute, no_input):
         document_name = tname_to_filename(request.node.name)
         convert(
-            filename, to="pdf", use=use, execute=execute, document_name=document_name, no_input=no_input, output_dir="tests/test_output"
+            filename,
+            to="pdf",
+            use=use,
+            execute=execute,
+            document_name=document_name,
+            no_input=no_input,
+            output_dir="tests/test_output",
         )
 
 
@@ -39,7 +46,14 @@ class TestConvertPDF:
 class TestConvertMD:
     def test_to_md(self, request, filename, execute, no_input):
         document_name = tname_to_filename(request.node.name)
-        convert(filename, to="md", execute=execute, document_name=document_name, no_input=no_input, output_dir="tests/test_output")
+        convert(
+            filename,
+            to="md",
+            execute=execute,
+            document_name=document_name,
+            no_input=no_input,
+            output_dir="tests/test_output",
+        )
 
 
 class TestConvertOther:
@@ -53,7 +67,7 @@ class TestConvertOther:
             save_notebook=True,
             execute=True,
             document_name=document_name,
-            output_dir="tests/test_output"
+            output_dir="tests/test_output",
         )
 
     def test_matplotlib(self):
@@ -66,5 +80,5 @@ class TestConvertOther:
             execute=True,
             document_name=document_name,
             table_conversion="matplotlib",
-            output_dir="tests/test_output"
+            output_dir="tests/test_output",
         )
