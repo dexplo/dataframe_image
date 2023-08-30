@@ -317,6 +317,10 @@ class Converter:
                 **self.nbconvert_config,
             }
         )
+        if os.environ.get("DEBUG"):
+            pdf.log.setLevel(10)
+            pdf.latex_command = ["xelatex", "{filename}"]
+            
         pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         self.return_data["pdf_data"] = pdf_data
         if not self.web_app:
