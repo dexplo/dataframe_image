@@ -126,8 +126,8 @@ jobs:
     - name: Upload pdf
       uses: actions/upload-artifact@v3
       with:
-        name: Test 1 PDF
-        path: tests/notebooks/*.pdf
+        name: test_output
+        path: tests/notebooks/test_output
         
   publish:
     runs-on: ubuntu-latest
