@@ -50,7 +50,7 @@ async def main(file_name, p):
             p.kill()
             raise Exception("Could not connect to chrome server")
 
-        async with session.ws_connect(page_url, receive_timeout=3, max_msg_size=0) as ws:
+        async with session.ws_connect(page_url, receive_timeout=10, max_msg_size=0) as ws:
             # first - navigate to html page
             params = {"url": file_name}
             data = {"id": 1, "method": "Page.navigate", "params": params}
@@ -67,7 +67,7 @@ async def main(file_name, p):
             await handler(ws, data, "content")
 
             # fourth - get pdf
-            for i in range(10):
+            for _ in range(10):
                 await asyncio.sleep(1)
                 params = {"displayHeaderFooter": False, "printBackground": True}
                 data = {"id": 4, "method": "Page.printToPDF", "params": params}
@@ -76,7 +76,7 @@ async def main(file_name, p):
                 if len(pdf_data) > 1000:
                     break
             else:
-                raise Exception("Could not get pdf data")
+                raise TimeoutError("Could not get pdf data")
             return pdf_data
 
 
