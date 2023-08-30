@@ -78,12 +78,6 @@ jobs:
           collection-mathscience
           collection-pictures
           collection-latexextra
-    # upload tmp.zip if fails
-    - name: upload tmp.zip
-      if: failure()
-      uses: actions/upload-artifact@v3
-      with:
-        path: notebook.tex
 
     # - name: Update TeX Live 
     #   run: tlmgr update --self --all --reinstall-forcibly-removed
@@ -123,6 +117,14 @@ jobs:
       run: |
         # sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest
+        
+    # upload tmp.zip if fails
+    - name: upload failed notebook.tex
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        path: notebook.tex
+        
     - name: Upload pdf
       uses: actions/upload-artifact@v3
       with:
