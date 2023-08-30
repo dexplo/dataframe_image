@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 from pandas.io.formats.style import Styler
 
@@ -91,9 +92,12 @@ def _export(
 
     else:
         from ._matplotlib_table import TableMaker
-
+        # get extension from filename without dot
+        extension = Path(filename).suffix
+        if extension.startswith("."):
+            extension = extension[1:]
         converter = TableMaker(
-            fontsize=fontsize, encode_base64=False, for_document=False, savefig_dpi=dpi
+            fontsize=fontsize, encode_base64=False, for_document=False, savefig_dpi=dpi, format=extension
         ).run
 
     if df.shape[0] > MAX_ROWS and max_rows is None:

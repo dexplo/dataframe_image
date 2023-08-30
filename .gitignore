@@ -11,6 +11,7 @@ site/
 __init__.pyc
 
 # tests result
+/tests/test_output/
 /tests/**/*.pdf
 /tests/**/*.png
 /tests/**/*.md
