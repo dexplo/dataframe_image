@@ -112,6 +112,8 @@ jobs:
         mkdir -p ~/Library/Jupyter
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
     - name: Test with pytest
+      env:
+        DEBUG: "1"
       run: |
         # sed 's/:/\n/g' <<< "$PATH"    # show path
         pytest

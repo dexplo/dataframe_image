@@ -1,5 +1,6 @@
 import base64
 import io
+import os
 import re
 import shutil
 import urllib.parse
@@ -91,6 +92,13 @@ class Converter:
                         "exclude_input": True,
                         "exclude_input_prompt": True,
                     }
+                }
+            )
+
+        if os.environ.get("DEBUG"):
+            self.nbconvert_config.update(
+                {
+                    "Application.log_level": 10,
                 }
             )
 
