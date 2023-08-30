@@ -1,3 +1,5 @@
+from ctypes import WinError
+import io
 import logging
 from pathlib import Path
 from tempfile import TemporaryDirectory

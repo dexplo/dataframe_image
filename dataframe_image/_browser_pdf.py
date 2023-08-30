@@ -4,13 +4,15 @@ import concurrent.futures
 import logging
 import os
 import platform
+import urllib.parse
 from pathlib import Path
 from subprocess import Popen
-from tempfile import mkstemp
+from tempfile import TemporaryDirectory, mkstemp
+import ChromeController
 
 import aiohttp
-import ChromeController
-from nbconvert.exporters import HTMLExporter
+from nbconvert import TemplateExporter
+from nbconvert.exporters import Exporter, HTMLExporter
 
 from ._screenshot import get_chrome_path
 
@@ -26,7 +28,6 @@ async def handler(ws, data, key=None):
         raise Exception("{data} failed")
     return result
 
-
 # deprecated
 async def main(file_name, p):
     async with aiohttp.ClientSession() as session:
@@ -40,9 +41,7 @@ async def main(file_name, p):
                 connected = True
             except Exception as ex:
                 if p.returncode is not None:
-                    raise Exception(
-                        "Chrome process has died with code: %s" % p.returncode
-                    )
+                    raise Exception("Chrome process has died with code: %s" % p.returncode)
                 logging.warning(ex)
                 await asyncio.sleep(1)
             if connected:
@@ -51,9 +50,7 @@ async def main(file_name, p):
             p.kill()
             raise Exception("Could not connect to chrome server")
 
-        async with session.ws_connect(
-            page_url, receive_timeout=10, max_msg_size=0
-        ) as ws:
+        async with session.ws_connect(page_url, receive_timeout=10, max_msg_size=0) as ws:
             # first - navigate to html page
             params = {"url": file_name}
             data = {"id": 1, "method": "Page.navigate", "params": params}
@@ -103,13 +100,13 @@ def get_launch_args():
         args.append("--no-sandbox")
     return args
 
-
 # deprecated
 def launch_chrome():
     chrome_path = get_chrome_path()
     args = [chrome_path] + get_launch_args() + ["--remote-debugging-port=9222"]
     p = Popen(args=args)
     return p
+
 
 
 # deprecated
@@ -122,7 +119,7 @@ def get_pdf_data(file_name):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         future = executor.submit(run, main(file_name, p))
-        data = future.result()
+        data =  future.result()
     p.kill()
     return data
 
@@ -145,9 +142,7 @@ def get_pdf_data_chromecontroller(file_name):
         # # Emulation_setVisibleSize(width, height) function if needed.
         # png_bytestring = cr.take_screeshot()
 
-        response = cr.Page_printToPDF(
-            **{"displayHeaderFooter": False, "printBackground": True}
-        )
+        response = cr.Page_printToPDF(**{"displayHeaderFooter": False, "printBackground": True})
         data = response["result"]["data"]
         pdf_data = base64.b64decode(data)
         return pdf_data
@@ -156,7 +151,7 @@ def get_pdf_data_chromecontroller(file_name):
 class BrowserExporter(HTMLExporter):
     def _file_extension_default(self):
         return ".pdf"
-
+    
     def _template_extension_default(self):
         return ".html.j2"
 

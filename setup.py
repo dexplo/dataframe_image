@@ -1,3 +1,4 @@
+import re
 
 import setuptools
 
@@ -47,9 +48,9 @@ setuptools.setup(
         )
     ],
     use_scm_version={
-        "write_to": "dataframe_image/_version.py",
-        "write_to_template": '__version__ = "{version}"',
-        "local_scheme": "node-and-date"
+        'write_to': 'dataframe_image/_version.py',
+        'write_to_template': '__version__ = "{version}"',
+        'local_scheme': 'node-and-date'
         # 'tag_regex': r'^(?P<prefix>v)?(?P<version>[^\+]+)(?P<suffix>.*)?$',
     },
     setup_requires=["setuptools_scm"],

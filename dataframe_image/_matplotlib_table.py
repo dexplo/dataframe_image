@@ -4,6 +4,7 @@ import textwrap
 
 import cssutils
 import numpy as np
+import pandas as pd
 from bs4 import BeautifulSoup
 from matplotlib import lines as mlines
 from matplotlib import patches as mpatches

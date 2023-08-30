@@ -1,4 +1,6 @@
+import base64
 import io
+import re
 import shutil
 import urllib.parse
 from pathlib import Path

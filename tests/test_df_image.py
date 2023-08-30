@@ -1,9 +1,10 @@
-import random
-import string
-
 import numpy as np
 import pandas as pd
 import pytest
+import random
+import string
+
+import dataframe_image
 
 df = pd.read_csv(
     "tests/notebooks/data/covid19.csv", parse_dates=["date"], index_col="date"
