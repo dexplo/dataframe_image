@@ -292,7 +292,7 @@ class Converter:
         # must download html images for latex to use them
         from ._preprocessors import MarkdownHTTPPreprocessor
 
-        temp_dir = Path(self.td.name)
+        temp_dir = Path(os.path.realpath(self.td.name))
         self.resources["temp_dir"] = temp_dir
         print("TEMP_DIR", temp_dir) # TODO just for debug
         MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
