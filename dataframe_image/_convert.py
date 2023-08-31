@@ -297,7 +297,7 @@ class Converter:
             fn_pieces = filename.split("_")
             cell_idx = int(fn_pieces[1])
             ext = fn_pieces[-1].split(".")[-1]
-            new_filename = str(temp_dir / filename)
+            new_filename =  os.path.expandvars(temp_dir / filename)
 
             # extract first image from gif and use as png for latex pdf
             if ext == "gif":
@@ -319,10 +319,6 @@ class Converter:
                 **self.nbconvert_config,
             }
         )
-        if os.environ.get("DEBUG"):
-            pdf.log.setLevel(10)
-            pdf.latex_command = ["xelatex", "{filename}"]
-
         try:
             pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         except Exception as ex:
