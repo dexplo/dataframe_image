@@ -1,5 +1,6 @@
 import base64
 import io
+import logging
 import os
 import re
 import shutil
@@ -8,6 +9,7 @@ import time
 import urllib.parse
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import warnings
 
 import nbformat
 from nbconvert import MarkdownExporter, PDFExporter
@@ -21,6 +23,7 @@ from ._preprocessors import (
     PdfLatexPreprocessor,
 )
 
+_logger = logging.getLogger(__name__)
 
 class Converter:
     KINDS = ["pdf", "md"]
@@ -289,15 +292,18 @@ class Converter:
         # must download html images for latex to use them
         from ._preprocessors import MarkdownHTTPPreprocessor
 
-        temp_dir = Path(self.td.name)
+        # get long path name of self.td
+        temp_dir = Path(self.td.name).resolve()
         self.resources["temp_dir"] = temp_dir
+        print("TEMP_DIR", temp_dir) # TODO just for debug
         MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
 
         for filename, image_data in self.resources["image_data_dict"].items():
             fn_pieces = filename.split("_")
             cell_idx = int(fn_pieces[1])
             ext = fn_pieces[-1].split(".")[-1]
-            new_filename =  os.path.expandvars(temp_dir / filename)
+            new_filename =  str(temp_dir / filename)
+            print(new_filename) # TODO just for debug
 
             # extract first image from gif and use as png for latex pdf
             if ext == "gif":
@@ -323,6 +329,7 @@ class Converter:
             pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         except Exception as ex:
             latex, _ = super(PDFExporter, pdf).from_notebook_node(self.nb, self.resources)
+            _logger.error("nbconvert failed to create PDF via latex \n\n{latex}")
             with open("notebook.tex", "w", encoding="utf-8") as f:
                 f.write(latex)
             raise ex
@@ -367,6 +374,11 @@ class Converter:
         # Step 2: if exporting as pdf with browser, do this first
         # as it requires no other preprocessing
         if "pdf_browser" in self.to:
+            warnings.warn("to pdf_browser method is deprecated"
+                          "We suggest using nbconvert, install it using `pip install nbconvert[webpdf]`"
+                          "and then run"
+                          "`jupyter nbconvert --to WebPDF --allow-chromium-download notebook.ipynb`"
+                          , DeprecationWarning)
             self.to_pdf_browser()
 
         if "md" in self.to or "pdf_latex" in self.to:
@@ -375,7 +387,7 @@ class Converter:
             self.no_execute_preprocess()
             # Step 4: Save notebook if necessary before processing markdown
             self.save_notebook_to_file()
-            # Step 5: Preprocess markdown
+            # Step 5: Preprocess markdown table
             if "md" in self.to:
                 MarkdownPreprocessor().preprocess(self.nb, self.resources)
             else:

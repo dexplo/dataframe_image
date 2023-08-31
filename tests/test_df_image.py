@@ -49,6 +49,10 @@ class TestImage:
             dstyle, f"tests/test_output/covid19_styled.svg", table_conversion="matplotlib", dpi=100
         )
 
+    def test_latex(self):
+        df_latex = pd.DataFrame(['$\int^0_1 3x^2 dx$'])
+        dfi.export(df_latex, f"tests/test_output/latex.png", table_conversion="chrome")
+
     @pytest.mark.parametrize("dpi", test_dpi_values)
     @pytest.mark.parametrize("converter", converters)
     def test_long_column_headers(self, converter, dpi):

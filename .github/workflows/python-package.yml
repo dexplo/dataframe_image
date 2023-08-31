@@ -129,7 +129,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: test_output
-        path: tests/notebooks/test_output
+        path: tests/test_output
         
   publish:
     runs-on: ubuntu-latest
