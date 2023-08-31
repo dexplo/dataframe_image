@@ -52,7 +52,7 @@ def export(
 
 
 def _export(
-    obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
+    obj: pd.DataFrame, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
 ):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj

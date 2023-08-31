@@ -94,6 +94,7 @@ def get_launch_args():
         "--disable-gpu",
         "--run-all-compositor-stages-before-draw",
         "--remote-allow-origins=*",
+        "--enable-features=NetworkService",
         f"--crash-dumps-dir={temp_dir_name}",
         "about:blank",
     ]
