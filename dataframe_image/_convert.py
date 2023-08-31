@@ -292,7 +292,8 @@ class Converter:
         # must download html images for latex to use them
         from ._preprocessors import MarkdownHTTPPreprocessor
 
-        temp_dir = Path(os.path.realpath(self.td.name))
+        # get long path name of self.td
+        temp_dir = Path(self.td.name).resolve()
         self.resources["temp_dir"] = temp_dir
         print("TEMP_DIR", temp_dir) # TODO just for debug
         MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
@@ -301,7 +302,7 @@ class Converter:
             fn_pieces = filename.split("_")
             cell_idx = int(fn_pieces[1])
             ext = fn_pieces[-1].split(".")[-1]
-            new_filename =  os.path.expandvars(temp_dir / filename)
+            new_filename =  str(temp_dir / filename)
             print(new_filename) # TODO just for debug
 
             # extract first image from gif and use as png for latex pdf
