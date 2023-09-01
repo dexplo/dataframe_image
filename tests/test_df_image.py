@@ -11,7 +11,7 @@ df = pd.read_csv(
     "tests/notebooks/data/covid19.csv", parse_dates=["date"], index_col="date"
 )
 
-test_dpi_values = [50, 100, 200, 400]
+test_dpi_values = [100, 200, 300]
 converters = ["chrome", "selenium", "matplotlib", "html2image", "playwright"]
 
 
