@@ -61,7 +61,7 @@ async def main(file_name, p):
             frameId = await handler(ws, data, "frameId")
 
             # second - enable page
-            # await asyncio.sleep(1)
+            await asyncio.sleep(1)
             data = {"id": 2, "method": "Page.enable"}
             await handler(ws, data)
 
@@ -71,14 +71,16 @@ async def main(file_name, p):
             await handler(ws, data, "content")
 
             # fourth - get pdf
+            prev_len = 0
             for _ in range(10):
                 await asyncio.sleep(1)
                 params = {"displayHeaderFooter": False, "printBackground": True}
                 data = {"id": 4, "method": "Page.printToPDF", "params": params}
                 pdf_data = await handler(ws, data, "data")
                 pdf_data = base64.b64decode(pdf_data)
-                if len(pdf_data) > 1000:
+                if len(pdf_data) > 1000 and len(pdf_data) == prev_len:
                     break
+                prev_len = len(pdf_data)
             else:
                 raise TimeoutError("Could not get pdf data")
             return pdf_data
