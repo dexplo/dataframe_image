@@ -3,21 +3,9 @@
 [![](https://img.shields.io/pypi/v/dataframe_image)](https://pypi.org/project/dataframe_image)
 [![PyPI - License](https://img.shields.io/pypi/l/dataframe_image)](LICENSE)
 [![Python Version](https://img.shields.io/pypi/pyversions/dataframe_image)](https://pypi.org/project/dataframe_image)
-A package to convert Jupyter Notebooks to PDF and/or Markdown embedding pandas DataFrames as images.
+A package to convert pandas DataFrames as images.
 
-## Overview
-
-When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as simple LaTeX tables. The left side of the image below shows this representation.
-
-![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/dataframe_image_compare.png)
-
-This package was first created to embed DataFrames into pdf and markdown documents as images so that they appear exactly as they do in Jupyter Notebooks, as seen from the right side of the image above. It has since added much more functionality.
-
-## Usage
-
-Upon installation, the option `DataFrame as Image (PDF or Markdown)` will appear in the menu `File -> Download as`. Clicking this option will open up a new browser tab with a short form to be completed.
-
-![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/form.png)
+Also convert Jupyter Notebooks to PDF and/or Markdown embedding dataframe as image into it.
 
 ### Exporting individual DataFrames
 
@@ -39,12 +27,69 @@ Here, an example of how exporting a DataFrame would look like in a notebook.
 
 ![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/dfi_export.png)
 
+### Export Jupyter Notebook
+
+When converting Jupyter Notebooks to pdf using nbconvert, pandas DataFrames appear as either raw text or as simple LaTeX tables. The left side of the image below shows this representation.
+
+![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/dataframe_image_compare.png)
+
+This package was first created to embed DataFrames into pdf and markdown documents as images so that they appear exactly as they do in Jupyter Notebooks, as seen from the right side of the image above. It has since added much more functionality.
+
+#### Usage
+
+Upon installation, the option `DataFrame as Image (PDF or Markdown)` will appear in the menu `File -> Download as`. Clicking this option will open up a new browser tab with a short form to be completed.
+
+![png](https://github.com/dexplo/dataframe_image/raw/gh-pages/images/form.png)
+
+
 ## Installation
 
 Install with either:
 
 * `pip install dataframe_image`
 * `conda install -c conda-forge dataframe_image`
+
+## Configuration
+
+### table_conversion
+
+When convert dataframe to image, we provide two kind of backend, browser or matplotlib. The default is browser, but you can change it by setting `table_conversion` parameter to `'matplotlib'`.
+
+The major difference between these two backends is that browser backend will render the dataframe as it is in the notebook, while matplotlib backend can work without browser, can export all image format, eg. `svg`, and will be extremely fast. But currently matplotlib can only simulate header and cells, `set_caption`  will not work.
+
+```python
+dfi.export(df.style.background_gradient(), "df_style.png", table_conversion="matplotlib")
+```
+
+#### Browser backend
+
+Current we provide 4 difference browser backend liberary: `playwright`, `html2image`, `selenium` and `chrome`. The default is `chrome`.
+
+`chrome`, which means convert image with your local chromium based browser by command line.
+
+`html2image` is a backup method for `chrome`, which use `html2image`.
+
+`playwright` is a much more stable method, but you have to install playwright first.
+
+`selenium` is a method that use `Firefox` driver. Sometimes chrome will make some breaking changes which break methods above, `Firefox` will be a good backup. Not stable and hard to install. But can be installed in Google Colab.
+
+### Other parameters
+
+```python
+dfi.export(
+    obj: pd.DataFrame,
+    filename,
+    fontsize=14,
+    max_rows=None,
+    max_cols=None,
+    table_conversion: Literal[
+        "chrome", "matplotlib", "html2image", "playwright", "selenium"
+    ] = "chrome",
+    chrome_path=None,
+    dpi=None, # enlarge your image，default is 100，set it larger will get a larger image
+    use_mathjax=False, # enable mathjax support， which means you can use latex in your dataframe
+)
+```
 
 ## PDF Conversion - LaTeX vs Chrome Browser
 
