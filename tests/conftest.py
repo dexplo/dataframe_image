@@ -6,7 +6,7 @@ def ensure_output_dir():
     from pathlib import Path
 
     output_dir = Path("tests/test_output")
-    output_dir.mkdir(if_exists=True, parents=True)
+    output_dir.mkdir(exist_ok=True, parents=True)
 
 @pytest.fixture()
 def document_name(request):
