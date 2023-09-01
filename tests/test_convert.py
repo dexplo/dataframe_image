@@ -18,7 +18,6 @@ executes = [True, False]
 no_input = [True, False]
 
 
-
 @pytest.mark.parametrize("filename", filenames)
 @pytest.mark.parametrize("use", uses)
 @pytest.mark.parametrize("execute", executes, ids=["executed", ""])

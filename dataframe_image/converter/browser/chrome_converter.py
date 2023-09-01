@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from PIL import Image
+
 from dataframe_image.converter.browser.base import BrowserConverter
 from dataframe_image.logger import logger
 
@@ -99,7 +100,7 @@ class ChromeConverter(BrowserConverter):
         )
         self.chrome_path = get_chrome_path(chrome_path)
 
-    def screenshot(self, html, ss_width=1400, ss_height=900)->Image:
+    def screenshot(self, html, ss_width=1400, ss_height=900) -> Image:
         html_css = self.get_css() + html
         # create temp dir under current user home dir
         # snap version Chrome only allow to access files under home dir
@@ -134,7 +135,9 @@ class ChromeConverter(BrowserConverter):
                 str(temp_html),
             ]
 
-            subprocess.run(executable=self.chrome_path, args=args, capture_output=True, check=True)
+            subprocess.run(
+                executable=self.chrome_path, args=args, capture_output=True, check=True
+            )
             with open(temp_img, "rb") as f:
                 bio = io.BytesIO(f.read())
             im = Image.open(bio)
@@ -149,6 +152,7 @@ class ChromeConverter(BrowserConverter):
                         or try 'df.dfi.export('df.png', table_conversion="selenium")'"""
                     )
             return im
+
 
 def make_repr_png(center_df=True, max_rows=30, max_cols=10, chrome_path=None):
     """

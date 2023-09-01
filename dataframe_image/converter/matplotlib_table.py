@@ -307,7 +307,9 @@ class MatplotlibTableConverter:
         end = self.figwidth - start
         bbox = Bbox([[start - 0.1, y * h], [end + 0.1, h]])
         buffer = io.BytesIO()
-        self.fig.savefig(buffer, bbox_inches=bbox, dpi=self.savefig_dpi, format=self.format)
+        self.fig.savefig(
+            buffer, bbox_inches=bbox, dpi=self.savefig_dpi, format=self.format
+        )
         img_str = buffer.getvalue()
         if self.encode_base64:
             img_str = base64.b64encode(img_str).decode()

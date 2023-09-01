@@ -6,7 +6,10 @@ import pandas as pd
 import pytest
 
 import dataframe_image as dfi
-df = pd.read_csv("tests/notebooks/data/covid19.csv", parse_dates=["date"], index_col="date")
+
+df = pd.read_csv(
+    "tests/notebooks/data/covid19.csv", parse_dates=["date"], index_col="date"
+)
 
 test_dpi_values = [50, 100, 200, 400]
 converters = ["chrome", "selenium", "matplotlib", "html2image", "playwright"]
@@ -21,6 +24,7 @@ def test_df(document_name, converter, dpi):
         dpi=dpi,
     )
 
+
 @pytest.mark.parametrize("dpi", test_dpi_values)
 @pytest.mark.parametrize("converter", converters)
 def test_styled(document_name, converter, dpi):
@@ -29,6 +33,7 @@ def test_styled(document_name, converter, dpi):
         table_conversion=converter,
         dpi=dpi,
     )
+
 
 @pytest.mark.parametrize("dpi", test_dpi_values)
 @pytest.mark.parametrize("converter", converters)
@@ -41,16 +46,24 @@ def test_huge_df(document_name, converter, dpi):
         max_rows=-1,
     )
 
+
 def test_svg(document_name):
     dstyle = df.style.background_gradient()
     dfi.export(
         dstyle, f"tests/test_output/{document_name}.svg", table_conversion="matplotlib"
     )
 
+
 @pytest.mark.parametrize("converter", converters)
 def test_latex(document_name, converter):
-    df_latex = pd.DataFrame(['$\int^0_1 3x^2 dx$'])
-    dfi.export(df_latex, f"tests/test_output/{document_name}.png", table_conversion=converter, use_mathjax=True)
+    df_latex = pd.DataFrame(["$\int^0_1 3x^2 dx$"])
+    dfi.export(
+        df_latex,
+        f"tests/test_output/{document_name}.png",
+        table_conversion=converter,
+        use_mathjax=True,
+    )
+
 
 @pytest.mark.parametrize("dpi", test_dpi_values)
 @pytest.mark.parametrize("converter", converters)

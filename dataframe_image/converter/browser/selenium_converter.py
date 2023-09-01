@@ -6,8 +6,8 @@ from PIL import Image
 
 from .base import BrowserConverter
 
-class SeleniumConverter(BrowserConverter):
 
+class SeleniumConverter(BrowserConverter):
     def screenshot(self, html: str) -> Image:
         # by default Firefox will cleanup it's profile directory after closing
         # so we need to set ignore_cleanup_errors=True

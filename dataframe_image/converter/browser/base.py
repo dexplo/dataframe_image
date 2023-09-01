@@ -1,23 +1,22 @@
-from abc import ABC
 import base64
 import io
-from pathlib import Path
 import logging
 import subprocess
+from abc import ABC
 from pathlib import Path
 from tempfile import TemporaryDirectory
-
-from dataframe_image.pd_html import styler2html
 
 import numpy as np
 from PIL import Image, ImageOps
 
-_logger = logging.getLogger(__name__)
+from dataframe_image.pd_html import styler2html
 
+_logger = logging.getLogger(__name__)
 
 
 class BrowserConverter(ABC):
     MAX_IMAGE_SIZE = 65535
+
     def __init__(
         self,
         center_df: bool = True,
@@ -115,7 +114,9 @@ class BrowserConverter(ABC):
 
         return enlarge, ss_width, ss_height
 
-    def screenshot(self, html: str, ss_width: int = 1920, ss_height: int = 1080) -> Image:
+    def screenshot(
+        self, html: str, ss_width: int = 1920, ss_height: int = 1080
+    ) -> Image:
         """
         Take a screenshot of the HTML.
 
@@ -183,7 +184,7 @@ class BrowserConverter(ABC):
         if self.encode_base64:
             img_str = base64.b64encode(img_str).decode()
         return img_str
-    
+
     def repr_png_wrapper(self):
         from pandas.io.formats.style import Styler
 

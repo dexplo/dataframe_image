@@ -1,14 +1,16 @@
-from .base import BrowserConverter
-from PIL import Image
 from io import BytesIO
+
+from PIL import Image
+
 from dataframe_image.logger import logger
+
+from .base import BrowserConverter
 
 
 class PlayWrightConverter(BrowserConverter):
     def screenshot(self, html):
         try:
-            from playwright.sync_api import sync_playwright
-            from playwright.sync_api import Error
+            from playwright.sync_api import Error, sync_playwright
         except ImportError as ex:
             raise ImportError(
                 "Playwright is not installed. Install it with 'pip install playwright' and make sure you have a chromium browser installed."

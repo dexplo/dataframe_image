@@ -1,14 +1,15 @@
 from pathlib import Path
 from typing import Literal
+
 import pandas as pd
 from pandas.io.formats.style import Styler
 from PIL import Image
 
 from dataframe_image.converter import (
     ChromeConverter,
-    SeleniumConverter,
     Html2ImageConverter,
     PlayWrightConverter,
+    SeleniumConverter,
 )
 from dataframe_image.pd_html import styler2html
 
