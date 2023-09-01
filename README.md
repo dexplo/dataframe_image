@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/pypi/v/dataframe_image)](https://pypi.org/project/dataframe_image)
 [![PyPI - License](https://img.shields.io/pypi/l/dataframe_image)](LICENSE)
-
+[![Python Version](https://img.shields.io/pypi/pyversions/dataframe_image)](Python Version)
 A package to convert Jupyter Notebooks to PDF and/or Markdown embedding pandas DataFrames as images.
 
 ## Overview
