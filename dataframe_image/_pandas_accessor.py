@@ -1,9 +1,16 @@
 from pathlib import Path
+from typing import Literal
 import pandas as pd
 from pandas.io.formats.style import Styler
+from PIL import Image
 
-from ._screenshot import Screenshot
-from .pd_html import styler2html
+from dataframe_image.converter import (
+    ChromeConverter,
+    SeleniumConverter,
+    Html2ImageConverter,
+    PlayWrightConverter,
+)
+from dataframe_image.pd_html import styler2html
 
 MAX_COLS = 30
 MAX_ROWS = 100
@@ -24,7 +31,7 @@ class _Export:
         chrome_path=None,
         dpi=None,
     ):
-        return _export(
+        return export(
             self._df,
             filename,
             fontsize,
@@ -36,30 +43,31 @@ class _Export:
         )
 
 
+BROWSER_CONVERTER_DICT = {
+    "chrome": ChromeConverter,
+    "selenium": SeleniumConverter,
+    "html2image": Html2ImageConverter,
+    "playwright": PlayWrightConverter,
+}
+
+
 def export(
-    obj,
+    obj: pd.DataFrame,
     filename,
     fontsize=14,
     max_rows=None,
     max_cols=None,
-    table_conversion="chrome",
+    table_conversion: Literal[
+        "chrome", "matplotlib", "html2image", "playwright", "selenium"
+    ] = "chrome",
     chrome_path=None,
     dpi=None,
-):
-    return _export(
-        obj, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
-    )
-
-
-def _export(
-    obj: pd.DataFrame, filename, fontsize, max_rows, max_cols, table_conversion, chrome_path, dpi
+    use_mathjax=False,
 ):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
-    if table_conversion == "html2image":
-        from ._html2image import Html2ImageConverter
-
-        converter = Html2ImageConverter(
+    if table_conversion in BROWSER_CONVERTER_DICT:
+        converter = BROWSER_CONVERTER_DICT[table_conversion](
             max_rows=max_rows,
             max_cols=max_cols,
             chrome_path=chrome_path,
@@ -67,37 +75,21 @@ def _export(
             encode_base64=False,
             limit_crop=False,
             device_scale_factor=(1 if dpi == None else dpi / 100.0),
+            use_mathjax=use_mathjax,
         ).run
-    elif table_conversion == "chrome":
-        converter = Screenshot(
-            max_rows=max_rows,
-            max_cols=max_cols,
-            chrome_path=chrome_path,
-            fontsize=fontsize,
-            encode_base64=False,
-            limit_crop=False,
-            device_scale_factor=(1 if dpi == None else dpi / 100.0),
-        ).run
-    elif table_conversion == "selenium":
-        from .selenium_screenshot import SeleniumScreenshot
-
-        converter = SeleniumScreenshot(
-            max_rows=max_rows,
-            max_cols=max_cols,
-            fontsize=fontsize,
-            encode_base64=False,
-            limit_crop=False,
-            device_scale_factor=(1 if dpi == None else dpi / 100.0),
-        ).run
-
     else:
-        from ._matplotlib_table import TableMaker
+        from .converter.matplotlib_table import MatplotlibTableConverter
+
         # get extension from filename without dot
         extension = Path(filename).suffix
         if extension.startswith("."):
             extension = extension[1:]
-        converter = TableMaker(
-            fontsize=fontsize, encode_base64=False, for_document=False, savefig_dpi=dpi, format=extension
+        converter = MatplotlibTableConverter(
+            fontsize=fontsize,
+            encode_base64=False,
+            for_document=False,
+            savefig_dpi=dpi,
+            format=extension,
         ).run
 
     if df.shape[0] > MAX_ROWS and max_rows is None:
@@ -144,7 +136,11 @@ def _export(
     else:
         html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
 
+    pre_limit = Image.MAX_IMAGE_PIXELS
+    Image.MAX_IMAGE_PIXELS = None
     img_str = converter(html)
+    # swap back to original value
+    Image.MAX_IMAGE_PIXELS = pre_limit
 
     try:
         with open(filename, "wb") as f:

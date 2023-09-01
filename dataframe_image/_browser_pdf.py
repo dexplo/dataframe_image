@@ -14,7 +14,7 @@ import ChromeController
 from nbconvert import TemplateExporter
 from nbconvert.exporters import Exporter, HTMLExporter
 
-from ._screenshot import get_chrome_path
+from .converter.browser.chrome_converter import get_chrome_path
 
 
 async def handler(ws, data, key=None):

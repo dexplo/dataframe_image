@@ -3,40 +3,21 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from PIL import Image
-from selenium.webdriver.firefox.service import Service
 
-from ._screenshot import Screenshot
+from .base import BrowserConverter
 
-_logger = logging.getLogger(__name__)
+class SeleniumConverter(BrowserConverter):
 
-
-class SeleniumScreenshot(Screenshot):
-    def __init__(
-        self,
-        center_df=True,
-        max_rows=None,
-        max_cols=None,
-        fontsize=18,
-        encode_base64=True,
-        limit_crop=True,
-        device_scale_factor=1,
-    ):
-        self.center_df = center_df
-        self.max_rows = max_rows
-        self.max_cols = max_cols
-        self.fontsize = fontsize
-        self.encode_base64 = encode_base64
-        self.limit_crop = limit_crop
-        self.device_scale_factor = device_scale_factor
-
-    def take_screenshot(self):
+    def screenshot(self, html: str) -> Image:
         # by default Firefox will cleanup it's profile directory after closing
         # so we need to set ignore_cleanup_errors=True
+
         temp_dir_obj = TemporaryDirectory(prefix="dataframe_image_")
         temp_dir = temp_dir_obj.name
         try:
             import selenium.common
             import selenium.webdriver
+            from selenium.webdriver.firefox.service import Service
 
             options = selenium.webdriver.FirefoxOptions()
             options.add_argument("--headless")
@@ -57,7 +38,7 @@ class SeleniumScreenshot(Screenshot):
         temp_html = Path(temp_dir) / "temp.html"
         temp_img = Path(temp_dir) / "temp.png"
         with open(temp_html, "w", encoding="utf-8") as f:
-            f.write(self.get_css() + self.html)
+            f.write(self.get_css() + html)
 
         with selenium.webdriver.Firefox(options=options, service=service) as driver:
             driver.get(f"file://{str(temp_html)}")  # selenium will do the rest
@@ -77,4 +58,4 @@ class SeleniumScreenshot(Screenshot):
             temp_dir_obj.cleanup()
         except OSError:
             pass
-        return self.crop(img)
+        return img

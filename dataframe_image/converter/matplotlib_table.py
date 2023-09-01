@@ -13,7 +13,7 @@ from matplotlib.figure import Figure
 from matplotlib.transforms import Bbox
 
 
-class TableMaker:
+class MatplotlibTableConverter:
     def __init__(
         self,
         fontsize=14,

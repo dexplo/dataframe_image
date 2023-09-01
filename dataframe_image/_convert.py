@@ -190,26 +190,26 @@ class Converter:
         if self.table_conversion == "html2image":
             pass
         elif self.table_conversion == "chrome":
-            from ._screenshot import Screenshot
+            from .converter.browser.chrome_converter import ChromeConverter
 
-            converter = Screenshot(
+            converter = ChromeConverter(
                 center_df=self.center_df,
                 max_rows=self.max_rows,
                 max_cols=self.max_cols,
                 chrome_path=self.chrome_path,
             ).run
         elif self.table_conversion == "selenium":
-            from .selenium_screenshot import SeleniumScreenshot
+            from .converter.browser.selenium_converter import SeleniumConverter
 
-            converter = SeleniumScreenshot(
+            converter = SeleniumConverter(
                 center_df=self.center_df,
                 max_rows=self.max_rows,
                 max_cols=self.max_cols,
             ).run
         else:
-            from ._matplotlib_table import TableMaker
+            from .converter.matplotlib_table import MatplotlibTableConverter
 
-            converter = TableMaker(fontsize=22).run
+            converter = MatplotlibTableConverter(fontsize=22).run
 
         resources = {
             "metadata": {"path": str(self.nb_home), "name": self.document_name},
