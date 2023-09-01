@@ -18,17 +18,12 @@ executes = [True, False]
 no_input = [True, False]
 
 
-def tname_to_filename(test_name: str):
-    return test_name.replace(" ", "_").replace("/", "_")
-
-
 @pytest.mark.parametrize("filename", filenames)
 @pytest.mark.parametrize("use", uses)
 @pytest.mark.parametrize("execute", executes, ids=["executed", ""])
 @pytest.mark.parametrize("no_input", no_input, ids=["no_input", ""])
 class TestConvertPDF:
-    def test_to_pdf(self, request, filename, use, execute, no_input):
-        document_name = tname_to_filename(request.node.name)
+    def test_to_pdf(self, document_name, filename, use, execute, no_input):
         convert(
             filename,
             to="pdf",
@@ -44,8 +39,7 @@ class TestConvertPDF:
 @pytest.mark.parametrize("execute", executes, ids=["executed", ""])
 @pytest.mark.parametrize("no_input", no_input, ids=["no_input", ""])
 class TestConvertMD:
-    def test_to_md(self, request, filename, execute, no_input):
-        document_name = tname_to_filename(request.node.name)
+    def test_to_md(self, document_name, filename, execute, no_input):
         convert(
             filename,
             to="md",

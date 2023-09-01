@@ -7,9 +7,9 @@ import shutil
 import tempfile
 import time
 import urllib.parse
+import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import warnings
 
 import nbformat
 from nbconvert import MarkdownExporter, PDFExporter
@@ -24,6 +24,7 @@ from ._preprocessors import (
 )
 
 _logger = logging.getLogger(__name__)
+
 
 class Converter:
     KINDS = ["pdf", "md"]
@@ -190,26 +191,26 @@ class Converter:
         if self.table_conversion == "html2image":
             pass
         elif self.table_conversion == "chrome":
-            from ._screenshot import Screenshot
+            from .converter.browser.chrome_converter import ChromeConverter
 
-            converter = Screenshot(
+            converter = ChromeConverter(
                 center_df=self.center_df,
                 max_rows=self.max_rows,
                 max_cols=self.max_cols,
                 chrome_path=self.chrome_path,
             ).run
         elif self.table_conversion == "selenium":
-            from .selenium_screenshot import SeleniumScreenshot
+            from .converter.browser.selenium_converter import SeleniumConverter
 
-            converter = SeleniumScreenshot(
+            converter = SeleniumConverter(
                 center_df=self.center_df,
                 max_rows=self.max_rows,
                 max_cols=self.max_cols,
             ).run
         else:
-            from ._matplotlib_table import TableMaker
+            from .converter.matplotlib_table import MatplotlibTableConverter
 
-            converter = TableMaker(fontsize=22).run
+            converter = MatplotlibTableConverter(fontsize=22).run
 
         resources = {
             "metadata": {"path": str(self.nb_home), "name": self.document_name},
@@ -295,15 +296,15 @@ class Converter:
         # get long path name of self.td
         temp_dir = Path(self.td.name).resolve()
         self.resources["temp_dir"] = temp_dir
-        print("TEMP_DIR", temp_dir) # TODO just for debug
+        print("TEMP_DIR", temp_dir)  # TODO just for debug
         MarkdownHTTPPreprocessor().preprocess(self.nb, self.resources)
 
         for filename, image_data in self.resources["image_data_dict"].items():
             fn_pieces = filename.split("_")
             cell_idx = int(fn_pieces[1])
             ext = fn_pieces[-1].split(".")[-1]
-            new_filename =  str(temp_dir / filename)
-            print(new_filename) # TODO just for debug
+            new_filename = str(temp_dir / filename)
+            print(new_filename)  # TODO just for debug
 
             # extract first image from gif and use as png for latex pdf
             if ext == "gif":
@@ -328,7 +329,9 @@ class Converter:
         try:
             pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
         except Exception as ex:
-            latex, _ = super(PDFExporter, pdf).from_notebook_node(self.nb, self.resources)
+            latex, _ = super(PDFExporter, pdf).from_notebook_node(
+                self.nb, self.resources
+            )
             _logger.error("nbconvert failed to create PDF via latex \n\n{latex}")
             with open("notebook.tex", "w", encoding="utf-8") as f:
                 f.write(latex)
@@ -374,11 +377,13 @@ class Converter:
         # Step 2: if exporting as pdf with browser, do this first
         # as it requires no other preprocessing
         if "pdf_browser" in self.to:
-            warnings.warn("to pdf_browser method is deprecated"
-                          "We suggest using nbconvert, install it using `pip install nbconvert[webpdf]`"
-                          "and then run"
-                          "`jupyter nbconvert --to WebPDF --allow-chromium-download notebook.ipynb`"
-                          , DeprecationWarning)
+            warnings.warn(
+                "to pdf_browser method is deprecated"
+                "We suggest using nbconvert, install it using `pip install nbconvert[webpdf]`"
+                "and then run"
+                "`jupyter nbconvert --to WebPDF --allow-chromium-download notebook.ipynb`",
+                DeprecationWarning,
+            )
             self.to_pdf_browser()
 
         if "md" in self.to or "pdf_latex" in self.to:

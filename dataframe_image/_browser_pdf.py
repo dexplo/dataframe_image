@@ -10,11 +10,10 @@ from subprocess import Popen
 from tempfile import TemporaryDirectory, mkstemp
 
 import aiohttp
-import ChromeController
 from nbconvert import TemplateExporter
 from nbconvert.exporters import Exporter, HTMLExporter
 
-from ._screenshot import get_chrome_path
+from .converter.browser.chrome_converter import get_chrome_path
 
 
 async def handler(ws, data, key=None):
@@ -62,7 +61,7 @@ async def main(file_name, p):
             frameId = await handler(ws, data, "frameId")
 
             # second - enable page
-            # await asyncio.sleep(1)
+            await asyncio.sleep(1)
             data = {"id": 2, "method": "Page.enable"}
             await handler(ws, data)
 
@@ -72,14 +71,16 @@ async def main(file_name, p):
             await handler(ws, data, "content")
 
             # fourth - get pdf
+            prev_len = 0
             for _ in range(10):
                 await asyncio.sleep(1)
                 params = {"displayHeaderFooter": False, "printBackground": True}
                 data = {"id": 4, "method": "Page.printToPDF", "params": params}
                 pdf_data = await handler(ws, data, "data")
                 pdf_data = base64.b64decode(pdf_data)
-                if len(pdf_data) > 1000:
+                if len(pdf_data) > 1000 and len(pdf_data) == prev_len:
                     break
+                prev_len = len(pdf_data)
             else:
                 raise TimeoutError("Could not get pdf data")
             return pdf_data
@@ -131,6 +132,7 @@ def get_pdf_data(file_name):
 
 
 def get_pdf_data_chromecontroller(file_name):
+    import ChromeController
     additional_options = get_launch_args()
     # ChromeContext will shlex.split binary, so add quote to it
     with ChromeController.ChromeContext(

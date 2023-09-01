@@ -18,11 +18,14 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license="MIT",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     install_requires=[
         "pandas>=0.24",
         "nbconvert>=5",
@@ -35,7 +38,6 @@ setuptools.setup(
         "beautifulsoup4",
         "cssutils",
         "html2image",
-        "ChromeController",
     ],
     include_package_data=True,
     entry_points={
