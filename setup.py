@@ -38,6 +38,7 @@ setuptools.setup(
         "beautifulsoup4",
         "cssutils",
         "html2image",
+        "matplotlib",
     ],
     include_package_data=True,
     entry_points={
