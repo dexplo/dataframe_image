@@ -56,7 +56,9 @@ Install with either:
 
 When convert dataframe to image, we provide two kind of backend, browser or matplotlib. The default is browser, but you can change it by setting `table_conversion` parameter to `'matplotlib'`.
 
-The major difference between these two backends is that browser backend will render the dataframe as it is in the notebook, while matplotlib backend can work without browser, can export all image format, eg. `svg`, and will be extremely fast. But currently matplotlib can only simulate header and cells, `set_caption`  will not work.
+The major difference between these two backends is that browser backend will render the dataframe as it is in the notebook, while matplotlib backend can work without browser, can export all image format, eg. `svg`, and will be extremely fast. 
+
+**But currently matplotlib can only simulate default header and cells style**, eg. background_gradient or font-size, any other css properties('width'/'height'/...) or additional element such as `set_caption`  will not work.
 
 ```python
 dfi.export(df.style.background_gradient(), "df_style.png", table_conversion="matplotlib")
