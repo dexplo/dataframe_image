@@ -28,7 +28,6 @@ tr, th, td {{
 
 th {{
     font-weight:bold; 
-    text-align:left;
     }}
 
 tbody tr:nth-child(odd){{
