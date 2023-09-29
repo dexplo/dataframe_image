@@ -31,6 +31,7 @@ class _Export:
         table_conversion="chrome",
         chrome_path=None,
         dpi=None,
+        index=True,
     ):
         return export(
             self._df,
@@ -41,6 +42,7 @@ class _Export:
             table_conversion,
             chrome_path,
             dpi,
+            index,
         )
 
 
@@ -64,6 +66,7 @@ def export(
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
+    index=True,
 ):
     is_styler = isinstance(obj, Styler)
     df = obj.data if is_styler else obj
@@ -135,7 +138,7 @@ def export(
     if is_styler:
         html = styler2html(obj)
     else:
-        html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
+        html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True, index=index)
 
     pre_limit = Image.MAX_IMAGE_PIXELS
     Image.MAX_IMAGE_PIXELS = None
