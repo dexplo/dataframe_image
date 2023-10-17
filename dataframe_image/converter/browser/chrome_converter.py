@@ -104,7 +104,9 @@ class ChromeConverter(BrowserConverter):
         html_css = self.get_css() + html
         # create temp dir under current user home dir
         # snap version Chrome only allow to access files under home dir
-        with TemporaryDirectory(dir=Path.home()) as temp_dir:
+        dfi_cache_dir = Path.home() / ".dataframe_image"
+        dfi_cache_dir.mkdir(exist_ok=True)
+        with TemporaryDirectory(dir=dfi_cache_dir) as temp_dir:
             temp_html = Path(temp_dir) / "temp.html"
             temp_img = Path(temp_dir) / "temp.png"
             with open(temp_html, "w", encoding="utf-8") as f:
