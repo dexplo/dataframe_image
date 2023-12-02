@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 from typing import Literal
 
@@ -82,7 +83,11 @@ def export(
         from .converter.matplotlib_table import MatplotlibTableConverter
 
         # get extension from filename without dot
-        extension = Path(filename).suffix
+        if isinstance(filename, io.IOBase):
+            extension = "png"
+        else:
+            extension = Path(filename).suffix
+
         if extension.startswith("."):
             extension = extension[1:]
         converter = MatplotlibTableConverter(

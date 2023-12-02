@@ -1,3 +1,4 @@
+from io import BytesIO
 import random
 import string
 
@@ -33,6 +34,18 @@ def test_styled(document_name, converter, dpi):
         table_conversion=converter,
         dpi=dpi,
     )
+
+@pytest.mark.parametrize("converter", converters)
+def test_styled2(document_name, converter):
+    col_headers = {
+        "selector": ".col_heading, thead",
+        "props": "color: white; background-color: #1d5632; font-size: 11px"
+        }
+            
+    df = pd.DataFrame(np.random.rand(6, 4))
+    df_styled = df.style.set_table_styles([col_headers])
+    dfi.export(df_styled, f"tests/test_output/{document_name}.png", table_conversion=converter)
+
 
 
 @pytest.mark.parametrize("dpi", test_dpi_values)
@@ -81,3 +94,8 @@ def test_long_column_headers(document_name, converter, dpi):
         dpi=dpi,
         max_rows=-1,
     )
+
+
+def test_save_using_bytesio():
+    buf = BytesIO()
+    df.dfi.export(buf, table_conversion='matplotlib')
