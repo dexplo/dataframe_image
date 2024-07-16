@@ -76,7 +76,7 @@ def export(
             fontsize=fontsize,
             encode_base64=False,
             limit_crop=False,
-            device_scale_factor=(1 if dpi == None else dpi / 100.0),
+            device_scale_factor=(1 if dpi is None else dpi / 100.0),
             use_mathjax=use_mathjax,
         ).run
     else:

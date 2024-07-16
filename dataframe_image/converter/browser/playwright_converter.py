@@ -19,7 +19,7 @@ class PlayWrightConverter(BrowserConverter):
             channels = ["chrome", "msedge", None]
             for c in channels:
                 try:
-                    browser = p.chromium.launch(channel=c)
+                    browser = p.chromium.launch(channel=c, args=["--disable-web-security"])
                     break
                 except Error:
                     pass
@@ -29,7 +29,7 @@ class PlayWrightConverter(BrowserConverter):
                     "Or install it by `playwright install chromium`"
                 )
 
-            context = browser.new_context(device_scale_factor=self.device_scale_factor)
+            context = browser.new_context(device_scale_factor=self.device_scale_factor, bypass_csp=True)
             page = context.new_page()
             page.set_content(self.get_css() + html)
             if self.use_mathjax:
