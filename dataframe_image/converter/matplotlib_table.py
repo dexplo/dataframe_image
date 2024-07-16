@@ -4,8 +4,9 @@ import textwrap
 
 import cssutils
 import numpy as np
-import pandas as pd
-from bs4 import BeautifulSoup
+from lxml.cssselect import CSSSelector
+from lxml.etree import tostring
+from lxml.html import fromstring
 from matplotlib import lines as mlines
 from matplotlib import patches as mpatches
 from matplotlib.backends.backend_agg import RendererAgg
@@ -38,9 +39,9 @@ class MatplotlibTableConverter:
         self.savefig_dpi = savefig_dpi
         self.format = format
 
-    def parse_html(self, html):
-        html = html.replace("<br>", "\n")
-        rows, num_header_rows = self.parse_into_rows(html)
+    def parse_html(self, tree):
+
+        rows, num_header_rows = self.parse_into_rows(tree)
         num_cols = sum(val[-1] for val in rows[0])
         new_rows = []
         rowspan = {}
@@ -80,11 +81,12 @@ class MatplotlibTableConverter:
                 if text_align.startswith(val):
                     return val
 
-    def parse_into_rows(self, html):
-        def get_property(class_name, property_name):
+    def parse_into_rows(self, tree):
+        def get_property(element, property_name):
             for rule in sheet:
-                selectors = rule.selectorText.replace(" ", "").split(",")
-                if class_name in selectors:
+                cssselector = CSSSelector(rule.selectorText)
+                matching = cssselector(element)
+                if matching:
                     for style_property in rule.style:
                         if style_property.name == property_name:
                             return style_property.value
@@ -94,20 +96,20 @@ class MatplotlibTableConverter:
             rowspan_dict = {}
             colspan_total = 0
             row_align = self.get_text_align(row)
-            for el in row.find_all(["td", "th"]):
-                bold = el.name == "th"
-                colspan = int(el.attrs.get("colspan", 1))
-                rowspan = int(el.attrs.get("rowspan", 1))
+            for el in row.xpath(".//td|.//th"):
+                bold = el.tag == "th"
+                colspan = int(el.get("colspan", 1))
+                rowspan = int(el.get("rowspan", 1))
                 text_align = self.get_text_align(el) or row_align
-                text = el.get_text()
-                if "id" in el.attrs:
+                text = el.text_content().strip()
+                if "id" in el.attrib:
                     values.append(
                         [
                             text,
                             bold,
                             text_align,
-                            get_property("#" + el.attrs["id"], "background-color"),
-                            get_property("#" + el.attrs["id"], "color"),
+                            get_property(el, "background-color"),
+                            get_property(el, "color"),
                             rowspan,
                             colspan,
                         ]
@@ -118,20 +120,18 @@ class MatplotlibTableConverter:
                     )
             return values
 
-        soup = BeautifulSoup(html, features="lxml")
-        style = soup.find("style")
-        if style:
+        style = tree.find(".//style")
+        if style is not None:
             sheet = cssutils.parseString(style.text)
         else:
             sheet = []
-        # get number of columns from first row
-        # num_cols = sum(int(el.get('colspan', 1)) for el in soup.find('tr').find_all(['td', 'th']))
-        thead = soup.find("thead")
-        tbody = soup.find("tbody")
 
         rows = []
-        if thead:
-            head_rows = thead.find_all("tr")
+        thead = tree.find(".//thead")
+        tbody = tree.find(".//tbody")
+
+        if thead is not None:
+            head_rows = thead.findall(".//tr")
             if head_rows:
                 for row in head_rows:
                     rows.append(parse_row(row))
@@ -140,13 +140,14 @@ class MatplotlibTableConverter:
 
         num_header_rows = len(rows)
 
-        if tbody:
-            for row in tbody.find_all("tr"):
+        if tbody is not None:
+            for row in tbody.findall(".//tr"):
                 rows.append(parse_row(row))
 
         if not thead and not tbody:
-            for row in soup.find_all("tr"):
+            for row in tree.findall(".//tr"):
                 rows.append(parse_row(row))
+
         return rows, num_header_rows
 
     def get_text_width(self, text, weight=None):
@@ -226,17 +227,22 @@ class MatplotlibTableConverter:
 
         return row_heights
 
-    def create_figure(self):
-        figheight = sum(self.row_heights)
-        fig = Figure(dpi=self.dpi, figsize=(self.figwidth, figheight))
-        return fig
-
     def print_table(self):
+        figheight = sum(self.row_heights)
+
+        # check table caption
+        caption = self.tree.find(".//table//caption")
+        if caption is not None:
+            caption_text = caption.text_content().strip()
+            figheight += self.fontsize / 72
+
+        self.fig = Figure(dpi=self.dpi, figsize=(self.figwidth, figheight))
+
         row_colors = ["#f5f5f5", "#ffffff"]
         # padding 0.5 em
         padding = self.fontsize / (self.figwidth * self.dpi) * 0.5
         total_width = sum(self.col_widths)
-        figheight = self.fig.get_figheight()
+
         row_locs = [height / figheight for height in self.row_heights]
 
         header_text_align = [vals[2] for vals in self.rows[0]]
@@ -244,6 +250,19 @@ class MatplotlibTableConverter:
         x = x0
         yd = row_locs[0]
         y = 1
+
+        # table caption
+        if caption is not None:
+            self.fig.text(
+                0.5,
+                1 - yd / 2,
+                caption_text,
+                size=self.fontsize,
+                ha="center",
+                va="center",
+                weight="bold",
+            )
+            y -= yd
 
         for i, (yd, row) in enumerate(zip(row_locs, self.rows)):
             x = x0
@@ -319,8 +338,10 @@ class MatplotlibTableConverter:
         self.fontsize = self.original_fontsize
         self.text_fig = Figure(dpi=self.dpi)
         self.renderer = RendererAgg(self.figwidth, self.figheight, self.dpi)
-        self.rows, self.num_header_rows = self.parse_html(html)
+        html = html.replace("<br>", "\n")
+        html_template = f"""<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">{html}</html>"""
+        self.tree = fromstring(html_template)
+        self.rows, self.num_header_rows = self.parse_html(self.tree)
         self.col_widths = self.calculate_col_widths()
         self.row_heights = self.get_row_heights()
-        self.fig = self.create_figure()
         return self.print_table()

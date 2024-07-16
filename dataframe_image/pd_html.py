@@ -8,4 +8,4 @@ def styler2html(style):
         html = style.to_html()
     else:
         html = style.render()
-    return '<head><meta charset="UTF-8"></head><div>' + html + "</div>"
+    return '<head><meta charset="UTF-8"/></head>' + html

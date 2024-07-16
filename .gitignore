@@ -1,3 +1,5 @@
+.venv/
+
 __pycache__/
 .DS_store
 .eggs/
@@ -9,6 +11,7 @@ build/
 .vscode/
 site/
 __init__.pyc
+*.ipynb
 
 # tests result
 /tests/test_output/

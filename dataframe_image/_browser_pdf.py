@@ -133,6 +133,7 @@ def get_pdf_data(file_name):
 
 def get_pdf_data_chromecontroller(file_name):
     import ChromeController
+
     additional_options = get_launch_args()
     # ChromeContext will shlex.split binary, so add quote to it
     with ChromeController.ChromeContext(
