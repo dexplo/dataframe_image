@@ -1,6 +1,6 @@
-from io import BytesIO
 import random
 import string
+from io import BytesIO
 
 import numpy as np
 import pandas as pd
@@ -43,7 +43,7 @@ def test_styled2(document_name, converter):
         }
             
     df = pd.DataFrame(np.random.rand(6, 4))
-    df_styled = df.style.set_table_styles([col_headers])
+    df_styled = df.style.set_table_styles([col_headers]).set_caption("This is a caption")
     dfi.export(df_styled, f"tests/test_output/{document_name}.png", table_conversion=converter)
 
 
