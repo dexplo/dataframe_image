@@ -338,9 +338,8 @@ class MatplotlibTableConverter:
         self.fontsize = self.original_fontsize
         self.text_fig = Figure(dpi=self.dpi)
         self.renderer = RendererAgg(self.figwidth, self.figheight, self.dpi)
-        html = html.replace("<br>", "\n")
-        html_template = f"""<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">{html}</html>"""
-        self.tree = fromstring(html_template)
+        html = html.replace("<br></br>", "\n").replace("<br>", "\n").replace("<br/>", "\n")
+        self.tree = fromstring(html)
         self.rows, self.num_header_rows = self.parse_html(self.tree)
         self.col_widths = self.calculate_col_widths()
         self.row_heights = self.get_row_heights()
