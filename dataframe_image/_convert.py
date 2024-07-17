@@ -324,7 +324,7 @@ class Converter:
             config={
                 "NbConvertBase": {"display_data_priority": self.DISPLAY_DATA_PRIORITY},
                 **self.nbconvert_config,
-            }
+            },
         )
         try:
             pdf_data, self.resources = pdf.from_notebook_node(self.nb, self.resources)
@@ -332,7 +332,9 @@ class Converter:
             latex, _ = super(PDFExporter, pdf).from_notebook_node(
                 self.nb, self.resources
             )
-            _logger.error(f"nbconvert failed to create PDF via latex template {pdf.template_file} \n\n{latex}")
+            _logger.error(
+                f"nbconvert failed to create PDF via latex template {pdf.template_file} \n\n{latex}"
+            )
             with open("notebook.tex", "w", encoding="utf-8") as f:
                 f.write(latex)
             raise ex

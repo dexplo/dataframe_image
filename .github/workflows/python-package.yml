@@ -85,14 +85,14 @@ jobs:
     - name: windows denpendencies
       if: ${{ startsWith(matrix.os, 'windows') }}
       run: |
-        choco install "pandoc<3.2" --no-progress
+        choco install pandoc --version 3.1 --no-progress
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
     - name: ubuntu dependencies
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get install -y xvfb libgtk2.0-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 curl
-        sudo apt-get install -y "pandoc<3.2"
+        sudo apt-get install -y pandoc
     - name: mac dependencies
       if: ${{ startsWith(matrix.os, 'macos') }}
       run: |
