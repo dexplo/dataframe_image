@@ -69,7 +69,7 @@ def test_svg(document_name):
 
 @pytest.mark.parametrize("converter", converters)
 def test_latex(document_name, converter):
-    df_latex = pd.DataFrame(["$\int^0_1 3x^2 dx$"])
+    df_latex = pd.DataFrame([r"$\int^0_1 3x^2 dx$"])
     dfi.export(
         df_latex,
         f"tests/test_output/{document_name}.png",
