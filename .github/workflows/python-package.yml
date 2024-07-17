@@ -113,6 +113,7 @@ jobs:
         brew search $packageName@
 
         # Run brew install@version as usual
+        brew uninstall --ignore-dependencies $packageName
         brew install local/$packageName/$packageName@$packageVersion
         ln -s -f $(which python3) /usr/local/bin/python
         ln -s -f $(which pip3) /usr/local/bin/pip
