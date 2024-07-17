@@ -101,6 +101,8 @@ jobs:
         # Please define variables
         export packageName=pandoc
         export packageVersion=3.1.6.1
+
+        brew install $packageName
         # Create a new tab
         brew tap-new local/$packageName
 
