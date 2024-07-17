@@ -332,7 +332,7 @@ class Converter:
             latex, _ = super(PDFExporter, pdf).from_notebook_node(
                 self.nb, self.resources
             )
-            _logger.error("nbconvert failed to create PDF via latex \n\n{latex}")
+            _logger.error(f"nbconvert failed to create PDF via latex \n\n{latex}")
             with open("notebook.tex", "w", encoding="utf-8") as f:
                 f.write(latex)
             raise ex
