@@ -6,7 +6,7 @@ import pandas as pd
 from pandas.io.formats.style import Styler
 from PIL import Image
 
-from dataframe_image.converter import (
+from dataframe_image.converter.browser import (
     ChromeConverter,
     Html2ImageConverter,
     PlayWrightConverter,
