@@ -95,9 +95,10 @@ jobs:
         sudo apt-get install -y pandoc
     - name: mac dependencies
       if: ${{ startsWith(matrix.os, 'macos') }}
+      # fix pandoc version to 3.1.6 until https://github.com/jupyter/nbconvert/issues/2164 fixed
       run: |
         brew update
-        brew install "pandoc<3.2"
+        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74b7e35f40e3347bc0719622a1fd59fd4a5352a9/Formula/pandoc.rb
         ln -s -f $(which python3) /usr/local/bin/python
         ln -s -f $(which pip3) /usr/local/bin/pip
 
