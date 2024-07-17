@@ -98,7 +98,20 @@ jobs:
       # fix pandoc version to 3.1.6 until https://github.com/jupyter/nbconvert/issues/2164 fixed
       run: |
         brew update
-        brew install https://raw.githubusercontent.com/Homebrew/homebrew-core/74b7e35f40e3347bc0719622a1fd59fd4a5352a9/Formula/pandoc.rb
+        # Please define variables
+        export packageName=pandoc
+        export packageVersion=3.1.6.1
+        # Create a new tab
+        brew tap-new local/$packageName
+
+        # Extract into local tap
+        brew extract --version=$packageVersion $packageName local/$packageName
+
+        # Verify packages is present
+        brew search $packageName@
+
+        # Run brew install@version as usual
+        brew install local/$packageName/$packageName@$packageVersion
         ln -s -f $(which python3) /usr/local/bin/python
         ln -s -f $(which pip3) /usr/local/bin/pip
 
