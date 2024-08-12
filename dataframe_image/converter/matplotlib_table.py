@@ -144,7 +144,7 @@ class MatplotlibTableConverter:
             for row in tbody.findall(".//tr"):
                 rows.append(parse_row(row))
 
-        if not thead and not tbody:
+        if thead is None and tbody is None:
             for row in tree.findall(".//tr"):
                 rows.append(parse_row(row))
 
