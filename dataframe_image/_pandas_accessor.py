@@ -1,3 +1,4 @@
+import inspect
 import io
 from pathlib import Path
 from typing import Literal
@@ -7,6 +8,7 @@ from pandas.io.formats.style import Styler
 from PIL import Image
 
 from dataframe_image.converter.browser import (
+    AsyncPlayWrightConverter,
     ChromeConverter,
     Html2ImageConverter,
     PlayWrightConverter,
@@ -50,11 +52,11 @@ BROWSER_CONVERTER_DICT = {
     "selenium": SeleniumConverter,
     "html2image": Html2ImageConverter,
     "playwright": PlayWrightConverter,
+    "async_playwright": AsyncPlayWrightConverter,
 }
 
 
-def export(
-    obj: pd.DataFrame,
+def prepare_converter(
     filename,
     fontsize=14,
     max_rows=None,
@@ -66,8 +68,6 @@ def export(
     dpi=None,
     use_mathjax=False,
 ):
-    is_styler = isinstance(obj, Styler)
-    df = obj.data if is_styler else obj
     if table_conversion in BROWSER_CONVERTER_DICT:
         converter = BROWSER_CONVERTER_DICT[table_conversion](
             max_rows=max_rows,
@@ -98,6 +98,17 @@ def export(
             format=extension,
         ).run
 
+    return converter
+
+
+def generate_html(
+    obj: pd.DataFrame,
+    filename,
+    max_rows=None,
+    max_cols=None,
+):
+    is_styler = isinstance(obj, Styler)
+    df = obj.data if is_styler else obj
     if df.shape[0] > MAX_ROWS and max_rows is None:
         error_msg = (
             f"Your DataFrame has more than {MAX_ROWS} rows and will produce a huge "
@@ -141,11 +152,13 @@ def export(
         html = styler2html(obj)
     else:
         html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
+    return html
 
+
+def save_image(img_str, filename):
+    # swap back to original value
     pre_limit = Image.MAX_IMAGE_PIXELS
     Image.MAX_IMAGE_PIXELS = None
-    img_str = converter(html)
-    # swap back to original value
     Image.MAX_IMAGE_PIXELS = pre_limit
 
     try:
@@ -156,6 +169,66 @@ def export(
             filename.write(img_str)
         else:
             raise ex
+        
+def export(
+    obj: pd.DataFrame,
+    filename,
+    fontsize=14,
+    max_rows=None,
+    max_cols=None,
+    table_conversion: Literal[
+        "chrome", "matplotlib", "html2image", "playwright", "selenium"
+    ] = "chrome",
+    chrome_path=None,
+    dpi=None,
+    use_mathjax=False,
+):
+    converter = prepare_converter(
+        filename,
+        fontsize,
+        max_rows,
+        max_cols,
+        table_conversion,
+        chrome_path,
+        dpi,
+        use_mathjax,
+    )
+    html = generate_html(obj, filename, max_rows, max_cols)
+    img_str = converter(html)
+    save_image(img_str, filename)
+
+
+async def export_async(
+    obj: pd.DataFrame,
+    filename,
+    fontsize=14,
+    max_rows=None,
+    max_cols=None,
+    table_conversion: Literal[
+        "chrome", "matplotlib", "html2image", "playwright_async", "selenium"
+    ] = "chrome",
+    chrome_path=None,
+    dpi=None,
+    use_mathjax=False,
+):
+    converter = prepare_converter(
+        filename,
+        fontsize,
+        max_rows,
+        max_cols,
+        table_conversion,
+        chrome_path,
+        dpi,
+        use_mathjax,
+    )
+    html = generate_html(obj, filename, max_rows, max_cols)
+    # check if converter is async
+    if inspect.iscoroutinefunction(converter):
+        img_str = await converter(html)
+    else:
+        img_str = converter(html)
+    # TODO: use async file writing
+    save_image(img_str, filename)
 
 
 setattr(Styler, "export_png", export)
