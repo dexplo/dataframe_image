@@ -78,9 +78,9 @@ jobs:
           collection-mathscience
           collection-pictures
           collection-latexextra
+        repository: https://mirrors.tuna.tsinghua.edu.cn/tex-historic-archive/systems/texlive/2023/tlnet-final/
+        version: 2023
 
-    # - name: Update TeX Live 
-    #   run: tlmgr update --self --all --reinstall-forcibly-removed
             
     - name: windows denpendencies
       if: ${{ startsWith(matrix.os, 'windows') }}
