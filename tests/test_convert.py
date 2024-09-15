@@ -1,5 +1,5 @@
-import os
 from pathlib import Path
+from sys import platform
 
 import pytest
 
@@ -26,7 +26,7 @@ no_input = [True, False]
 class TestConvertPDF:
     def test_to_pdf(self, document_name, filename, use, execute, no_input):
         # skip this test if os is osx and use is latex
-        if use == "latex" and os.uname().system == "Darwin":
+        if use == "latex" and platform == "darwin":
             pytest.skip("Skip test for latex on osx")
         convert(
             filename,
