@@ -29,7 +29,7 @@ setuptools.setup(
     install_requires=[
         "pandas>=0.24",
         "nbconvert>=5",
-        "aiohttp",
+        "aiohttp>=3.10.2",
         "requests",
         "pillow",
         "packaging",
