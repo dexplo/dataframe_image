@@ -1,5 +1,6 @@
 import inspect
 import io
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Literal
 
@@ -19,6 +20,15 @@ from dataframe_image.pd_html import styler2html
 MAX_COLS = 30
 MAX_ROWS = 100
 
+
+
+
+@contextmanager
+def disable_max_image_pixels():
+    pre_limit = Image.MAX_IMAGE_PIXELS
+    Image.MAX_IMAGE_PIXELS = None
+    yield
+    Image.MAX_IMAGE_PIXELS = pre_limit
 
 @pd.api.extensions.register_dataframe_accessor("dfi")
 class _Export:
@@ -156,10 +166,6 @@ def generate_html(
 
 
 def save_image(img_str, filename):
-    # swap back to original value
-    pre_limit = Image.MAX_IMAGE_PIXELS
-    Image.MAX_IMAGE_PIXELS = None
-    Image.MAX_IMAGE_PIXELS = pre_limit
 
     try:
         with open(filename, "wb") as f:
@@ -194,7 +200,10 @@ def export(
         use_mathjax,
     )
     html = generate_html(obj, filename, max_rows, max_cols)
-    img_str = converter(html)
+
+    with disable_max_image_pixels():
+        img_str = converter(html)
+
     save_image(img_str, filename)
 
 
@@ -222,11 +231,12 @@ async def export_async(
         use_mathjax,
     )
     html = generate_html(obj, filename, max_rows, max_cols)
-    # check if converter is async
-    if inspect.iscoroutinefunction(converter):
-        img_str = await converter(html)
-    else:
-        img_str = converter(html)
+    with disable_max_image_pixels():
+        # check if converter is async
+        if inspect.iscoroutinefunction(converter):
+            img_str = await converter(html)
+        else:
+            img_str = converter(html)
     # TODO: use async file writing
     save_image(img_str, filename)
 
