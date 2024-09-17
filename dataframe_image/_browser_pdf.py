@@ -4,6 +4,7 @@ import concurrent.futures
 import logging
 import os
 import platform
+import socket
 import urllib.parse
 from pathlib import Path
 from subprocess import Popen
@@ -29,13 +30,13 @@ async def handler(ws, data, key=None):
 
 
 # deprecated
-async def main(file_name, p):
+async def main(file_name, p, debug_port):
     async with aiohttp.ClientSession() as session:
         connected = False
         await asyncio.sleep(1)
         for _ in range(20):
             try:
-                resp = await session.get("http://localhost:9222/json")
+                resp = await session.get(f"http://localhost:{debug_port}/json")
                 data = await resp.json()
                 page_url = data[0]["webSocketDebuggerUrl"]
                 connected = True
@@ -109,23 +110,31 @@ def get_launch_args():
 
 
 # deprecated
-def launch_chrome():
+def launch_chrome(debug_port):
     chrome_path = get_chrome_path()
-    args = [chrome_path] + get_launch_args() + ["--remote-debugging-port=9222"]
+    args = [chrome_path] + get_launch_args() + [f"--remote-debugging-port={debug_port}"]
     p = Popen(args=args)
     return p
 
 
 # deprecated
+def get_free_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("localhost", 0))
+    _, port = s.getsockname()
+    s.close()
+    return port
+
 def get_pdf_data(file_name):
-    p = launch_chrome()
+    debug_port = get_free_port()
+    p = launch_chrome(debug_port)
     try:
         from asyncio import run
     except ImportError:
         from ._my_asyncio import run
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future = executor.submit(run, main(file_name, p))
+        future = executor.submit(run, main(file_name, p, debug_port))
         data = future.result()
     p.kill()
     return data
