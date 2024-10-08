@@ -54,8 +54,9 @@ class TestConvertMD:
         )
 
 
+@pytest.mark.parametrize("use", uses)
 class TestConvertOther:
-    def test_save_notebook(self):
+    def test_save_notebook(self, use):
         filename = "tests/notebooks/Short.ipynb"
         to = "pdf"
         document_name = Path(filename).stem + " saved NEW NAME"
@@ -64,11 +65,12 @@ class TestConvertOther:
             to=to,
             save_notebook=True,
             execute=True,
+            use=use,
             document_name=document_name,
             output_dir="tests/test_output",
         )
 
-    def test_matplotlib(self):
+    def test_matplotlib(self, use):
         filename = "tests/notebooks/Test 1.ipynb"
         to = "pdf"
         document_name = Path(filename).stem + " matplotlib NEW NAME"
@@ -76,6 +78,7 @@ class TestConvertOther:
             filename,
             to=to,
             execute=True,
+            use=use,
             document_name=document_name,
             table_conversion="matplotlib",
             output_dir="tests/test_output",
