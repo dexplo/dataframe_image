@@ -20,7 +20,7 @@ class SeleniumConverter(BrowserConverter):
             from selenium.webdriver.firefox.service import Service
 
             options = selenium.webdriver.FirefoxOptions()
-            options.add_argument("--headless=old")
+            options.add_argument("--headless")
 
             profile = selenium.webdriver.FirefoxProfile(temp_dir)
             profile.set_preference(
