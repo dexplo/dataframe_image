@@ -91,7 +91,7 @@ def get_launch_args():
     # temp_dir = TemporaryDirectory()
     temp_dir_name = os.path.abspath(".")
     args = [
-        "--headless",
+        "--headless=old",
         "--enable-logging",
         "--disable-gpu",
         "--run-all-compositor-stages-before-draw",
