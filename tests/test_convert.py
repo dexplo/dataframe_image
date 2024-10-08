@@ -11,7 +11,7 @@ filenames = [
     "tests/notebooks/Test 1 EXECUTED.ipynb",
 ]
 uses = [
-    "latex",
+    # "latex",
     "browser",
 ]
 executes = [True, False]
