@@ -67,8 +67,11 @@ def get_chrome_path(chrome_path=None):
             r"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\brave.exe",
         ]
         for loc in locs:
-            handle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, loc)
-            num_values = winreg.QueryInfoKey(handle)[1]
+            try:
+                handle = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, loc)
+                num_values = winreg.QueryInfoKey(handle)[1]
+            except FileNotFoundError:
+                num_values = 0
             if num_values > 0:
                 return winreg.EnumValue(handle, 0)[1]
         raise OSError("Cannot find chrome.exe on your windows machine")
