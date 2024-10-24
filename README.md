@@ -20,6 +20,7 @@ dataframe_image has the ability to export both normal and styled DataFrames as i
 You may also export directly from the DataFrame or styled DataFrame using the `dfi.export` and `export_png` methods, respectively.
 
 ```python
+>>> import dataframe_image as dfi # you have to import it first to enable this plugin
 >>> df.dfi.export('df.png')
 >>> df_styled.export_png('df_styled.png')
 ```
