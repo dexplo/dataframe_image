@@ -1,1 +1,1 @@
-from .browser import *
+from .browser import *  # noqa: F403

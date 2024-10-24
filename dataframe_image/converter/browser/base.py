@@ -1,10 +1,8 @@
 import base64
 import io
 import logging
-import subprocess
 from abc import ABC
 from pathlib import Path
-from tempfile import TemporaryDirectory
 
 import numpy as np
 from PIL import Image, ImageOps

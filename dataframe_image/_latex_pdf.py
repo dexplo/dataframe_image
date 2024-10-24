@@ -1,6 +1,6 @@
 import shutil
 
-from nbconvert.exporters import Exporter, HTMLExporter, PDFExporter
+from nbconvert.exporters import PDFExporter
 
 from ._preprocessors import (
     ChangeOutputTypePreprocessor,

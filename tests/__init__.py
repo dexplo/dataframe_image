@@ -1,1 +1,1 @@
-from . import conftest
+from . import conftest  # noqa: F401

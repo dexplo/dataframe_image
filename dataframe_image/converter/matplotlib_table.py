@@ -5,7 +5,6 @@ import textwrap
 import cssutils
 import numpy as np
 from lxml.cssselect import CSSSelector
-from lxml.etree import tostring
 from lxml.html import fromstring
 from matplotlib import lines as mlines
 from matplotlib import patches as mpatches
@@ -93,8 +92,8 @@ class MatplotlibTableConverter:
 
         def parse_row(row):
             values = []
-            rowspan_dict = {}
-            colspan_total = 0
+            # rowspan_dict = {}
+            # colspan_total = 0
             row_align = self.get_text_align(row)
             for el in row.xpath(".//td|.//th"):
                 bold = el.tag == "th"
@@ -169,7 +168,7 @@ class MatplotlibTableConverter:
                     )
                 row_widths.append(cell_max_width)
             all_text_widths.append(row_widths)
-        pad = 10  # number of pixels to pad columns with
+        # pad = 10  # number of pixels to pad columns with
         return np.array(all_text_widths) + 15
 
     def calculate_col_widths(self):

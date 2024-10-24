@@ -5,14 +5,12 @@ import logging
 import os
 import platform
 import socket
-import urllib.parse
 from pathlib import Path
 from subprocess import Popen
-from tempfile import TemporaryDirectory, mkstemp
+from tempfile import mkstemp
 
 import aiohttp
-from nbconvert import TemplateExporter
-from nbconvert.exporters import Exporter, HTMLExporter
+from nbconvert.exporters import HTMLExporter
 
 from .converter.browser.chrome_converter import get_chrome_path
 
@@ -141,7 +139,7 @@ def get_pdf_data(file_name):
 
 
 def get_pdf_data_chromecontroller(file_name):
-    import ChromeController
+    import ChromeController  # type: ignore
 
     additional_options = get_launch_args()
     # ChromeContext will shlex.split binary, so add quote to it
@@ -150,10 +148,10 @@ def get_pdf_data_chromecontroller(file_name):
     ) as cr:
         # Do a blocking navigate to a URL, and get the page content as served by the remote
         # server, with no modification by local javascript (if applicable)
-        raw_source = cr.blocking_navigate_and_get_source(file_name)
+        # raw_source = cr.blocking_navigate_and_get_source(file_name)
         # Since the page is now rendered by the blocking navigate, we can
         # get the page source after any javascript has modified it.
-        rendered_source = cr.get_rendered_page_source()
+        # rendered_source = cr.get_rendered_page_source()
         # # Or take a screenshot
         # # The screenshot is the size of the remote browser's configured viewport,
         # # which by default is set to 1024 * 1366. This size can be changed via the
