@@ -19,14 +19,14 @@ class MatplotlibTableConverter:
         self,
         fontsize=14,
         encode_base64=True,
-        limit_crop=True,
+        crop_top=True,
         for_document=True,
         savefig_dpi=None,
         format="png",
     ):
         self.original_fontsize = fontsize
         self.encode_base64 = encode_base64
-        self.limit_crop = limit_crop
+        self.crop_top = crop_top
         self.for_document = for_document
         self.figwidth = 1
         self.figheight = 1

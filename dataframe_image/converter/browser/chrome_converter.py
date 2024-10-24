@@ -86,7 +86,7 @@ class ChromeConverter(BrowserConverter):
         chrome_path: str = None,
         fontsize: int = 18,
         encode_base64: bool = True,
-        limit_crop: bool = True,
+        crop_top: bool = True,
         device_scale_factor: int = 1,
         use_mathjax: bool = False,
     ):
@@ -97,7 +97,7 @@ class ChromeConverter(BrowserConverter):
             chrome_path,
             fontsize,
             encode_base64,
-            limit_crop,
+            crop_top,
             device_scale_factor,
             use_mathjax,
         )
@@ -152,9 +152,9 @@ class ChromeConverter(BrowserConverter):
                     return self.screenshot(html, ss_width, ss_height)
                 else:
                     logger.warning(
-                        f"""Unable to enlarge image with Chrome, it is a known bug with version 111 and 112
-                        You could try to install an individual Chrome dev version and set chrome_path to it
-                        or try 'df.dfi.export('df.png', table_conversion="selenium")'"""
+                        """Unable to enlarge image with Chrome, it is a known bug with version 111 and 112
+                        You could try to install an individual Chrome dev version and set `chrome_path` to it
+                        or try 'df.dfi.export('df.png', table_conversion="playwright")'"""
                     )
             return im
 

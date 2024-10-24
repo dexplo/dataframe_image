@@ -1,4 +1,7 @@
+import math
 from io import BytesIO
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from PIL import Image
 
@@ -15,11 +18,14 @@ class PlayWrightConverter(BrowserConverter):
             raise ImportError(
                 "Playwright is not installed. Install it with 'pip install playwright' and make sure you have a chromium browser installed."
             ) from ex
+
         with sync_playwright() as p:
             channels = ["chrome", "msedge", None]
             for c in channels:
                 try:
-                    browser = p.chromium.launch(channel=c, args=["--disable-web-security"])
+                    browser = p.chromium.launch(
+                        channel=c, args=["--disable-web-security"]
+                    )
                     break
                 except Error:
                     pass
@@ -29,9 +35,19 @@ class PlayWrightConverter(BrowserConverter):
                     "Or install it by `playwright install chromium`"
                 )
 
-            context = browser.new_context(device_scale_factor=self.device_scale_factor, bypass_csp=True)
+            context = browser.new_context(
+                device_scale_factor=self.device_scale_factor, bypass_csp=True
+            )
             page = context.new_page()
-            page.set_content(self.get_css() + html)
+            page.set_content(self.build_valid_html(html))
+            # get height and width for #dfi_table
+            locator = page.locator("#dfi_table table")
+            bbox = locator.bounding_box()
+            width = bbox["width"]
+            height = bbox["height"]
+            page.set_viewport_size(
+                {"width": math.ceil(width) + 20, "height": math.ceil(height) + 20}
+            )
             if self.use_mathjax:
                 mj = page.locator("mjx-container math")
                 try:
@@ -42,19 +58,18 @@ class PlayWrightConverter(BrowserConverter):
                     )
                     pass
                 page.wait_for_timeout(200)
-            screenshot_bytes = page.screenshot(full_page=True)
+            screenshot_bytes = locator.screenshot()
         im = Image.open(BytesIO(screenshot_bytes))
         return im
 
 
 class AsyncPlayWrightConverter(BrowserConverter):
-    
     async def run(self, html: str) -> bytes:
         im = await self.screenshot(html)
         temp_img = self.crop(im)
         image_bytes = self.finalize_image(temp_img)
         return image_bytes
-    
+
     async def screenshot(self, html):
         try:
             from playwright.async_api import Error, async_playwright
@@ -84,7 +99,14 @@ class AsyncPlayWrightConverter(BrowserConverter):
                 device_scale_factor=self.device_scale_factor, bypass_csp=True
             )
             page = await context.new_page()
-            await page.set_content(self.get_css() + html)
+            await page.set_content(self.build_valid_html(html))
+            locator = await page.locator("#dfi_table table")
+            bbox = locator.bounding_box()
+            width = bbox["width"]
+            height = bbox["height"]
+            await page.set_viewport_size(
+                {"width": math.ceil(width) + 20, "height": math.ceil(height) + 20}
+            )
             if self.use_mathjax:
                 mj = page.locator("mjx-container math")
                 try:
@@ -96,6 +118,6 @@ class AsyncPlayWrightConverter(BrowserConverter):
                     )
                     pass
                 page.wait_for_timeout(200)
-            screenshot_bytes = await page.screenshot(full_page=True)
+            screenshot_bytes = await locator.screenshot()
         im = Image.open(BytesIO(screenshot_bytes))
         return im

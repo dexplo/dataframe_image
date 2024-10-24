@@ -25,7 +25,7 @@ class BrowserConverter(ABC):
         chrome_path: str = None,
         fontsize: int = 18,
         encode_base64: bool = True,
-        limit_crop: bool = True,
+        crop_top: bool = True,
         device_scale_factor: int = 1,
         use_mathjax: bool = False,
     ):
@@ -39,7 +39,7 @@ class BrowserConverter(ABC):
             chrome_path (str): Path to the Chrome executable. Default is None.
             fontsize (int): Font size. Default is 18.
             encode_base64 (bool): Whether to encode the image in base64. Default is True.
-            limit_crop (bool): Whether to limit the crop. Default is True.
+            crop_top (bool): Whether to limit the crop. Default is True.
             device_scale_factor (int): Device scale factor. Default is 1.
             use_mathjax (bool): Whether to use MathJax for rendering. Default is False.
         """
@@ -49,9 +49,37 @@ class BrowserConverter(ABC):
         self.chrome_path = chrome_path
         self.fontsize = fontsize
         self.encode_base64 = encode_base64
-        self.limit_crop = limit_crop
+        self.crop_top = crop_top
         self.device_scale_factor = device_scale_factor
         self.use_mathjax = use_mathjax
+
+    def build_valid_html(self, html: str) -> str:
+        """
+        Build a valid page HTML.
+
+        Args:
+            html (str): The HTML to build.
+
+        Returns:
+            str: The valid HTML string.
+        """
+        # <style>...</style> must be in the head
+        css_str = self.get_css()
+        # <div>...</div> must be in the body
+        table_div = html
+
+        page = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        {css_str}
+        </head>
+        <body>
+        {table_div}
+        </body>
+        </html>
+        """
+        return page
 
     def get_css(self) -> str:
         """
@@ -140,18 +168,23 @@ class BrowserConverter(ABC):
         Returns:
             Image: The cropped image.
         """
-        # remove black
-        imrgb = im.convert("RGB")
-        imageBox = imrgb.getbbox()
-        im = im.crop(imageBox)
-
         # remove alpha channel
-        imrgb = im.convert("RGB")
-        # invert image (so that white is 0)
-        invert_im = ImageOps.invert(imrgb)
-        imageBox = invert_im.getbbox()
-        cropped = im.crop(imageBox)
-        return cropped
+        imrgb = ImageOps.invert(im.convert("RGB"))
+        imageBox = imrgb.getbbox()
+        # check imageBox top pixels are all not white
+        top_line_np = np.array(
+            imrgb.crop((imageBox[0], imageBox[1], imageBox[2], imageBox[1] + 1))
+        )
+        ## convert top_line_np to boolean array, white is 1
+        top_line_white_percent = (top_line_np != 0).mean()
+        ## some df has no top border, or top is caption, so we need to crop top from 0
+        ## else we crop top from imageBox
+        if top_line_white_percent > 0.5 and self.crop_top:
+            im = im.crop(imageBox)
+        else:
+            im = im.crop((imageBox[0], 0, imageBox[2], imageBox[3]))
+
+        return im
 
     def run(self, html: str) -> bytes:
         """

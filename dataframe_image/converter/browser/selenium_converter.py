@@ -41,13 +41,14 @@ class SeleniumConverter(BrowserConverter):
             f.write(self.get_css() + html)
 
         with selenium.webdriver.Firefox(options=options, service=service) as driver:
-            driver.get(f"file://{str(temp_html)}")  # selenium will do the rest
+            driver.get(temp_html.as_uri())  # selenium will do the rest
 
+            # get "#dfi_table table" width and height
             required_width = driver.execute_script(
-                "return document.body.parentNode.scrollWidth"
+                "return document.querySelector('#dfi_table table').scrollWidth"
             )
             required_height = driver.execute_script(
-                "return document.body.parentNode.scrollHeight"
+                "return document.querySelector('#dfi_table table').scrollHeight"
             )
             driver.set_window_size(required_width + 150, required_height + 90)
             driver.save_screenshot(str(temp_img))

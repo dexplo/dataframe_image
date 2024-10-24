@@ -77,6 +77,7 @@ def prepare_converter(
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
+    crop_top=True,
 ):
     if table_conversion in BROWSER_CONVERTER_DICT:
         converter = BROWSER_CONVERTER_DICT[table_conversion](
@@ -85,7 +86,7 @@ def prepare_converter(
             chrome_path=chrome_path,
             fontsize=fontsize,
             encode_base64=False,
-            limit_crop=False,
+            crop_top=crop_top,
             device_scale_factor=(1 if dpi is None else dpi / 100.0),
             use_mathjax=use_mathjax,
         ).run
@@ -162,6 +163,8 @@ def generate_html(
         html = styler2html(obj)
     else:
         html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
+    # wrap html with a div and add id `dfi_table`
+    html = f'<div id="dfi_table">{html}</div>'
     return html
 
 
@@ -188,7 +191,22 @@ def export(
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
+    crop_top=True,
 ):
+    """export a DataFrame as png to a file
+
+    Args:
+        obj: DataFrame or Styler object, required
+        filename: str or file-like, required
+        fontsize: int, optional, default 14
+        max_rows: int, optional, default None
+        max_cols: int, optional, default None
+        table_conversion: str, optional, default 'chrome'
+        chrome_path: str, optional, default None
+        dpi: int, optional, default None
+        use_mathjax: bool, optional, default False
+        crop_top: bool, optional, crop top of the generate image, default True
+    """
     converter = prepare_converter(
         filename,
         fontsize,
@@ -198,6 +216,7 @@ def export(
         chrome_path,
         dpi,
         use_mathjax,
+        crop_top=crop_top,
     )
     html = generate_html(obj, filename, max_rows, max_cols)
 
@@ -219,7 +238,22 @@ async def export_async(
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
+    crop_top=True,
 ):
+    """export a DataFrame as png to a file
+
+    Args:
+        obj: DataFrame or Styler object, required
+        filename: str or file-like, required
+        fontsize: int, optional, default 14
+        max_rows: int, optional, default None
+        max_cols: int, optional, default None
+        table_conversion: str, optional, default 'chrome'
+        chrome_path: str, optional, default None
+        dpi: int, optional, default None
+        use_mathjax: bool, optional, default False
+        crop_top: bool, optional, crop top of the generate image, default True
+    """
     converter = prepare_converter(
         filename,
         fontsize,
@@ -229,6 +263,7 @@ async def export_async(
         chrome_path,
         dpi,
         use_mathjax,
+        crop_top=crop_top,
     )
     html = generate_html(obj, filename, max_rows, max_cols)
     with disable_max_image_pixels():
@@ -298,6 +333,13 @@ dpi : int, default `None`
     If `table_conversion`=`chrome`, the dpi value is converted to a 
     "device scale factor" but should provide the same effect. When `None`,
     the "device scale factor" is 1.
+use_mathjax : bool, default False
+    Use MathJax to render LaTeX in the DataFrame. This only works with 
+    `table_conversion` set to 'playwright', 'matplotlib' or 'selenium'.
+crop_top : bool, default True
+    Crop the top of the generated image. This is useful when the DataFrame
+    has a lot of white space at the top of the image. But if you can set it
+    to False if you think the image is being cropped too much.
 """
 
 export_intro = """

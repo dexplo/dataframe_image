@@ -40,7 +40,7 @@ class Html2ImageConverter(BrowserConverter):
                 return self.screenshot(html, ss_width, ss_height)
             else:
                 logger.warning(
-                    f"""Unable to enlarge image with Chrome, it is a known bug with version 111 and 112
+                    """Unable to enlarge image with Chrome, it is a known bug with version 111 and 112
                     You could try to install an individual Chrome dev version and set chrome_path to it
                     or try 'df.dfi.export('df.png', table_conversion="selenium")'"""
                 )
