@@ -98,8 +98,8 @@ class AsyncPlayWrightConverter(BrowserConverter):
             )
             page = await context.new_page()
             await page.set_content(self.build_valid_html(html))
-            locator = await page.locator("#dfi_table table")
-            bbox = locator.bounding_box()
+            locator = page.locator("#dfi_table table")
+            bbox = await locator.bounding_box()
             width = bbox["width"]
             height = bbox["height"]
             await page.set_viewport_size(
