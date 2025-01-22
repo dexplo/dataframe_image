@@ -118,7 +118,7 @@ class ChromeConverter(BrowserConverter):
             args = [
                 "--enable-logging",
                 "--disable-gpu",
-                "--headless=old",
+                "--headless",
                 # "--no-sandbox",
                 f"--crash-dumps-dir={temp_dir}",
                 f"--force-device-scale-factor={self.device_scale_factor}",
