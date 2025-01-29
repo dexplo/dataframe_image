@@ -73,7 +73,7 @@ def prepare_converter(
     max_cols=None,
     table_conversion: Literal[
         "chrome", "matplotlib", "html2image", "playwright", "selenium"
-    ] = "chrome",
+    ] = "playwright",
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
@@ -187,7 +187,7 @@ def export(
     max_cols=None,
     table_conversion: Literal[
         "chrome", "matplotlib", "html2image", "playwright", "selenium"
-    ] = "chrome",
+    ] = "playwright",
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
@@ -234,7 +234,7 @@ async def export_async(
     max_cols=None,
     table_conversion: Literal[
         "chrome", "matplotlib", "html2image", "playwright_async", "selenium"
-    ] = "chrome",
+    ] = "playwright_async",
     chrome_path=None,
     dpi=None,
     use_mathjax=False,

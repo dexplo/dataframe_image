@@ -7,7 +7,7 @@ import platform
 import socket
 from pathlib import Path
 from subprocess import Popen
-from tempfile import mkstemp
+from tempfile import TemporaryDirectory, mkstemp
 
 import aiohttp
 from nbconvert.exporters import HTMLExporter
@@ -86,25 +86,25 @@ async def main(file_name, p, debug_port):
 
 
 def get_launch_args():
-    # temp_dir = TemporaryDirectory()
-    temp_dir_name = os.path.abspath(".")
-    args = [
-        "--headless",
-        "--enable-logging",
-        "--disable-gpu",
-        "--run-all-compositor-stages-before-draw",
-        "--remote-allow-origins=*",
-        "--enable-features=NetworkService",
-        f"--crash-dumps-dir={temp_dir_name}",
-        "about:blank",
-    ]
-    if (
-        os.environ.get("NO_SANDBOX", False)
-        or platform.system().lower() != "windows"
-        and os.geteuid() == 0
-    ):
-        args.append("--no-sandbox")
-    return args
+    with TemporaryDirectory() as temp_dir:
+        temp_dir_name = os.path.abspath(".")
+        args = [
+            "--headless",
+            "--enable-logging",
+            "--disable-gpu",
+            "--run-all-compositor-stages-before-draw",
+            "--enable-features=NetworkService",
+            f"--crash-dumps-dir={temp_dir_name}",
+            f"--user-data-dir={temp_dir}",
+            "about:blank",
+        ]
+        if (
+            os.environ.get("NO_SANDBOX", False)
+            or platform.system().lower() != "windows"
+            and os.geteuid() == 0
+        ):
+            args.append("--no-sandbox")
+        return args
 
 
 # deprecated
@@ -112,6 +112,7 @@ def launch_chrome(debug_port):
     chrome_path = get_chrome_path()
     args = [chrome_path] + get_launch_args() + [f"--remote-debugging-port={debug_port}"]
     p = Popen(args=args)
+    logging.debug(f"Chrome process started with PID: {p.pid}")
     return p
 
 

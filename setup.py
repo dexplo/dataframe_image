@@ -36,7 +36,7 @@ setuptools.setup(
         "lxml",
         "beautifulsoup4",
         "cssutils",
-        "html2image",
+        "playwright",
         "cssselect",
     ],
     include_package_data=True,
