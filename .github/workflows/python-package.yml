@@ -106,7 +106,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install pytest pytest-asyncio matplotlib jupyter pandoc playwright selenium
+        pip install pytest pytest-asyncio matplotlib jupyter pandoc playwright selenium html2image
         pip install . --upgrade
     - name: mac nbconvert patch fix # this is a tmp fix, related to https://github.com/jupyter/nbconvert/issues/1773
       if: ${{ startsWith(matrix.os, 'macos') }}
