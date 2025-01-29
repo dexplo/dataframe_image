@@ -161,3 +161,54 @@ def test_caption_cut(get_df):
     dfi.export(
         df, "tests/test_output/caption_cut.png", table_conversion="chrome", max_rows=-1
     )
+
+
+@pytest.mark.parametrize("converter", converters)
+def test_complex_styled_df(document_name, get_df, converter):
+    df = get_df.copy()
+    table_styles = [
+        {
+            "selector": "thead th",  # Style pour les en-têtes de colonnes
+            "props": [
+                ("background-color", "blue"),  # Fond bleu
+                ("color", "white"),  # Texte en blanc
+                ("font-weight", "bold"),  # Texte en gras
+                ("text-align", "center"),  # Centrer le texte
+            ],
+        },
+        {
+            "selector": "td",  # Style général pour toutes les cellules
+            "props": [("border-right", "0.8px solid black")],
+        },
+        {
+            "selector": "td.col0",  # Largeur spécifique pour la première colonne
+            "props": [("width", "200px")],
+        },
+        # Appliquer une largeur spécifique à toutes les colonnes de la 2ᵉ à la dernière
+        {
+            "selector": "td:nth-child(n+2)",  # `nth-child(n+2)` cible la 2ᵉ colonne et au-delà
+            "props": [("width", "70px")],
+        },
+    ]
+
+    perf_indice_stylised = (
+        df.style.set_properties(
+            **{"text-align": "center"}
+        )  # Centrer le contenu des colonnes
+        .set_table_styles(table_styles, overwrite=False)  # Appliquer les propriétés CSS
+        .bar(
+            align=0,
+            vmin=0,
+            vmax=5000,
+            height=50,
+            width=50,
+        )
+        .hide(axis=0)  # Masquer l'index
+    )
+
+    image_path = f"tests/test_output/{document_name}.png"
+    dfi.export(
+        perf_indice_stylised,
+        image_path,
+        table_conversion=converter,
+    )
