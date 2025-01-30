@@ -82,7 +82,11 @@ class PlayWrightConverter(BrowserConverter):
                     )
                     pass
                 page.wait_for_timeout(200)
-            screenshot_bytes = locator.screenshot(timeout=1000)
+            try:
+                screenshot_bytes = locator.screenshot(timeout=1000)
+            except Error:
+                logger.warning("Locator screenshot timed out. Taking full page screenshot instead.")
+                screenshot_bytes = page.screenshot(timeout=1000)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
 
@@ -168,6 +172,10 @@ class AsyncPlayWrightConverter(BrowserConverter):
                     )
                     pass
                 page.wait_for_timeout(200)
-            screenshot_bytes = await locator.screenshot(timeout=1000)
+            try:
+                screenshot_bytes = await locator.screenshot(timeout=1000)
+            except Error:
+                logger.warning("Locator screenshot timed out. Taking full page screenshot instead.")
+                screenshot_bytes = await page.screenshot(timeout=1000)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
