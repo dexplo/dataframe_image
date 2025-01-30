@@ -166,8 +166,7 @@ def generate_html(
         html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
     # wrap html with a div and add id `dfi_table`
     html = f'<div id="dfi_table">{html}</div>'
-    html_template = f"""<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><meta charset="UTF-8"/></head>{html}</html>"""
-    return html_template
+    return html
 
 
 def save_image(img_str, filename):

@@ -68,8 +68,9 @@ class BrowserConverter(ABC):
 
         page = f"""
         <!DOCTYPE html>
-        <html>
+        <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
         <head>
+        <meta charset="UTF-8"/>
         {css_str}
         </head>
         <body>

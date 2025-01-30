@@ -82,7 +82,7 @@ class PlayWrightConverter(BrowserConverter):
                     )
                     pass
                 page.wait_for_timeout(200)
-            screenshot_bytes = locator.screenshot()
+            screenshot_bytes = locator.screenshot(timeout=1000)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
 
@@ -168,6 +168,6 @@ class AsyncPlayWrightConverter(BrowserConverter):
                     )
                     pass
                 page.wait_for_timeout(200)
-            screenshot_bytes = await locator.screenshot()
+            screenshot_bytes = await locator.screenshot(timeout=1000)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
