@@ -17,7 +17,7 @@ converters = [
     "chrome",
     "selenium",
     "matplotlib",
-    "html2image",
+    # "html2image",
     "playwright",
 ]
 
