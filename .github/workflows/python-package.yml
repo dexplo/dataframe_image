@@ -106,7 +106,7 @@ jobs:
         pip install pytest pytest-asyncio matplotlib jupyter pandoc playwright selenium html2image 
         pip install . --upgrade
         pip install chromedriver-autoinstaller
-        python -c "import chromedriver-autoinstaller; chromedriver-autoinstaller.install()"
+        python -c 'import chromedriver-autoinstaller; chromedriver-autoinstaller.install()'
     - name: mac nbconvert patch fix # this is a tmp fix, related to https://github.com/jupyter/nbconvert/issues/1773
       if: ${{ startsWith(matrix.os, 'macos') }}
       run: |
