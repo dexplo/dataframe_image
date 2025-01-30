@@ -56,6 +56,7 @@ def get_chrome_path(chrome_path=None):
             for cmd in commands:
                 chrome_path = shutil.which(cmd, path=path)
                 if chrome_path:
+                    logger.info(f"Found Chrome executable at {chrome_path}")
                     return chrome_path
         raise OSError("Chrome executable not able to be found on your machine")
     elif system == "windows":

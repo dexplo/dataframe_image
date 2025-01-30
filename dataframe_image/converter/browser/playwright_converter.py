@@ -9,6 +9,31 @@ from .base import BrowserConverter
 
 
 class PlayWrightConverter(BrowserConverter):
+    def __init__(
+        self,
+        center_df=True,
+        max_rows=None,
+        max_cols=None,
+        chrome_path=None,
+        fontsize=18,
+        encode_base64=True,
+        crop_top=True,
+        device_scale_factor=1,
+        use_mathjax=False,
+    ):
+        super().__init__(
+            center_df,
+            max_rows,
+            max_cols,
+            chrome_path,
+            fontsize,
+            encode_base64,
+            crop_top,
+            device_scale_factor,
+            use_mathjax,
+        )
+        self.channels = ["chrome", "msedge", "chromium", "firefox", None]
+
     def screenshot(self, html):
         try:
             from playwright.sync_api import Error, sync_playwright
@@ -18,11 +43,12 @@ class PlayWrightConverter(BrowserConverter):
             ) from ex
 
         with sync_playwright() as p:
-            channels = ["chrome", "msedge", None]
-            for c in channels:
+            for c in self.channels:
                 try:
                     browser = p.chromium.launch(
-                        channel=c, args=["--disable-web-security"]
+                        channel=c,
+                        args=["--disable-web-security"],
+                        executable_path=self.chrome_path,
                     )
                     break
                 except Error:
@@ -62,6 +88,31 @@ class PlayWrightConverter(BrowserConverter):
 
 
 class AsyncPlayWrightConverter(BrowserConverter):
+    def __init__(
+        self,
+        center_df=True,
+        max_rows=None,
+        max_cols=None,
+        chrome_path=None,
+        fontsize=18,
+        encode_base64=True,
+        crop_top=True,
+        device_scale_factor=1,
+        use_mathjax=False,
+    ):
+        super().__init__(
+            center_df,
+            max_rows,
+            max_cols,
+            chrome_path,
+            fontsize,
+            encode_base64,
+            crop_top,
+            device_scale_factor,
+            use_mathjax,
+        )
+        self.channels = ["chrome", "msedge", "chromium", "firefox", None]
+
     async def run(self, html: str) -> bytes:
         im = await self.screenshot(html)
         temp_img = self.crop(im)
@@ -77,11 +128,12 @@ class AsyncPlayWrightConverter(BrowserConverter):
                 "and make sure you have a chromium browser installed."
             ) from ex
         async with async_playwright() as p:
-            channels = ["chromium", "chrome", "msedge", None]
-            for c in channels:
+            for c in self.channels:
                 try:
                     browser = await p.chromium.launch(
-                        channel=c, args=["--disable-web-security"]
+                        channel=c,
+                        args=["--disable-web-security"],
+                        executable_path=self.chrome_path,
                     )
                     break
                 except Error:
