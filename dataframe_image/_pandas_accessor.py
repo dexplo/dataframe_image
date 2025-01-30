@@ -15,6 +15,7 @@ from dataframe_image.converter.browser import (
     PlayWrightConverter,
     SeleniumConverter,
 )
+from dataframe_image.logger import logger
 from dataframe_image.pd_html import styler2html
 
 MAX_COLS = 30
@@ -234,8 +235,8 @@ async def export_async(
     max_rows=None,
     max_cols=None,
     table_conversion: Literal[
-        "chrome", "matplotlib", "html2image", "playwright_async", "selenium"
-    ] = "playwright_async",
+        "chrome", "matplotlib", "html2image", "playwright", "selenium", "playwright_async"
+    ] = "playwright",
     chrome_path=None,
     dpi=None,
     use_mathjax=False,
@@ -255,6 +256,17 @@ async def export_async(
         use_mathjax: bool, optional, default False
         crop_top: bool, optional, crop top of the generate image, default True
     """
+    if table_conversion == "playwright_async":
+        # show DeprecationWarning
+        import warnings
+        warnings.warn(
+            "table_conversion='playwright_async' is deprecated, use 'playwright' instead",
+            DeprecationWarning,
+        )
+
+    async_converters = ["playwright"]
+    if table_conversion in async_converters:
+        table_conversion = f"{table_conversion}_async"
     converter = prepare_converter(
         filename,
         fontsize,

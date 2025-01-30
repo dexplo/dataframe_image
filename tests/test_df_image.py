@@ -79,7 +79,7 @@ async def test_styled2_async(document_name):
     await dfi.export_async(
         df_styled,
         f"tests/test_output/{document_name}_playwright_async.png",
-        table_conversion="playwright_async",
+        table_conversion="playwright",
     )
     await dfi.export_async(
         df_styled,
@@ -169,9 +169,8 @@ def test_caption_cut(get_df):
     )
 
 
-# @pytest.mark.parametrize("converter", converters)
-async def test_complex_styled_df(document_name):
-    converter = "playwright_async"
+@pytest.mark.parametrize("converter", converters)
+async def test_complex_styled_df(document_name, converter):
     from matplotlib.colors import LinearSegmentedColormap
 
     custom_cmap = LinearSegmentedColormap.from_list(
