@@ -156,8 +156,9 @@ jobs:
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
         
-    - name: publish-to-conda
-      uses: maxibor/conda-package-publish-action@v1.1
-      with:
-        subDir: 'conda'
-        AnacondaToken: ${{ secrets.ANACONDA_TOKEN }}
+    # - name: publish-to-conda
+    #   if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    #   uses: maxibor/conda-package-publish-action@v1.1
+    #   with:
+    #     subDir: 'conda'
+    #     AnacondaToken: ${{ secrets.ANACONDA_TOKEN }}
