@@ -62,7 +62,7 @@ BROWSER_CONVERTER_DICT = {
     "selenium": SeleniumConverter,
     "html2image": Html2ImageConverter,
     "playwright": PlayWrightConverter,
-    "async_playwright": AsyncPlayWrightConverter,
+    "playwright_async": AsyncPlayWrightConverter,
 }
 
 
@@ -72,7 +72,7 @@ def prepare_converter(
     max_rows=None,
     max_cols=None,
     table_conversion: Literal[
-        "chrome", "matplotlib", "html2image", "playwright", "selenium"
+        "chrome", "matplotlib", "html2image", "playwright", "selenium", "playwright_async"
     ] = "playwright",
     chrome_path=None,
     dpi=None,
@@ -165,7 +165,8 @@ def generate_html(
         html = obj.to_html(max_rows=max_rows, max_cols=max_cols, notebook=True)
     # wrap html with a div and add id `dfi_table`
     html = f'<div id="dfi_table">{html}</div>'
-    return html
+    html_template = f"""<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><meta charset="UTF-8"/></head>{html}</html>"""
+    return html_template
 
 
 def save_image(img_str, filename):

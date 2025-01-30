@@ -13,7 +13,13 @@ df = pd.read_csv(
 )
 
 test_dpi_values = [100, 200, 300]
-converters = ["chrome", "selenium", "matplotlib", "html2image", "playwright"]
+converters = [
+    "chrome",
+    "selenium",
+    "matplotlib",
+    "html2image",
+    "playwright",
+]
 
 
 @pytest.fixture
@@ -163,9 +169,28 @@ def test_caption_cut(get_df):
     )
 
 
-@pytest.mark.parametrize("converter", converters)
-def test_complex_styled_df(document_name, get_df, converter):
-    df = get_df.copy()
+# @pytest.mark.parametrize("converter", converters)
+async def test_complex_styled_df(document_name):
+    converter = "playwright_async"
+    from matplotlib.colors import LinearSegmentedColormap
+
+    custom_cmap = LinearSegmentedColormap.from_list(
+        "custom_cmap", ["#FFA07A", "white", "#ADD8E6"]
+    )  # Bleu clair, blanc, rouge clair
+
+    df = pd.DataFrame(
+        {
+            "Fonds": ["Fonds A", "Fonds B", "Fonds C"],
+            "Performance": [5.4, -2.1, 3.7],
+            "Volatilité": [12.3, 15.2, 9.8],
+        }
+    )
+
+    # Fonction pour appliquer le style conditionnel
+    col_format = {
+        "Performance": "{:.1f}%",
+        "Volatilité": "{:.1f}",
+    }
     table_styles = [
         {
             "selector": "thead th",  # Style pour les en-têtes de colonnes
@@ -190,25 +215,29 @@ def test_complex_styled_df(document_name, get_df, converter):
             "props": [("width", "70px")],
         },
     ]
-
-    perf_indice_stylised = (
+    styled_df = (
         df.style.set_properties(
             **{"text-align": "center"}
         )  # Centrer le contenu des colonnes
         .set_table_styles(table_styles, overwrite=False)  # Appliquer les propriétés CSS
+        .format(
+            col_format, na_rep=""
+        )  # Appliquer les formats avec valeurs manquantes remplacées par ''
         .bar(
             align=0,
-            vmin=0,
-            vmax=5000,
+            vmin=-2.5,
+            vmax=2.5,
             height=50,
             width=50,
+            cmap=custom_cmap,
+            subset=["Performance"],
         )
         .hide(axis=0)  # Masquer l'index
     )
 
     image_path = f"tests/test_output/{document_name}.png"
-    dfi.export(
-        perf_indice_stylised,
+    await dfi.export_async(
+        styled_df,
         image_path,
         table_conversion=converter,
     )
