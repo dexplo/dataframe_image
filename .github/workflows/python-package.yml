@@ -112,8 +112,7 @@ jobs:
       run: |
         mkdir -p ~/Library/Jupyter
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
-    - name: ubuntu playwright patch fix # for install chromium
-      if: ${{ startsWith(matrix.os, 'ubuntu') }}
+    - name: playwright patch fix # install chromium
       run: |
         playwright install
     - name: Test with pytest
