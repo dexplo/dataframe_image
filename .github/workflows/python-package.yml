@@ -112,9 +112,9 @@ jobs:
       run: |
         mkdir -p ~/Library/Jupyter
         ln -s /opt/homebrew/share/jupyter/nbconvert ~/Library/Jupyter
-    - name: playwright patch fix # install chromium
+    - name: playwright install # install chromium
       run: |
-        playwright install
+        playwright install chromium --with-deps
     - name: Test with pytest
       env:
         DEBUG: "1"
