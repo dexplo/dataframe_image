@@ -17,7 +17,8 @@ dataframe_image has the ability to export both normal and styled DataFrames as i
 >>> dfi.export(df_styled, 'df_styled.png')
 ```
 
-*NOTE* If you run code in a Jupyter Notebook, you must use async api:
+> [!NOTE]  
+> If you run code in a Jupyter Notebook, you must use async api:
 
 ```python
 import dataframe_image as dfi
