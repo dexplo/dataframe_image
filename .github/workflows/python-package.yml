@@ -127,13 +127,13 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v4
       with:
-        name: failed_notebook_${{ github.run_id }}
+        name: failed_notebook_${{ matrix.os }}_${{ matrix.python-version }}
         path: notebook.tex
         
     - name: Upload pdf
       uses: actions/upload-artifact@v4
       with:
-        name: test_output_${{ github.run_id }}
+        name: test_output_${{ matrix.os }}_${{ matrix.python-version }}
         path: tests/test_output
         
   publish:
