@@ -125,12 +125,12 @@ jobs:
     # upload tmp.zip if fails
     - name: upload failed notebook.tex
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         path: notebook.tex
         
     - name: Upload pdf
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test_output
         path: tests/test_output
