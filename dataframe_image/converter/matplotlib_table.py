@@ -1,6 +1,7 @@
 import base64
 import io
 import textwrap
+import re
 
 import cssutils
 import numpy as np
@@ -101,22 +102,34 @@ class MatplotlibTableConverter:
                 rowspan = int(el.get("rowspan", 1))
                 text_align = self.get_text_align(el) or row_align
                 text = el.text_content().strip()
+                bg_color = "#ffffff"
+                fg_color = "#000000"
+
+                #check and apply class based rules.
+                if "class" in el.attrib:
+                    class_names = list(re.split(" |,", el.attrib["class"]))
+                    #classnames in selectors have "." in front of them
+                    class_names = set(map(lambda x: f".{x}", class_names))
+
+                    for rule in sheet.cssRules:
+                        #selector names can be separated by a "," or a " "
+                        selector_names = set(re.split(" |,", rule.selectorText))
+                        if class_names.intersection(selector_names):
+                            bg_color = rule.style["background-color"]
+                            fg_color = rule.style["color"]
+                            break
+                #higher precidence to #id based rules.
                 if "id" in el.attrib:
-                    values.append(
-                        [
-                            text,
-                            bold,
-                            text_align,
-                            get_property(el, "background-color"),
-                            get_property(el, "color"),
-                            rowspan,
-                            colspan,
-                        ]
-                    )
-                else:
-                    values.append(
-                        [text, bold, text_align, "#ffffff", "#000000", rowspan, colspan]
-                    )
+                    _bg = get_property(el, "background-color")
+                    _fg = get_property(el, "color")
+                    bg_color = _bg if _bg else bg_color
+                    fg_color = _fg if _fg else fg_color
+
+                #assigning the values to the cell
+                values.append(
+                    [text, bold, text_align, bg_color, fg_color, rowspan, colspan]
+                )
+            # print("Element:", el.attrib, "\nValues:", values)
             return values
 
         style = tree.find(".//style")
