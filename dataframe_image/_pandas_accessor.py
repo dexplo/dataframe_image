@@ -42,7 +42,7 @@ class _Export:
         fontsize=14,
         max_rows=None,
         max_cols=None,
-        table_conversion="chrome",
+        table_conversion="playwright",
         chrome_path=None,
         dpi=None,
     ):
