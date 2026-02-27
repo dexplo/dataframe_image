@@ -43,8 +43,23 @@ Here, an example of how exporting a DataFrame would look like in a notebook.
 
 Install with either:
 
-* `pip install dataframe_image`
+* `pip install dataframe_image` (minimal/core dependencies)
 * `conda install -c conda-forge dataframe_image`
+
+Install optional features as needed:
+
+* Notebook conversion (`convert` API / CLI): `pip install "dataframe_image[convert]"`
+* Playwright backend: `pip install "dataframe_image[playwright]"`
+* Matplotlib backend: `pip install "dataframe_image[matplotlib]"`
+* Selenium backend: `pip install "dataframe_image[selenium]"`
+* html2image backend: `pip install "dataframe_image[html2image]"`
+* Everything: `pip install "dataframe_image[all]"`
+
+For Playwright, you may also need browser binaries:
+
+```bash
+playwright install chromium
+```
 
 ## PDF Conversion - LaTeX vs Chrome Browser
 
@@ -109,11 +124,16 @@ Closely related to this package is [`jupyter_to_medium`](https://github.com/dexp
 
 ## Dependencies
 
-You must have the following Python libraries installed:
+Core dependencies (installed by default):
 
 * [pandas](https://github.com/pandas-dev/pandas)
-* [nbconvert](https://github.com/jupyter/nbconvert)
-* [requests](https://requests.readthedocs.io/en/master/)
-* [matplotlib](http://matplotlib.org/)
-* [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
-* [aiohttp](https://docs.aiohttp.org/en/stable/index.html)
+* [pillow](https://python-pillow.org/)
+* [packaging](https://packaging.pypa.io/)
+
+Optional dependency groups:
+
+* `convert`: [nbconvert](https://github.com/jupyter/nbconvert), [nbformat](https://github.com/jupyter/nbformat), [aiohttp](https://docs.aiohttp.org/en/stable/index.html), [requests](https://requests.readthedocs.io/en/master/), [mistune](https://github.com/lepture/mistune), [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
+* `playwright`: [playwright](https://playwright.dev/python/)
+* `matplotlib`: [matplotlib](http://matplotlib.org/), [cssutils](https://github.com/jaraco/cssutils), [lxml](https://lxml.de/), [cssselect](https://cssselect.readthedocs.io/)
+* `selenium`: [selenium](https://www.selenium.dev/)
+* `html2image`: [html2image](https://github.com/vgalin/html2image)
