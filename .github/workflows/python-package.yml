@@ -68,7 +68,7 @@ jobs:
       uses: Homebrew/actions/setup-homebrew@master
 
     - name: Setup TeX Live
-      uses: teatimeguest/setup-texlive-action@v3
+      uses: TeX-Live/setup-texlive-action@v3
       with:
         cache: true
         packages: >-
@@ -100,10 +100,15 @@ jobs:
         brew update
         brew install pandoc
 
+    - name: Pin numpy for Python 3.8
+      if: ${{ matrix.python-version == '3.8' }}
+      run: |
+        python -m pip install "numpy<2"
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install pytest pytest-asyncio matplotlib jupyter pandoc playwright selenium html2image 
+        pip install "pytest<9" pytest-asyncio matplotlib jupyter pandoc playwright selenium html2image 
         pip install . --upgrade
         pip install chromedriver-autoinstaller
         python -c 'import chromedriver_autoinstaller; chromedriver_autoinstaller.install()'
