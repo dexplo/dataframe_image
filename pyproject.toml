@@ -1,0 +1,103 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dataframe_image"
+dynamic = ["version"]
+authors = [{ name = "Ted Petrou", email = "petrou.theodore@gmail.com" }]
+description = "Embed pandas DataFrames as images in pdf and markdown files when converting from Jupyter Notebooks"
+readme = "README.md"
+license = { text = "MIT" }
+keywords = ["jupyter", "notebook", "pandas", "dataframe", "image", "pdf", "markdown"]
+classifiers = [
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "pandas>=0.24",
+    "pillow",
+    "packaging",
+]
+
+[project.optional-dependencies]
+convert = [
+    "nbconvert>=5",
+    "nbformat",
+    "aiohttp>=3.10.2",
+    "requests",
+    "mistune",
+    "beautifulsoup4",
+]
+playwright = ["playwright"]
+matplotlib = ["matplotlib", "cssutils", "lxml", "cssselect"]
+selenium = ["selenium"]
+html2image = ["html2image"]
+all = [
+    "nbconvert>=5",
+    "nbformat",
+    "aiohttp>=3.10.2",
+    "requests",
+    "mistune",
+    "beautifulsoup4",
+    "playwright",
+    "matplotlib",
+    "cssutils",
+    "lxml",
+    "cssselect",
+    "selenium",
+    "html2image",
+]
+
+[project.urls]
+Homepage = "https://github.com/dexplo/dataframe_image"
+
+[project.scripts]
+dataframe_image = "dataframe_image._command_line:main"
+
+# ---------------------------------------------------------------------------
+# Version: derived from git tags via hatch-vcs (wraps setuptools-scm)
+# ---------------------------------------------------------------------------
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.version.raw-options]
+local_scheme = "node-and-date"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "dataframe_image/_version.py"
+
+# ---------------------------------------------------------------------------
+# Build targets
+# ---------------------------------------------------------------------------
+[tool.hatch.build.targets.wheel]
+packages = ["dataframe_image"]
+
+# Replaces setup.py data_files=[("etc/jupyter/nbconfig/notebook.d", [...])]
+[tool.hatch.build.targets.wheel.shared-data]
+"jupyter-config/nbconfig/notebook.d/dataframe_image.json" = "etc/jupyter/nbconfig/notebook.d/dataframe_image.json"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "dataframe_image/",
+    "jupyter-config/",
+    "tests/",
+    "docs/",
+    "LICENSE",
+    "README.md",
+    "MANIFEST.in",
+    "pytest.ini",
+]
+
+# ---------------------------------------------------------------------------
+# Pytest (migrated from pytest.ini)
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
