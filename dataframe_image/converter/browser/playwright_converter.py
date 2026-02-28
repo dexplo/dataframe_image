@@ -7,6 +7,8 @@ from dataframe_image.logger import logger
 
 from .base import BrowserConverter
 
+MATHJAX_TIMEOUT = 10000
+SCREENSHOT_TIMEOUT = 1000
 
 class PlayWrightConverter(BrowserConverter):
     def __init__(
@@ -83,10 +85,10 @@ class PlayWrightConverter(BrowserConverter):
                     pass
                 page.wait_for_timeout(200)
             try:
-                screenshot_bytes = locator.screenshot(timeout=5000)
+                screenshot_bytes = locator.screenshot(timeout=SCREENSHOT_TIMEOUT)
             except Error:
                 logger.warning("Locator screenshot timed out. Taking full page screenshot instead.")
-                screenshot_bytes = page.screenshot(timeout=5000)
+                screenshot_bytes = page.screenshot(timeout=SCREENSHOT_TIMEOUT)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
 
@@ -164,7 +166,7 @@ class AsyncPlayWrightConverter(BrowserConverter):
             if self.use_mathjax:
                 mj = page.locator("mjx-container math")
                 try:
-                    mj.wait_for(timeout=10000)
+                    mj.wait_for(timeout=MATHJAX_TIMEOUT)
                 except Error:
                     logger.warning(
                         "MathJax did not render in time. Formula in dataframe may not "
@@ -173,9 +175,9 @@ class AsyncPlayWrightConverter(BrowserConverter):
                     pass
                 page.wait_for_timeout(200)
             try:
-                screenshot_bytes = await locator.screenshot(timeout=1000)
+                screenshot_bytes = await locator.screenshot(timeout=SCREENSHOT_TIMEOUT)
             except Error:
                 logger.warning("Locator screenshot timed out. Taking full page screenshot instead.")
-                screenshot_bytes = await page.screenshot(timeout=1000)
+                screenshot_bytes = await page.screenshot(timeout=SCREENSHOT_TIMEOUT)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
