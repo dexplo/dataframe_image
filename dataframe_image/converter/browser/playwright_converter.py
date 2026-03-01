@@ -86,8 +86,8 @@ class PlayWrightConverter(BrowserConverter):
                 page.wait_for_timeout(200)
             try:
                 screenshot_bytes = locator.screenshot(timeout=SCREENSHOT_TIMEOUT)
-            except Error:
-                logger.warning("Locator screenshot timed out. Taking full page screenshot instead.")
+            except Error as ex:
+                logger.warning(f"Locator screenshot failed. Taking full page screenshot instead. Error: {ex}")
                 screenshot_bytes = page.screenshot(timeout=SCREENSHOT_TIMEOUT)
         im = Image.open(BytesIO(screenshot_bytes))
         return im
