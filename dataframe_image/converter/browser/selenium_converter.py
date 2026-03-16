@@ -54,6 +54,13 @@ class SeleniumConverter(BrowserConverter):
 
             # temp_img will be deleted after context exit
             img = Image.open(temp_img)
+            
+            # Retry with larger height if the first screenshot is too short
+            if img.height < required_height:
+                shortfall = required_height - img.height +200
+                driver.set_window_size(required_width + 150,  required_height + 90 + shortfall)
+                driver.save_screenshot(str(temp_img))
+                img = Image.open(temp_img)
         try:
             temp_dir_obj.cleanup()
         except OSError:
